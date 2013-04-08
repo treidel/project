@@ -1,0 +1,31 @@
+package project;
+
+option optimize_for = LITE_RUNTIME;
+
+message HelloRequest 
+{
+  required uint32 version = 1;
+}
+
+message HelloResponse
+{
+  required bool success = 1;
+}
+
+message LevelNotificationV1
+{
+  repeated int32 levelInDecibels = 1;
+}
+
+message RequestV1
+{
+} 
+
+message ResponseV1
+{
+}
+
+message NotificationV1
+{
+  optional LevelNotificationV1 level = 1;
+}

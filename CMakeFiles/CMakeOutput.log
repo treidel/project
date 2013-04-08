@@ -1,0 +1,258 @@
+The system is: Linux - 3.2.0-29-generic - x86_64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: /usr/bin/gcc 
+Build flags: 
+Id flags: 
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+
+The C compiler identification is GNU, found in "/home/treidel/src/project/CMakeFiles/CompilerIdC/a.out"
+
+The target system is: Linux - 1 - 
+The host system is: Linux - 3.2.0-29-generic - x86_64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-gcc 
+Build flags: 
+Id flags: 
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+
+The C compiler identification is GNU, found in "/home/treidel/src/project/CMakeFiles/CompilerIdC/a.out"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-g++ 
+Build flags: 
+Id flags: 
+
+The output was:
+0
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+
+The CXX compiler identification is GNU, found in "/home/treidel/src/project/CMakeFiles/CompilerIdCXX/a.out"
+
+Determining if the C compiler works passed with the following output:
+Change Dir: /home/treidel/src/project/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/make "cmTryCompileExec/fast"
+/usr/bin/make -f CMakeFiles/cmTryCompileExec.dir/build.make CMakeFiles/cmTryCompileExec.dir/build
+make[1]: Entering directory `/home/treidel/src/project/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/treidel/src/project/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec.dir/testCCompiler.c.o
+/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-gcc   -I/root/chroot-raspbian-armhf/usr/include/arm-linux-gnueabihf    -o CMakeFiles/cmTryCompileExec.dir/testCCompiler.c.o   -c /home/treidel/src/project/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTryCompileExec
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec.dir/link.txt --verbose=1
+/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-gcc         CMakeFiles/cmTryCompileExec.dir/testCCompiler.c.o  -o cmTryCompileExec -rdynamic 
+make[1]: Leaving directory `/home/treidel/src/project/CMakeFiles/CMakeTmp'
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: /home/treidel/src/project/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/make "cmTryCompileExec/fast"
+/usr/bin/make -f CMakeFiles/cmTryCompileExec.dir/build.make CMakeFiles/cmTryCompileExec.dir/build
+make[1]: Entering directory `/home/treidel/src/project/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/treidel/src/project/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec.dir/CMakeCCompilerABI.c.o
+/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-gcc   -I/root/chroot-raspbian-armhf/usr/include/arm-linux-gnueabihf    -o CMakeFiles/cmTryCompileExec.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-2.8/Modules/CMakeCCompilerABI.c
+Linking C executable cmTryCompileExec
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec.dir/link.txt --verbose=1
+/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-gcc       -v CMakeFiles/cmTryCompileExec.dir/CMakeCCompilerABI.c.o  -o cmTryCompileExec -rdynamic  
+Using built-in specs.
+COLLECT_GCC=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-gcc
+COLLECT_LTO_WRAPPER=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/lto-wrapper
+Target: arm-bcm2708hardfp-linux-gnueabi
+Configured with: /home/extra/crosstool/staginghf/.build/src/gcc-linaro-4.7-2012.04/configure --build=i686-build_pc-linux-gnu --host=i686-build_pc-linux-gnu --target=arm-bcm2708hardfp-linux-gnueabi --prefix=/home/dc4/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi --with-sysroot=/home/dc4/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot --enable-languages=c,c++ --with-cpu=arm1176jzf-s --with-tune=arm1176jzf-s --with-float=hard --with-pkgversion='crosstool-NG 1.15.2' --enable-__cxa_atexit --disable-libmudflap --disable-libgomp --disable-libssp --with-gmp=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-mpfr=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-mpc=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-ppl=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-cloog=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-libelf=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-host-libstdcxx='-static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm -L/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools/lib -lpwl' --enable-threads=posix --enable-target-optspace --disable-nls --disable-multilib --with-local-prefix=/home/dc4/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot --enable-c99 --enable-long-long --with-float=hard
+Thread model: posix
+gcc version 4.7.1 20120402 (prerelease) (crosstool-NG 1.15.2) 
+COMPILER_PATH=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/bin/
+LIBRARY_PATH=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/lib/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/lib/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTryCompileExec' '-rdynamic' '-mcpu=arm1176jzf-s' '-mfloat-abi=hard' '-mtls-dialect=gnu'
+ /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/collect2 --sysroot=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot --eh-frame-hdr -export-dynamic -dynamic-linker /lib/ld-linux.so.3 -X -m armelf_linux_eabi -o cmTryCompileExec /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crt1.o /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crti.o /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/crtbegin.o -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1 -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/lib -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/lib -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib CMakeFiles/cmTryCompileExec.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/crtend.o /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crtn.o
+make[1]: Leaving directory `/home/treidel/src/project/CMakeFiles/CMakeTmp'
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/treidel/src/project/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:/usr/bin/make "cmTryCompileExec/fast"]
+  ignore line: [/usr/bin/make -f CMakeFiles/cmTryCompileExec.dir/build.make CMakeFiles/cmTryCompileExec.dir/build]
+  ignore line: [make[1]: Entering directory `/home/treidel/src/project/CMakeFiles/CMakeTmp']
+  ignore line: [/usr/bin/cmake -E cmake_progress_report /home/treidel/src/project/CMakeFiles/CMakeTmp/CMakeFiles 1]
+  ignore line: [Building C object CMakeFiles/cmTryCompileExec.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-gcc   -I/root/chroot-raspbian-armhf/usr/include/arm-linux-gnueabihf    -o CMakeFiles/cmTryCompileExec.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-2.8/Modules/CMakeCCompilerABI.c]
+  ignore line: [Linking C executable cmTryCompileExec]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec.dir/link.txt --verbose=1]
+  ignore line: [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-gcc       -v CMakeFiles/cmTryCompileExec.dir/CMakeCCompilerABI.c.o  -o cmTryCompileExec -rdynamic  ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-gcc]
+  ignore line: [COLLECT_LTO_WRAPPER=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/lto-wrapper]
+  ignore line: [Target: arm-bcm2708hardfp-linux-gnueabi]
+  ignore line: [Configured with: /home/extra/crosstool/staginghf/.build/src/gcc-linaro-4.7-2012.04/configure --build=i686-build_pc-linux-gnu --host=i686-build_pc-linux-gnu --target=arm-bcm2708hardfp-linux-gnueabi --prefix=/home/dc4/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi --with-sysroot=/home/dc4/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot --enable-languages=c,c++ --with-cpu=arm1176jzf-s --with-tune=arm1176jzf-s --with-float=hard --with-pkgversion='crosstool-NG 1.15.2' --enable-__cxa_atexit --disable-libmudflap --disable-libgomp --disable-libssp --with-gmp=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-mpfr=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-mpc=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-ppl=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-cloog=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-libelf=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-host-libstdcxx='-static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm -L/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools/lib -lpwl' --enable-threads=posix --enable-target-optspace --disable-nls --disable-multilib --with-local-prefix=/home/dc4/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot --enable-c99 --enable-long-long --with-float=hard]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 4.7.1 20120402 (prerelease) (crosstool-NG 1.15.2) ]
+  ignore line: [COMPILER_PATH=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/bin/]
+  ignore line: [LIBRARY_PATH=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/lib/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/lib/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTryCompileExec' '-rdynamic' '-mcpu=arm1176jzf-s' '-mfloat-abi=hard' '-mtls-dialect=gnu']
+  link line: [ /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/collect2 --sysroot=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot --eh-frame-hdr -export-dynamic -dynamic-linker /lib/ld-linux.so.3 -X -m armelf_linux_eabi -o cmTryCompileExec /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crt1.o /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crti.o /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/crtbegin.o -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1 -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/lib -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/lib -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib CMakeFiles/cmTryCompileExec.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/crtend.o /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crtn.o]
+    arg [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/collect2] ==> ignore
+    arg [--sysroot=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-export-dynamic] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib/ld-linux.so.3] ==> ignore
+    arg [-X] ==> ignore
+    arg [-m] ==> ignore
+    arg [armelf_linux_eabi] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTryCompileExec] ==> ignore
+    arg [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crt1.o] ==> ignore
+    arg [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crti.o] ==> ignore
+    arg [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/crtbegin.o] ==> ignore
+    arg [-L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1] ==> dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1]
+    arg [-L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc] ==> dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc]
+    arg [-L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/lib] ==> dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/lib]
+    arg [-L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/lib] ==> dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/lib]
+    arg [-L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib] ==> dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib]
+    arg [CMakeFiles/cmTryCompileExec.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [-lgcc] ==> lib [gcc]
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--no-as-needed] ==> ignore
+    arg [-lc] ==> lib [c]
+    arg [-lgcc] ==> lib [gcc]
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--no-as-needed] ==> ignore
+    arg [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/crtend.o] ==> ignore
+    arg [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crtn.o] ==> ignore
+  remove lib [gcc]
+  remove lib [gcc_s]
+  remove lib [gcc]
+  remove lib [gcc_s]
+  collapse dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1] ==> [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1]
+  collapse dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc] ==> [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/lib/gcc]
+  collapse dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/lib] ==> [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/lib]
+  collapse dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/lib] ==> [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot/lib]
+  collapse dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib] ==> [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib]
+  implicit libs: [c]
+  implicit dirs: [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1;/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/lib/gcc;/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/lib;/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot/lib;/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib]
+
+
+Determining if the CXX compiler works passed with the following output:
+Change Dir: /home/treidel/src/project/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/make "cmTryCompileExec/fast"
+/usr/bin/make -f CMakeFiles/cmTryCompileExec.dir/build.make CMakeFiles/cmTryCompileExec.dir/build
+make[1]: Entering directory `/home/treidel/src/project/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/treidel/src/project/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building CXX object CMakeFiles/cmTryCompileExec.dir/testCXXCompiler.cxx.o
+/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-g++    -I/root/chroot-raspbian-armhf/usr/include/arm-linux-gnueabihf    -o CMakeFiles/cmTryCompileExec.dir/testCXXCompiler.cxx.o -c /home/treidel/src/project/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
+Linking CXX executable cmTryCompileExec
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec.dir/link.txt --verbose=1
+/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-g++          CMakeFiles/cmTryCompileExec.dir/testCXXCompiler.cxx.o  -o cmTryCompileExec -rdynamic 
+make[1]: Leaving directory `/home/treidel/src/project/CMakeFiles/CMakeTmp'
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: /home/treidel/src/project/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/make "cmTryCompileExec/fast"
+/usr/bin/make -f CMakeFiles/cmTryCompileExec.dir/build.make CMakeFiles/cmTryCompileExec.dir/build
+make[1]: Entering directory `/home/treidel/src/project/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/treidel/src/project/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building CXX object CMakeFiles/cmTryCompileExec.dir/CMakeCXXCompilerABI.cpp.o
+/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-g++    -I/root/chroot-raspbian-armhf/usr/include/arm-linux-gnueabihf    -o CMakeFiles/cmTryCompileExec.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-2.8/Modules/CMakeCXXCompilerABI.cpp
+Linking CXX executable cmTryCompileExec
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec.dir/link.txt --verbose=1
+/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-g++        -v CMakeFiles/cmTryCompileExec.dir/CMakeCXXCompilerABI.cpp.o  -o cmTryCompileExec -rdynamic  
+Using built-in specs.
+COLLECT_GCC=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-g++
+COLLECT_LTO_WRAPPER=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/lto-wrapper
+Target: arm-bcm2708hardfp-linux-gnueabi
+Configured with: /home/extra/crosstool/staginghf/.build/src/gcc-linaro-4.7-2012.04/configure --build=i686-build_pc-linux-gnu --host=i686-build_pc-linux-gnu --target=arm-bcm2708hardfp-linux-gnueabi --prefix=/home/dc4/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi --with-sysroot=/home/dc4/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot --enable-languages=c,c++ --with-cpu=arm1176jzf-s --with-tune=arm1176jzf-s --with-float=hard --with-pkgversion='crosstool-NG 1.15.2' --enable-__cxa_atexit --disable-libmudflap --disable-libgomp --disable-libssp --with-gmp=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-mpfr=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-mpc=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-ppl=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-cloog=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-libelf=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-host-libstdcxx='-static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm -L/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools/lib -lpwl' --enable-threads=posix --enable-target-optspace --disable-nls --disable-multilib --with-local-prefix=/home/dc4/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot --enable-c99 --enable-long-long --with-float=hard
+Thread model: posix
+gcc version 4.7.1 20120402 (prerelease) (crosstool-NG 1.15.2) 
+COMPILER_PATH=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/bin/
+LIBRARY_PATH=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/lib/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/lib/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTryCompileExec' '-rdynamic' '-shared-libgcc' '-mcpu=arm1176jzf-s' '-mfloat-abi=hard' '-mtls-dialect=gnu'
+ /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/collect2 --sysroot=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot --eh-frame-hdr -export-dynamic -dynamic-linker /lib/ld-linux.so.3 -X -m armelf_linux_eabi -o cmTryCompileExec /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crt1.o /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crti.o /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/crtbegin.o -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1 -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/lib -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/lib -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib CMakeFiles/cmTryCompileExec.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/crtend.o /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crtn.o
+make[1]: Leaving directory `/home/treidel/src/project/CMakeFiles/CMakeTmp'
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/treidel/src/project/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:/usr/bin/make "cmTryCompileExec/fast"]
+  ignore line: [/usr/bin/make -f CMakeFiles/cmTryCompileExec.dir/build.make CMakeFiles/cmTryCompileExec.dir/build]
+  ignore line: [make[1]: Entering directory `/home/treidel/src/project/CMakeFiles/CMakeTmp']
+  ignore line: [/usr/bin/cmake -E cmake_progress_report /home/treidel/src/project/CMakeFiles/CMakeTmp/CMakeFiles 1]
+  ignore line: [Building CXX object CMakeFiles/cmTryCompileExec.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-g++    -I/root/chroot-raspbian-armhf/usr/include/arm-linux-gnueabihf    -o CMakeFiles/cmTryCompileExec.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-2.8/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Linking CXX executable cmTryCompileExec]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec.dir/link.txt --verbose=1]
+  ignore line: [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-g++        -v CMakeFiles/cmTryCompileExec.dir/CMakeCXXCompilerABI.cpp.o  -o cmTryCompileExec -rdynamic  ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/arm-bcm2708hardfp-linux-gnueabi-g++]
+  ignore line: [COLLECT_LTO_WRAPPER=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/lto-wrapper]
+  ignore line: [Target: arm-bcm2708hardfp-linux-gnueabi]
+  ignore line: [Configured with: /home/extra/crosstool/staginghf/.build/src/gcc-linaro-4.7-2012.04/configure --build=i686-build_pc-linux-gnu --host=i686-build_pc-linux-gnu --target=arm-bcm2708hardfp-linux-gnueabi --prefix=/home/dc4/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi --with-sysroot=/home/dc4/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot --enable-languages=c,c++ --with-cpu=arm1176jzf-s --with-tune=arm1176jzf-s --with-float=hard --with-pkgversion='crosstool-NG 1.15.2' --enable-__cxa_atexit --disable-libmudflap --disable-libgomp --disable-libssp --with-gmp=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-mpfr=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-mpc=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-ppl=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-cloog=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-libelf=/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools --with-host-libstdcxx='-static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm -L/home/extra/crosstool/staginghf/.build/arm-bcm2708hardfp-linux-gnueabi/buildtools/lib -lpwl' --enable-threads=posix --enable-target-optspace --disable-nls --disable-multilib --with-local-prefix=/home/dc4/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot --enable-c99 --enable-long-long --with-float=hard]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 4.7.1 20120402 (prerelease) (crosstool-NG 1.15.2) ]
+  ignore line: [COMPILER_PATH=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/bin/]
+  ignore line: [LIBRARY_PATH=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/lib/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/lib/:/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTryCompileExec' '-rdynamic' '-shared-libgcc' '-mcpu=arm1176jzf-s' '-mfloat-abi=hard' '-mtls-dialect=gnu']
+  link line: [ /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/collect2 --sysroot=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot --eh-frame-hdr -export-dynamic -dynamic-linker /lib/ld-linux.so.3 -X -m armelf_linux_eabi -o cmTryCompileExec /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crt1.o /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crti.o /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/crtbegin.o -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1 -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/lib -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/lib -L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib CMakeFiles/cmTryCompileExec.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/crtend.o /home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crtn.o]
+    arg [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../libexec/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/collect2] ==> ignore
+    arg [--sysroot=/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-export-dynamic] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib/ld-linux.so.3] ==> ignore
+    arg [-X] ==> ignore
+    arg [-m] ==> ignore
+    arg [armelf_linux_eabi] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTryCompileExec] ==> ignore
+    arg [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crt1.o] ==> ignore
+    arg [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crti.o] ==> ignore
+    arg [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/crtbegin.o] ==> ignore
+    arg [-L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1] ==> dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1]
+    arg [-L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc] ==> dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc]
+    arg [-L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/lib] ==> dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/lib]
+    arg [-L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/lib] ==> dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/lib]
+    arg [-L/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib] ==> dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib]
+    arg [CMakeFiles/cmTryCompileExec.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [-lstdc++] ==> lib [stdc++]
+    arg [-lm] ==> lib [m]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-lc] ==> lib [c]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/crtend.o] ==> ignore
+    arg [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib/crtn.o] ==> ignore
+  remove lib [gcc_s]
+  remove lib [gcc]
+  remove lib [gcc_s]
+  remove lib [gcc]
+  collapse dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1] ==> [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1]
+  collapse dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc] ==> [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/lib/gcc]
+  collapse dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1/../../../../arm-bcm2708hardfp-linux-gnueabi/lib] ==> [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/lib]
+  collapse dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/lib] ==> [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot/lib]
+  collapse dir [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/bin/../arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib] ==> [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib]
+  implicit libs: [stdc++;m;c]
+  implicit dirs: [/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/lib/gcc/arm-bcm2708hardfp-linux-gnueabi/4.7.1;/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/lib/gcc;/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/lib;/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot/lib;/home/treidel/src/raspian/tools/arm-bcm2708/arm-bcm2708hardfp-linux-gnueabi/arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/lib]
+
+

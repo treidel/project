@@ -1,0 +1,5 @@
+/home/treidel/src/project/app/CMakeFiles/app.dir
+/home/treidel/src/project/audio/CMakeFiles/audio.dir
+/home/treidel/src/project/bluetooth/CMakeFiles/bluetooth.dir
+/home/treidel/src/project/control/CMakeFiles/control.dir
+/home/treidel/src/project/CMakeFiles/leveling-glass.dir

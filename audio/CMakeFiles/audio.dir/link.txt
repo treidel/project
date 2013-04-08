@@ -1,0 +1,2 @@
+/usr/bin/ar cr libaudio.a  CMakeFiles/audio.dir/audio_capturemgr.cpp.o CMakeFiles/audio.dir/audio_captureinstance.cpp.o CMakeFiles/audio.dir/audio_channel.cpp.o CMakeFiles/audio.dir/audio_processor.cpp.o
+/usr/bin/ranlib libaudio.a
