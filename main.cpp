@@ -3,13 +3,23 @@
 #include "audio/audio_capturemgr.h"
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <ev.h>
+
+#include <log4cxx/logger.h>
+#include <log4cxx/basicconfigurator.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // macros
 ///////////////////////////////////////////////////////////////////////////////
 
+#define NAME "Leveling Glass"
 #define PROCFS_SELF_EXE "/proc/self/exe"
+
+// make sure the version macro is defined
+#ifndef VERSION
+#error VERSION is not defined
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // type defintions
@@ -30,6 +40,7 @@ static const uint8_t c_uuid_int[] = {0xc2, 0x0d, 0x3a, 0x1a, 0x6c, 0xd, 0x11, 0x
 static uuid_t g_uuid;
 static SPPServer *g_server_p = NULL;
 static char g_execpath[1024] = {0};
+static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("main"));
 
 ///////////////////////////////////////////////////////////////////////////////
 // private function declarations
@@ -44,6 +55,11 @@ static void populate_execpath(char *execpath_p, size_t path_length);
 
 int main(int argc, char *argv[])
 {
+	// use console logging for now
+	log4cxx::BasicConfigurator::configure();
+
+	LOG4CXX_INFO(g_logger, "Starting NAME - version VERSION");
+
 	// figure out where our executable is located
 	populate_execpath(g_execpath, sizeof g_execpath);
 
@@ -66,13 +82,14 @@ int main(int argc, char *argv[])
     	ev_run(loop_p, 0);   
 
 	// we should never get here
-	// TBD: error log
-    	return 1;
+	LOG4CXX_FATAL(g_logger, "main loop exited");
+    	return -1;
 }
 
 void kill_cb(struct ev_loop *loop_p, ev_signal *w_p, int revents)
 {
-	// TBD: warning log
+	LOG4CXX_INFO(g_logger, "Exiting");
+	exit(1);
 }
 
 void populate_execpath(char *path_p, size_t path_length)

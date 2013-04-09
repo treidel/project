@@ -1,18 +1,26 @@
-cmake_minimum_required (VERSION 2.6) 
-project (leveling-glass)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6) 
+PROJECT(leveling-glass)
 
 # set the toolschain info
-set(CMAKE_TOOLCHAIN_FILE, "Toolchain-RaspberryPi.cmake")
+SET(CMAKE_TOOLCHAIN_FILE, "Toolchain-RaspberryPi.cmake")
 
 # add third party directory into the module search path
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty.cmake)
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty.cmake)
 
 # find the CMake modules we need
-find_package(Log4Cxx REQUIRED)
-find_package(LibEV REQUIRED)
+FIND_PACKAGE(Log4Cxx REQUIRED)
+FIND_PACKAGE(LibEV REQUIRED)
 
 # set the global compiler flags
-set(CMAKE_CXX_FLAGS "-Werror")
+SET(CMAKE_CXX_FLAGS "-Werror")
+
+IF(DEFINED ENV{VERSION})
+	# use the version provided by the external build environment if available
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVERSION=$ENV{VERSION}")
+ELSE()
+	# hardcode to internal version
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVERSION=INTERNAL")	
+ENDIF()
 
 # add our own directory as an include
 include_directories(.)
