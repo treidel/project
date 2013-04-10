@@ -1,2 +1,0 @@
-/usr/bin/ar cr libbluetooth.a  CMakeFiles/bluetooth.dir/spp_server.cpp.o CMakeFiles/bluetooth.dir/spp_connection.cpp.o
-/usr/bin/ranlib libbluetooth.a

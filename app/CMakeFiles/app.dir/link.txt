@@ -1,2 +1,0 @@
-/usr/bin/ar cr libapp.a  CMakeFiles/app.dir/app_mgr.cpp.o CMakeFiles/app.dir/app_sppconnector.cpp.o
-/usr/bin/ranlib libapp.a

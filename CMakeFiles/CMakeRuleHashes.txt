@@ -1,2 +1,0 @@
-# Hashes of file build rules.
-ed22e4df0e27f03b2ae67147c4639461 control/control.pb.cc
