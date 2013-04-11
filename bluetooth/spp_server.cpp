@@ -1,13 +1,22 @@
+
+#include "spp_server.h"
+#include "spp_connection.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
-
 #include <sys/socket.h>
 
-#include "common.h"
-#include "spp_server.h"
-#include "spp_connection.h"
+#include <string>
+
+#include <log4cxx/logger.h>
+
+///////////////////////////////////////////////////////////////////////////////
+// macros 
+///////////////////////////////////////////////////////////////////////////////
+
+#define MAC_ADDR_STRING_LENGTH ((2*6)+5)
 
 ///////////////////////////////////////////////////////////////////////////////
 // type defintions
@@ -24,18 +33,20 @@ static const bdaddr_t g_bluetooth_local_addr = {0, 0, 0, 0xff, 0xff, 0xff};
 
 static const char *g_servicename = "LevelingGlass Bluetooth SPP V1.0 Service";
 static const char *g_servicedescription = "Version 1.0 of the Bluetooth SPP Service for LevelingGlass";
-static const char *g_serviceprovider = "timmytimmytimmy.com";
+static const char *g_serviceprovider = "Wazzup";
 
 ///////////////////////////////////////////////////////////////////////////////
 // module variables
 ///////////////////////////////////////////////////////////////////////////////
+
+static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("bluetooth.spp.server"));
 
 ///////////////////////////////////////////////////////////////////////////////
 // private function declarations
 ///////////////////////////////////////////////////////////////////////////////
 
 static uint8_t allocate_channel(int sock, struct sockaddr_rc *sockaddr);
-
+static std::string format_mac_addr(const bdaddr_t *addr_p);
 
 ///////////////////////////////////////////////////////////////////////////////
 // public function implementations
@@ -48,23 +59,25 @@ SPPServer::SPPServer(uuid_t uuid) :
 	m_socket(0),
 	m_connection_p(NULL)
 {
+	LOG4CXX_DEBUG(g_logger, "SPPServer::SPPServer enter");
 
 	// create the SPP socket
         m_socket = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
         if (0 > m_socket)
         {
-            // TBD: log error
-            return;
+		LOG4CXX_ERROR(g_logger, "socket returned error " << m_socket);
+            	return;
         }
 
         // bind socket to the first RFCOMM port on the first available 
         // local bluetooth adapter
-        struct sockaddr_rc loc_addr = { 0, 0, 0 };
-        bdaddr_t addr = { 0 };
+        struct sockaddr_rc loc_addr = {0, 0, 0};
         loc_addr.rc_family = AF_BLUETOOTH;
-        loc_addr.rc_bdaddr = addr;
+        loc_addr.rc_bdaddr = g_bluetooth_any_addr;
         loc_addr.rc_channel = (uint8_t)0;
         uint8_t channel = allocate_channel(m_socket, &loc_addr);
+
+	LOG4CXX_DEBUG(g_logger, "SPPServer::SPPServer channel=" << channel);
 
         // listen for connections with no backlog 
         listen(m_socket, 0);
@@ -105,9 +118,10 @@ SPPServer::SPPServer(uuid_t uuid) :
 	// connect to SDP
 	m_session_p = sdp_connect(&g_bluetooth_any_addr, &g_bluetooth_local_addr, SDP_RETRY_IF_BUSY);
 	// register the service
-	if (0 > sdp_record_register(m_session_p, record_p, 0))
+	int rc = sdp_record_register(m_session_p, record_p, 0);
+	if (0 > rc)
 	{
-		// TBD: error
+		LOG4CXX_ERROR(g_logger, "sdp_record_register returned error " << rc);            		
 		return;
 	}
 	
@@ -124,21 +138,63 @@ SPPServer::SPPServer(uuid_t uuid) :
     
     	// register the listener with the loop
     	ev_io_start(m_loop_p, &m_watcher);
+
+	LOG4CXX_DEBUG(g_logger, "SPPServer::SPPServer exit");
 }
 
 SPPServer::~SPPServer()
 {
+	LOG4CXX_DEBUG(g_logger, "SPPServer::~SPPServer enter");
+
 	// stop the watcher
 	ev_io_stop(m_loop_p, &m_watcher);
 	// close the SDP session
 	sdp_close(m_session_p);
 	// close the socket
 	close(m_socket);
+
+	LOG4CXX_DEBUG(g_logger, "SPPServer::~SPPServer exit");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // private function implementations
 ///////////////////////////////////////////////////////////////////////////////
+
+void SPPServer::socket_cb (EV_P_ ev_io *w_p, int revents)
+{
+	LOG4CXX_DEBUG(g_logger, "SPPServer::socket_cb enter " << w_p << " " << revents);
+	// get the object
+	SPPServer *server_p = (SPPServer *)(w_p->data);
+    	// we're only signalled when a new connection has arrived so let's accept it
+    	struct sockaddr_rc remote_addr;
+    	socklen_t len = sizeof(struct sockaddr_rc);
+    	int client_socket = accept(w_p->fd, (struct sockaddr *)&remote_addr, &len);
+    	if (0 > client_socket)
+    	{
+		LOG4CXX_ERROR(g_logger, "accept returned error " << client_socket);
+        	return;
+    	}
+
+	std::string mac_addr_s = format_mac_addr(&remote_addr.rc_bdaddr);
+	LOG4CXX_INFO(g_logger, "received connection from " << mac_addr_s);
+   
+    	// see if we already have a connection 
+    	if (NULL == server_p->m_connection_p)
+    	{
+        	// create the connection
+		server_p->m_connection_p = new SPPConnection(server_p, client_socket);
+    	}
+    	else
+    	{
+		LOG4CXX_WARN(g_logger, "refusing connection request -> already connected");
+
+        	// close the socket unceremoniously 
+        	close(client_socket);
+    	}
+
+    	// done
+	LOG4CXX_DEBUG(g_logger, "SPPServer::socket_cb exit");
+}
 
 uint8_t allocate_channel(int sock, struct sockaddr_rc *sockaddr_p)
 {
@@ -155,36 +211,12 @@ uint8_t allocate_channel(int sock, struct sockaddr_rc *sockaddr_p)
     	return 0;
 }
 
-void SPPServer::socket_cb (EV_P_ ev_io *w, int revents)
+
+
+std::string format_mac_addr(const bdaddr_t *addr_p)
 {
-	// get the object
-	SPPServer *server_p = (SPPServer *)(w->data);
-    	// we're only signalled when a new connection has arrived so let's accept it
-    	struct sockaddr_rc remote_addr;
-    	socklen_t len = sizeof(struct sockaddr_rc);
-    	int client_socket = accept(w->fd, (struct sockaddr *)&remote_addr, &len);
-    	if (0 > client_socket)
-    	{
-        	// TBD: error log
-        	return;
-    	}
-
-    	// TBD: info log
-   
-    	// see if we already have a connection 
-    	if (NULL == server_p->m_connection_p)
-    	{
-        	// create the connection
-		server_p->m_connection_p = new SPPConnection(server_p, client_socket);
-    	}
-    	else
-    	{
-        	// TBD: warning log
-
-        	// close the socket unceremoniously 
-        	close(client_socket);
-    	}
-
-    	// done
+	std::string buffer_s(MAC_ADDR_STRING_LENGTH, ' '); 
+	snprintf((char *)buffer_s.c_str(), buffer_s.capacity(), "%02X:%02X:%02X:%02X:%02X:%02X", addr_p->b[0], addr_p->b[1], addr_p->b[2], addr_p->b[3], addr_p->b[4], addr_p->b[5]);
+	return buffer_s;
 }
 

@@ -7,6 +7,8 @@
 #include <google/protobuf/message_lite.h>
 #include <math.h>
 
+#include <log4cxx/logger.h>
+
 ///////////////////////////////////////////////////////////////////////////////
 // macros
 ///////////////////////////////////////////////////////////////////////////////
@@ -29,6 +31,8 @@ static const int32_t c_zero_level_in_db = -98;
 ///////////////////////////////////////////////////////////////////////////////
 
 
+static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("control.v1"));
+
 ///////////////////////////////////////////////////////////////////////////////
 // private function declarations
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,11 +45,17 @@ Control::Control(APPManager::NotificationHandler *handler_p) :
 	m_handler_p(handler_p),
 	m_state(STATE_HELLO)
 {
+	LOG4CXX_DEBUG(g_logger, "Control::Control enter " << handler_p);
+
 	GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+	LOG4CXX_DEBUG(g_logger, "Control::Control exit");
 }
 
 Control::~Control()
 {
+	LOG4CXX_DEBUG(g_logger, "Control::Contol enter");
+	LOG4CXX_DEBUG(g_logger, "Control::Contol exit");
 }
 
 
@@ -55,6 +65,8 @@ Control::~Control()
 
 ResultCode Control::handle_request(const APPManager::Message *request_p, APPManager::Message **response_pp)
 {
+	LOG4CXX_DEBUG(g_logger, "Control::handler_request enter " << request_p << " " << response_pp << "state=" << m_state);
+
 	// assume success
 	ResultCode result_code = RESULT_CODE_OK;
     
@@ -69,7 +81,7 @@ ResultCode Control::handle_request(const APPManager::Message *request_p, APPMana
 			project::HelloRequest request;
 			if (false == request.ParseFromArray((void *)request_p->data_p, request_p->length))
 			{
-				// TBD: error log
+				LOG4CXX_ERROR(g_logger, "unable to parse hello protocol buffer len=" << request_p->length);
 				result_code = RESULT_CODE_ERROR;
 				break;			
 			}
@@ -101,7 +113,7 @@ ResultCode Control::handle_request(const APPManager::Message *request_p, APPMana
         		project::RequestV1 request;
         		if (false == request.ParseFromArray((void *)request_p->data_p, request_p->length))
         		{
-            			// TBD: error log
+				LOG4CXX_ERROR(g_logger, "unable to parse request protocol buffer len=" << request_p->length);
             			result_code = RESULT_CODE_ERROR;
             			break;
         		}
@@ -117,11 +129,12 @@ ResultCode Control::handle_request(const APPManager::Message *request_p, APPMana
 
 		default:
 			// unknown state
-			// TBD: error log
+			LOG4CXX_ERROR(g_logger, "unknown state=" << m_state);
 			return RESULT_CODE_ERROR;
         }
     
 	// done
+	LOG4CXX_DEBUG(g_logger, "Control::handler_request exit state= " << m_state << " " << result_code);
     	return result_code;
 }
 
@@ -133,6 +146,8 @@ ResultCode Control::handle_request(const APPManager::Message *request_p, APPMana
 
 ResultCode Control::handle_results(const AUDIOProcessor::Data results[])
 {
+	LOG4CXX_DEBUG(g_logger, "Control::handle_results enter " << results);
+
 	// setup the notification
 	project::NotificationV1 notification;
 	
@@ -165,14 +180,16 @@ ResultCode Control::handle_results(const AUDIOProcessor::Data results[])
 	ResultCode rc = m_handler_p->send_notification(&message_p);
 	if (RESULT_CODE_OK != rc)
 	{
-		// TBD: error log
+		LOG4CXX_ERROR(g_logger, "unable to send notification rc=" << rc);
 		free(message_p);
-
 	}
 	else
 	{
 		ASSERT(NULL == message_p);
 	}
+
+	LOG4CXX_DEBUG(g_logger, "Control::handle_results exit " << rc);
+
 	return rc;
 }
 
@@ -184,6 +201,8 @@ ResultCode Control::handle_results(const AUDIOProcessor::Data results[])
 
 APPManager::Message *Control::populate_response(::google::protobuf::MessageLite& message)
 {
+	LOG4CXX_DEBUG(g_logger, "Control::populate_response enter " << &message);
+
 	// allocate the memory for the response
        	APPManager::Message *response_p = (APPManager::Message *)calloc(1, sizeof(APPManager::Message));
         // calculate how large the response will be 
@@ -193,11 +212,12 @@ APPManager::Message *Control::populate_response(::google::protobuf::MessageLite&
         // serialize the response
         if (false == message.SerializeToArray((void *)(response_p->data_p), response_p->length))
         {
-            	// TBD: error log
+		LOG4CXX_ERROR(g_logger, "unable to serialize response to protocol buffer");
             	free(response_p->data_p);
             	free(response_p);
 		return NULL;
         }
 	// done
+	LOG4CXX_DEBUG(g_logger, "Control::populate_response exit " << response_p);
 	return response_p;
 }

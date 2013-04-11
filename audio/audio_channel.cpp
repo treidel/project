@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include <log4cxx/logger.h>
+
 ///////////////////////////////////////////////////////////////////////////////
 // macros
 ///////////////////////////////////////////////////////////////////////////////
@@ -28,6 +30,7 @@ static const AUDIOChannel::NormalizedSample c_normalization_factor = (1.0 / 3276
 // module variables
 ///////////////////////////////////////////////////////////////////////////////
 
+static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("audio.channel"));
 
 // we get away with having a single buffer by virtue of being single threaded
 // in event loop
@@ -53,11 +56,14 @@ AUDIOChannel::AUDIOChannel(Index index) :
 	m_index(index),
 	m_loop_p(ev_default_loop(0))
 {
+	LOG4CXX_DEBUG(g_logger, "AUDIOChannel::AUDIOChannel enter " << index);
+
         // allocate the pipe file descriptors
         int fds[2];
-        if (0 > pipe(fds))
+        int rc = pipe(fds);
+	if (0 > rc)
         {
-            	// TBD: error log 
+		LOG4CXX_ERROR(g_logger, "pipe returned error " << rc);
 		return;
         }
         // store the file descriptors in our private data 
@@ -69,15 +75,21 @@ AUDIOChannel::AUDIOChannel(Index index) :
 	m_watcher.data = (void *)this;
 	// register the listener with the loop
 	ev_io_start(m_loop_p, &m_watcher);
+
+	LOG4CXX_DEBUG(g_logger, "AUDIOChannel::AUDIOChannel exit");
 }
 
 AUDIOChannel::~AUDIOChannel() 
 {
+	LOG4CXX_DEBUG(g_logger, "AUDIOChannel::~AUDIOChannel enter");
+
 	// stop the watcher
 	ev_io_stop(m_loop_p, &m_watcher);
 	// close the file descriptors for the pipe
 	close(m_read_fd);
 	close(m_write_fd);
+
+	LOG4CXX_DEBUG(g_logger, "AUDIOChannel::AUDIOChannel exit");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -86,12 +98,15 @@ AUDIOChannel::~AUDIOChannel()
 
 void AUDIOChannel::read_cb(struct ev_loop *loop_p, struct ev_io *w_p, int revents)
 {
+	LOG4CXX_DEBUG(g_logger, "AUDIOChannel::read_cb enter " << loop_p << " " << w_p << " " << revents);
+
 	// get our object
 	AUDIOChannel *channel_p = (AUDIOChannel *)w_p->data;
 	// read the data from the pipe
-	if (0 > read(channel_p->getReadFD(), g_buffer_p, BUFFER_SIZE_IN_BYTES))
+	int rc = read(channel_p->getReadFD(), g_buffer_p, BUFFER_SIZE_IN_BYTES);
+	if (0 > rc)
 	{
-		// TBD: error
+		LOG4CXX_ERROR(g_logger, "read returned error " << rc);
 		return;
 	}
 	// iterate through all handlers
@@ -102,12 +117,15 @@ void AUDIOChannel::read_cb(struct ev_loop *loop_p, struct ev_io *w_p, int revent
 	{
 		// call the handler to do something useful with this audio frame
 		AUDIOCaptureManager::Handler *handler_p = *iter;
-		if (RESULT_CODE_OK != handler_p->handle_samples(channel_p->getIndex(), BUFFER_SIZE_IN_SAMPLES, g_buffer_p))
+		ResultCode result = handler_p->handle_samples(channel_p->getIndex(), BUFFER_SIZE_IN_SAMPLES, g_buffer_p);
+		if (RESULT_CODE_OK != result)
 		{
-			// TBD: error
+			LOG4CXX_ERROR(g_logger, "handler_p->handle_samples returned error " << result);
 			return;
 		}
 	}
+
+	LOG4CXX_DEBUG(g_logger, "AUDIOChannel::read_cb exit");
 }
 
 
