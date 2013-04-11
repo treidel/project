@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	// use console logging for now
 	log4cxx::BasicConfigurator::configure();
 
-	LOG4CXX_INFO(g_logger, "Starting NAME - version VERSION");
+	LOG4CXX_INFO(g_logger, "Starting " << NAME << "- version " << VERSION);
 
 	// figure out where our executable is located
 	populate_execpath(g_execpath, sizeof g_execpath);
