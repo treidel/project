@@ -11,7 +11,7 @@ include(${ALSA_INCLUDE_DIRS} ${LIBEV_INCLUDE_DIRS})
 include_directories(../)
 
 # define the bluetooth library
-add_library(audio STATIC audio_capturemgr.cpp audio_captureinstance.cpp audio_channel.cpp audio_processor.cpp)
+add_library(audio STATIC audio_capturemgr.cpp audio_captureinstance.cpp audio_channel.cpp audio_processor.cpp audio_formatter.cpp)
 
 # include our dependency libraries
 target_link_libraries(audio ${ALSA_LIBRARIES} ${LIBEV_LIBRARIES})

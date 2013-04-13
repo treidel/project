@@ -164,10 +164,8 @@ ResultCode Control::handle_results(const AUDIOProcessor::Data results[])
 		// if this is zero then the level is dB is negative infinity
 		if (AUDIO_CHANNEL_ZERO_LEVEL != peak)
 		{
-			// convert to normalized form
-			AUDIOChannel::NormalizedSample normalized = AUDIOChannel::convertToNormalized(peak);
 			// do the dBm calcuation
-			levelInDB = (int32_t)(20.0 * log10(normalized));
+			levelInDB = (int32_t)(20.0 * log10(peak));
 		}
 		// add the level to the notification
 		level_p->add_levelindecibels(levelInDB);

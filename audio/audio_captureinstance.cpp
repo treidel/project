@@ -3,6 +3,7 @@
 #include "audio_captureinstance.h"
 #include "audio_channel.h"
 #include "audio_capturemgr.h"
+#include "audio_formatter.h"
 
 #include <log4cxx/logger.h>
 
@@ -11,7 +12,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define SAMPLE_RATE_IN_HZ (41000)
-#define CHANNEL_COUNT (2)
 #define BUFFER_SIZE_IN_SAMPLES (128)
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -43,7 +43,8 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("audio.captureinst
 
 AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const char *device) :
 	m_handle_p(NULL),
-	m_channel_count(CHANNEL_COUNT),
+	m_formatter_p(NULL),
+	m_channel_count(0),
 	m_abort(false)
 {
 	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::AUDIOCaptureInstance enter " << manager_p << " " << device);
@@ -62,7 +63,7 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
 		LOG4CXX_ERROR(g_logger, "snd_pcm_open returned error=" << rc);
 		return;
     	}
-		 
+ 
     	// allocate the hardware params data structure
     	rc = snd_pcm_hw_params_malloc(&hw_params_p);
 	if (rc < 0)
@@ -78,15 +79,49 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
 		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_any returned error=" << rc);
 		return;
     	}
+
+	// query the number of channels
+	rc = snd_pcm_hw_params_get_channels(hw_params_p, &m_channel_count);
+	if (rc < 0)
+	{
+		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_get_channels return error=" << rc);
+		return;
+	}
 	
-    	// specify that we want interleaved data
-    	rc = snd_pcm_hw_params_set_access(m_handle_p, hw_params_p, SND_PCM_ACCESS_RW_INTERLEAVED);
+    	// specify that we want non-interleaved data
+    	rc = snd_pcm_hw_params_set_access(m_handle_p, hw_params_p, SND_PCM_ACCESS_RW_NONINTERLEAVED);
 	if (rc < 0)
     	{
 		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_set_access returned error=" << rc);
 		return;
     	}
-       
+
+	// query the list of supported formats
+	snd_pcm_format_mask_t *format_mask_p = NULL;
+	rc = snd_pcm_format_mask_malloc(&format_mask_p);
+	if (0 > rc)
+	{
+		LOG4CXX_ERROR(g_logger, "snd_pcm_format_mask_malloc returned error=" << rc);
+		return;
+ 
+	}
+	snd_pcm_hw_params_get_format_mask(hw_params_p, format_mask_p);
+	// check for our preferred format
+	if (0 != snd_pcm_format_mask_test(format_mask_p, SND_PCM_FORMAT_FLOAT_LE))
+	{
+		m_formatter_p = AUDIOFormatterFactory::createAudioFormatter_p(SND_PCM_FORMAT_FLOAT_LE);
+	}
+	else if (0 != snd_pcm_format_mask_test(format_mask_p, SND_PCM_FORMAT_S16_LE))
+	{
+		m_formatter_p = AUDIOFormatterFactory::createAudioFormatter_p(SND_PCM_FORMAT_S16_LE);
+	}
+	else
+	{
+		LOG4CXX_ERROR(g_logger, "no supported sample formats for " << device);
+		return;
+	}
+	snd_pcm_format_mask_free(format_mask_p);
+
 	// set the format of the audio samples 
     	rc = snd_pcm_hw_params_set_format(m_handle_p, hw_params_p, SND_PCM_FORMAT_FLOAT_LE);
 	if (rc < 0)
@@ -104,7 +139,7 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
     	}	
 	
 	// set the number of channels
-    	rc = snd_pcm_hw_params_set_channels(m_handle_p, hw_params_p, CHANNEL_COUNT);
+    	rc = snd_pcm_hw_params_set_channels(m_handle_p, hw_params_p, m_channel_count);
 	if (rc < 0)
     	{
 		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_set_channels returned error=" << rc);
@@ -159,6 +194,9 @@ AUDIOCaptureInstance::~AUDIOCaptureInstance()
 	}
 	delete [] m_channels_pp;
 
+	// delete the formatter
+	delete m_formatter_p;
+
 	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::~AUDIOCaptureInstance exit");
 }
     
@@ -171,25 +209,25 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
 {
 	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::thread_handler enter " << arg);
 
-	AUDIOCaptureInstance *instance_p = (AUDIOCaptureInstance *)arg;
+	// get the object instance
+	AUDIOCaptureInstance *instance_p = (AUDIOCaptureInstance *)arg; 
 
-    	// tell the audio device we want some data now please
+	// get the channel count locally for convenience 
+	const size_t channel_count = instance_p->m_channel_count;
+
+    	// allocate a buffer to hold raw audio data
+    	const snd_pcm_uframes_t buffer_length = BUFFER_SIZE_IN_SAMPLES * channel_count * sizeof(AUDIOChannel::Sample);
+    	uint8_t *raw_buffer_p = (uint8_t *)malloc(buffer_length);
+
+    	// allocate buffer to hold the de-interlaced data
+    	AUDIOChannel::Sample *channel_buffer_p = (AUDIOChannel::Sample *)malloc(BUFFER_SIZE_IN_SAMPLES * sizeof(AUDIOChannel::Sample));
+
+  	// tell the audio device we want some data now please
     	int rc = snd_pcm_prepare(instance_p->m_handle_p);
 	if (rc < 0)
     	{
 		LOG4CXX_ERROR(g_logger, "snd_pcm_prepare returned error=" << rc);
         	return NULL;
-    	}
-
-    	// allocate a buffer to hold audio data
-    	const snd_pcm_uframes_t buffer_length = BUFFER_SIZE_IN_SAMPLES * CHANNEL_COUNT * sizeof(AUDIOChannel::Sample);
-    	AUDIOChannel::Sample *buffer_p = (AUDIOChannel::Sample *)malloc(buffer_length);
-
-    	// allocate buffers to hold the de-interlaced data
-    	AUDIOChannel::Sample *channel_buffer_pp[instance_p->m_channel_count];
-    	for (int counter = 0; counter < instance_p->m_channel_count; counter++)
-    	{
-      		channel_buffer_pp[counter] = (AUDIOChannel::Sample *)malloc(BUFFER_SIZE_IN_SAMPLES * sizeof(AUDIOChannel::Sample));
     	}
 
     	// debug counter to see how many samples we've captured
@@ -198,10 +236,8 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
     	// loop until signalled
     	while (false == instance_p->m_abort)
     	{
-		LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::thread_handler samples " << samples);
-
         	// read some data
-        	rc = snd_pcm_readi(instance_p->m_handle_p, (void *)buffer_p, buffer_length);
+        	rc = snd_pcm_readi(instance_p->m_handle_p, (void *)raw_buffer_p, buffer_length);
         	if (-EPIPE == rc) 
         	{
             		// EPIPE is returned when we were too slow in retrieving a sample
@@ -226,21 +262,19 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
         	// we successfully collected a sample
         	samples++;
 
-        	// de-interlace the samples
-        	for(int channel_counter = 0; channel_counter < instance_p->m_channel_count; channel_counter++)
-        	{
-            		for(int sample_counter = 0; sample_counter < BUFFER_SIZE_IN_SAMPLES; sample_counter++)
-            		{
-              			channel_buffer_pp[channel_counter][sample_counter] = buffer_p[(CHANNEL_COUNT * sample_counter) + channel_counter];
-            		}
-        	}
-        	// now feed the data to our consumers
-        	for (int counter = 0; counter < CHANNEL_COUNT; counter++)
-        	{
-            		// get the channel
+		LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::thread_handler samples " << samples);
+
+        	// go through and handle the audio data for each channel
+		for (int counter = 0; counter < channel_count; counter++)
+		{ 
+			// let the formatter convert the samples for us 
+			uint8_t *index_p = raw_buffer_p + (counter * instance_p->m_formatter_p->sample_sizeof() * BUFFER_SIZE_IN_SAMPLES);
+			instance_p->m_formatter_p->format_samples(index_p, channel_buffer_p, BUFFER_SIZE_IN_SAMPLES);
+
+        		// now feed the samples to our consumer e.g. the channel
             		AUDIOChannel *channel_p = instance_p->m_channels_pp[counter];
             		// write the data to the pipe
-            		rc = write(channel_p->getWriteFD(), channel_buffer_pp[counter], BUFFER_SIZE_IN_SAMPLES * sizeof(AUDIOChannel::Sample));
+            		rc = write(channel_p->getWriteFD(), channel_buffer_p, BUFFER_SIZE_IN_SAMPLES * sizeof(AUDIOChannel::Sample));
 			if (rc < 0)
             		{
 				LOG4CXX_ERROR(g_logger, "write returned error=" << rc)
@@ -250,14 +284,11 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
     	}
 
 error:
-    	// free the interlaced buffer
-    	free(buffer_p);
+    	// free the raw buffer
+    	free(raw_buffer_p);
 
-    	// free the de-interlaced buffers
-    	for (int counter = 0; counter < CHANNEL_COUNT; counter++)
-    	{
-        	free(channel_buffer_pp[counter]);
-   	}
+	// free the channel buffer
+        free(channel_buffer_p);
 
 	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::thread_handler exit");
 

@@ -24,7 +24,6 @@
 // constants
 ///////////////////////////////////////////////////////////////////////////////
 
-static const AUDIOChannel::NormalizedSample c_normalization_factor = (1.0 / 32768.0);
 
 ///////////////////////////////////////////////////////////////////////////////
 // module variables
@@ -45,12 +44,6 @@ static AUDIOChannel::Sample *g_buffer_p = (AUDIOChannel::Sample *)malloc(BUFFER_
 ///////////////////////////////////////////////////////////////////////////////
 // public function implementations
 ///////////////////////////////////////////////////////////////////////////////
-
-
-AUDIOChannel::NormalizedSample AUDIOChannel::convertToNormalized(AUDIOChannel::Sample sample)
-{
-	return sample * c_normalization_factor;
-}
 
 AUDIOChannel::AUDIOChannel(Index index) :
 	m_index(index),

@@ -29,16 +29,13 @@ class AUDIOChannel
 
 public:
 	typedef uint16_t Index;
-	typedef int16_t Sample;
-	typedef float NormalizedSample;
+	typedef float Sample;
 
 ///////////////////////////////////////////////////////////////////////////////
 // public function declarations
 ///////////////////////////////////////////////////////////////////////////////
 
 public:
-
-	static NormalizedSample convertToNormalized(Sample sample);
 
 	AUDIOChannel(Index index);
 	virtual ~AUDIOChannel();
