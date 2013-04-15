@@ -34,9 +34,10 @@ add_subdirectory (bluetooth)
 add_subdirectory (control) 
 add_subdirectory (audio)
 add_subdirectory (app)
+add_subdirectory (proto)
 
 # define the executable
 add_executable (leveling-glass main.cpp)
 
 # add the libraries to the executable
-target_link_libraries (leveling-glass app bluetooth control audio pthread ${LOG4CXX_LIBRARIES} ${LIBEV_LIBRARIES}) 
+target_link_libraries (leveling-glass app proto bluetooth control audio pthread ${LOG4CXX_LIBRARIES} ${LIBEV_LIBRARIES}) 

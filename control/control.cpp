@@ -2,7 +2,7 @@
 #include "common.h"
 #include "control.h"
 
-#include "control.pb.h"
+#include "proto/v1.pb.h"
 
 #include <google/protobuf/message_lite.h>
 #include <math.h>
@@ -42,8 +42,7 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("control.v1"));
 ///////////////////////////////////////////////////////////////////////////////
 
 Control::Control(APPManager::NotificationHandler *handler_p) :
-	m_handler_p(handler_p),
-	m_state(STATE_HELLO)
+	m_handler_p(handler_p)
 {
 	LOG4CXX_DEBUG(g_logger, "Control::Control enter " << handler_p);
 
@@ -65,7 +64,7 @@ Control::~Control()
 
 ResultCode Control::handle_request(const APPManager::Message *request_p, APPManager::Message **response_pp)
 {
-	LOG4CXX_DEBUG(g_logger, "Control::handler_request enter " << request_p << " " << response_pp << "state=" << m_state);
+	LOG4CXX_DEBUG(g_logger, "Control::handler_request enter " << request_p << " " << response_pp);
 
 	// assume success
 	ResultCode result_code = RESULT_CODE_OK;
@@ -73,68 +72,55 @@ ResultCode Control::handle_request(const APPManager::Message *request_p, APPMana
 	// assume we don't have a response unless we explicitly send one below
 	*response_pp = NULL;
 
-	switch (m_state)
+	do 
 	{
-		case STATE_HELLO:
+		// decode the message
+        	v1::Request request;
+        	if (false == request.ParseFromArray((void *)request_p->data_p, request_p->length))
+        	{
+			LOG4CXX_ERROR(g_logger, "unable to parse request protocol buffer len=" << request_p->length);
+            		result_code = RESULT_CODE_ERROR;
+			break;
+        	}
+		// get the response message ready
+        	v1::ResponseOrNotification responseornotification;
+		v1::Response *response_p = responseornotification.mutable_response();
+
+		// assume failure 
+		response_p->set_success(false);
+
+		// see what kind of request we got
+		switch (request.type())
 		{
-            		// decode the hello
-			project::HelloRequest request;
-			if (false == request.ParseFromArray((void *)request_p->data_p, request_p->length))
+			case v1::Request_RequestType_SETLEVEL:
 			{
-				LOG4CXX_ERROR(g_logger, "unable to parse hello protocol buffer len=" << request_p->length);
-				result_code = RESULT_CODE_ERROR;
-				break;			
+			  	// do something to set the level type	
 			}
-
-			// setup the response
-			project::HelloResponse response;
-
-	    		// if the version is wrong send back a nasty gram
-            		if (EXPECTED_MESSAGE_VERSION != request.version())
-            		{
-                		response.set_success(false);
-				*response_pp = populate_response(response);
-                		result_code = RESULT_CODE_ERROR;
-				break;
-            		}
+			break;
 			
-			// success
-			response.set_success(true);
-			*response_pp = populate_response(response);
+			case v1::Request_RequestType_QUERYAUDIOCHANNELS:
+			{
+				// do something to query the channels
+				v1::QueryAudioChannelsResponse *qac_p = response_p->mutable_queryaudiochannels();
+				qac_p->add_channels(1);
+				qac_p->add_channels(2);
+			}	
+			break;
+			
+			default:
+				LOG4CXX_ERROR(g_logger, "unknown request type=" << request.type());
+				break;
 
-			// now connected
-			m_state = STATE_CONNECTED;
 		}
-		break;
+		
 
-		case STATE_CONNECTED:
-		{
-			// decode the message
-        		project::RequestV1 request;
-        		if (false == request.ParseFromArray((void *)request_p->data_p, request_p->length))
-        		{
-				LOG4CXX_ERROR(g_logger, "unable to parse request protocol buffer len=" << request_p->length);
-            			result_code = RESULT_CODE_ERROR;
-            			break;
-        		}
-			// get the response message ready
-        		project::ResponseV1 response;
-
-			// do some processing
-
-			// populate the response
-			*response_pp = populate_response(response);        		
-		}
-		break;
-
-		default:
-			// unknown state
-			LOG4CXX_ERROR(g_logger, "unknown state=" << m_state);
-			return RESULT_CODE_ERROR;
-        }
+		// populate the response
+		*response_pp = populate_response(responseornotification);        		
+	} 
+	while (false);
     
 	// done
-	LOG4CXX_DEBUG(g_logger, "Control::handler_request exit state= " << m_state << " " << result_code);
+	LOG4CXX_DEBUG(g_logger, "Control::handler_request exit " << result_code);
     	return result_code;
 }
 
@@ -149,10 +135,10 @@ ResultCode Control::handle_results(const AUDIOProcessor::Data results[])
 	LOG4CXX_DEBUG(g_logger, "Control::handle_results enter " << results);
 
 	// setup the notification
-	project::NotificationV1 notification;
+	v1::Notification notification;
 	
 	// only support level for now
-	project::LevelNotificationV1 *level_p =  notification.mutable_level();
+	v1::LevelNotification *level_p =  notification.mutable_level();
 	
 	// iterate through all results
 	for (int counter = 0; counter < sizeof results; counter++)

@@ -36,11 +36,6 @@ class Control : public APPManager::RequestHandler, public AUDIOProcessor::Handle
 ///////////////////////////////////////////////////////////////////////////////
 
 private:
-	typedef enum
-	{
-		STATE_HELLO,
-		STATE_CONNECTED
-	} State;
 
 ///////////////////////////////////////////////////////////////////////////////
 // public function declarations
@@ -78,6 +73,5 @@ private:
 
 private:
 	APPManager::NotificationHandler *m_handler_p;
-	State m_state;
 };
 #endif
