@@ -37,10 +37,6 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("audio.capturemgr"
 // singleton pointer
 AUDIOCaptureManager *AUDIOCaptureManager::g_instance_p = NULL;
 
-// we get away with having a single buffer by virtue of being single threaded
-// in event loop
-static AUDIOChannel::Sample *g_buffer_p = (AUDIOChannel::Sample *)malloc(BUFFER_SIZE_IN_BYTES);
-
 ///////////////////////////////////////////////////////////////////////////////
 // private function declarations
 ///////////////////////////////////////////////////////////////////////////////

@@ -33,7 +33,7 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("audio.channel"));
 
 // we get away with having a single buffer by virtue of being single threaded
 // in event loop
-static AUDIOChannel::Sample *g_buffer_p = (AUDIOChannel::Sample *)malloc(BUFFER_SIZE_IN_BYTES);
+static AUDIOChannel::Sample g_buffer[BUFFER_SIZE_IN_BYTES];
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -96,7 +96,7 @@ void AUDIOChannel::read_cb(struct ev_loop *loop_p, struct ev_io *w_p, int revent
 	// get our object
 	AUDIOChannel *channel_p = (AUDIOChannel *)w_p->data;
 	// read the data from the pipe
-	int rc = read(channel_p->getReadFD(), g_buffer_p, BUFFER_SIZE_IN_BYTES);
+	int rc = read(channel_p->getReadFD(), g_buffer, BUFFER_SIZE_IN_BYTES);
 	if (0 > rc)
 	{
 		LOG4CXX_ERROR(g_logger, "read returned error " << rc);
@@ -110,7 +110,7 @@ void AUDIOChannel::read_cb(struct ev_loop *loop_p, struct ev_io *w_p, int revent
 	{
 		// call the handler to do something useful with this audio frame
 		AUDIOCaptureManager::Handler *handler_p = *iter;
-		ResultCode result = handler_p->handle_samples(channel_p->getIndex(), BUFFER_SIZE_IN_SAMPLES, g_buffer_p);
+		ResultCode result = handler_p->handle_samples(channel_p->getIndex(), BUFFER_SIZE_IN_SAMPLES, g_buffer);
 		if (RESULT_CODE_OK != result)
 		{
 			LOG4CXX_ERROR(g_logger, "handler_p->handle_samples returned error " << result);

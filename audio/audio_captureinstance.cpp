@@ -60,15 +60,15 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
     	int rc = snd_pcm_open(&m_handle_p, device, SND_PCM_STREAM_CAPTURE, SND_PCM_CLASS_GENERIC);
 	if (rc < 0)
     	{
-		LOG4CXX_ERROR(g_logger, "snd_pcm_open returned error=" << rc);
+		LOG4CXX_ERROR(g_logger, "snd_pcm_open returned error=" << rc << " " << snd_strerror(rc));
 		return;
     	}
- 
+
     	// allocate the hardware params data structure
     	rc = snd_pcm_hw_params_malloc(&hw_params_p);
 	if (rc < 0)
     	{
-		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_malloc returned error=" << rc);
+		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_malloc returned error=" << rc << " " << snd_strerror(rc));
 		return;
     	}
 
@@ -76,23 +76,23 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
     	rc = snd_pcm_hw_params_any(m_handle_p, hw_params_p);
 	if (rc < 0)
     	{
-		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_any returned error=" << rc);
+		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_any returned error=" << rc << " " << snd_strerror(rc));
 		return;
     	}
 
-	// query the number of channels
-	rc = snd_pcm_hw_params_get_channels(hw_params_p, &m_channel_count);
-	if (rc < 0)
-	{
-		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_get_channels return error=" << rc);
-		return;
-	}
-	
+		// read the number channels
+		rc = snd_pcm_hw_params_get_channels_max(hw_params_p, &m_channel_count);
+		if (rc < 0)
+	    	{
+			LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_get_channels_max returned error=" << rc << " " << snd_strerror(rc));
+			return;
+	    	}
+
     	// specify that we want non-interleaved data
-    	rc = snd_pcm_hw_params_set_access(m_handle_p, hw_params_p, SND_PCM_ACCESS_RW_NONINTERLEAVED);
+    	rc = snd_pcm_hw_params_set_access(m_handle_p, hw_params_p, SND_PCM_ACCESS_RW_INTERLEAVED);
 	if (rc < 0)
     	{
-		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_set_access returned error=" << rc);
+		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_set_access returned error=" << rc << " " << snd_strerror(rc));
 		return;
     	}
 
@@ -101,7 +101,7 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
 	rc = snd_pcm_format_mask_malloc(&format_mask_p);
 	if (0 > rc)
 	{
-		LOG4CXX_ERROR(g_logger, "snd_pcm_format_mask_malloc returned error=" << rc);
+		LOG4CXX_ERROR(g_logger, "snd_pcm_format_mask_malloc returned error=" << rc << " " << snd_strerror(rc));
 		return;
  
 	}
@@ -123,10 +123,10 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
 	snd_pcm_format_mask_free(format_mask_p);
 
 	// set the format of the audio samples 
-    	rc = snd_pcm_hw_params_set_format(m_handle_p, hw_params_p, SND_PCM_FORMAT_FLOAT_LE);
+    	rc = snd_pcm_hw_params_set_format(m_handle_p, hw_params_p, m_formatter_p->format());
 	if (rc < 0)
     	{
-		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_set_format returned error=" << rc);
+		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_set_format returned error=" << rc << " " << snd_strerror(rc));
 		return;
 	}
         
@@ -134,7 +134,7 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
     	rc = snd_pcm_hw_params_set_rate_near(m_handle_p, hw_params_p, &rate, NULL);
 	if (rc < 0)
     	{
-		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_set_rate_near returned error=" << rc);
+		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_set_rate_near returned error=" << rc << " " << snd_strerror(rc));
 		return;
     	}	
 	
@@ -142,14 +142,14 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
     	rc = snd_pcm_hw_params_set_channels(m_handle_p, hw_params_p, m_channel_count);
 	if (rc < 0)
     	{
-		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_set_channels returned error=" << rc);
+		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_set_channels returned error=" << rc << " " << snd_strerror(rc));
 		return;
     	}
 
 	// set the hardware params 
     	if(0 > snd_pcm_hw_params(m_handle_p, hw_params_p))
     	{
-		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params returned error=" << rc);
+		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params returned error=" << rc << " " << snd_strerror(rc));
 		return;
     	}
 
@@ -216,17 +216,17 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
 	const size_t channel_count = instance_p->m_channel_count;
 
     	// allocate a buffer to hold raw audio data
-    	const snd_pcm_uframes_t buffer_length = BUFFER_SIZE_IN_SAMPLES * channel_count * sizeof(AUDIOChannel::Sample);
+    	const snd_pcm_uframes_t buffer_length = BUFFER_SIZE_IN_SAMPLES * channel_count * instance_p->m_formatter_p->sample_sizeof();
     	uint8_t *raw_buffer_p = (uint8_t *)malloc(buffer_length);
 
-    	// allocate buffer to hold the de-interlaced data
+    	// allocate buffer to hold the normalized data
     	AUDIOChannel::Sample *channel_buffer_p = (AUDIOChannel::Sample *)malloc(BUFFER_SIZE_IN_SAMPLES * sizeof(AUDIOChannel::Sample));
 
   	// tell the audio device we want some data now please
     	int rc = snd_pcm_prepare(instance_p->m_handle_p);
 	if (rc < 0)
     	{
-		LOG4CXX_ERROR(g_logger, "snd_pcm_prepare returned error=" << rc);
+		LOG4CXX_ERROR(g_logger, "snd_pcm_prepare returned error=" << rc << " " << snd_strerror(rc));
         	return NULL;
     	}
 
@@ -237,7 +237,7 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
     	while (false == instance_p->m_abort)
     	{
         	// read some data
-        	rc = snd_pcm_readi(instance_p->m_handle_p, (void *)raw_buffer_p, buffer_length);
+        	rc = snd_pcm_readi(instance_p->m_handle_p, (void *)raw_buffer_p, BUFFER_SIZE_IN_SAMPLES);
         	if (-EPIPE == rc) 
         	{
             		// EPIPE is returned when we were too slow in retrieving a sample
@@ -248,28 +248,35 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
             		rc = snd_pcm_prepare(instance_p->m_handle_p);
 			if (rc < 0)
             		{
-				LOG4CXX_ERROR(g_logger, "snd_pcm_prepare returned error=" << rc);
+				LOG4CXX_ERROR(g_logger, "snd_pcm_prepare returned error=" << rc << " " << snd_strerror(rc));
                 		goto error;
             		}
             		continue;
         	}
         	else if (0 > rc)
         	{ 
-			LOG4CXX_ERROR(g_logger, "snd_pcm_readi returned error=" << rc);
+			LOG4CXX_ERROR(g_logger, "snd_pcm_readi returned error=" << rc << " " << snd_strerror(rc));
             		goto error;
         	}
 
         	// we successfully collected a sample
         	samples++;
 
-		LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::thread_handler samples " << samples);
+		// output a debug log every second
+#if 0
+		if (0 == (samples % (SAMPLE_RATE_IN_HZ / BUFFER_SIZE_IN_SAMPLES)))
+		{
+#endif
+//			LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::thread_handler samples " << samples);
+#if 0
+		}
+#endif
 
         	// go through and handle the audio data for each channel
 		for (int counter = 0; counter < channel_count; counter++)
 		{ 
-			// let the formatter convert the samples for us 
-			uint8_t *index_p = raw_buffer_p + (counter * instance_p->m_formatter_p->sample_sizeof() * BUFFER_SIZE_IN_SAMPLES);
-			instance_p->m_formatter_p->format_samples(index_p, channel_buffer_p, BUFFER_SIZE_IN_SAMPLES);
+			// let the formatter de-interlace convert the samples for us 
+			instance_p->m_formatter_p->format_samples(raw_buffer_p, counter, channel_buffer_p, BUFFER_SIZE_IN_SAMPLES);
 
         		// now feed the samples to our consumer e.g. the channel
             		AUDIOChannel *channel_p = instance_p->m_channels_pp[counter];
