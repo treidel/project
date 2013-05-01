@@ -68,6 +68,7 @@ private:
 	AUDIOChannel **m_channels_pp;
 	AUDIOFormatter *m_formatter_p;
 	snd_pcm_t *m_handle_p;
+	char *m_device;
 	pthread_t m_thread_id;
 	size_t m_channel_count;
 	bool m_abort;

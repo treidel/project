@@ -7,7 +7,7 @@
 #include <ev.h>
 
 #include <log4cxx/logger.h>
-#include <log4cxx/basicconfigurator.h>
+#include <log4cxx/propertyconfigurator.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // macros
@@ -15,6 +15,7 @@
 
 #define NAME "Leveling Glass"
 #define PROCFS_SELF_EXE "/proc/self/exe"
+#define LOG_CONFIG_FILE "log.cfg"
 
 // make sure the version macro is defined
 #ifndef VERSION
@@ -39,7 +40,7 @@ static const uint8_t c_uuid_int[] = {0xc2, 0x0d, 0x3a, 0x1a, 0x6c, 0xd, 0x11, 0x
 
 static uuid_t g_uuid;
 static SPPServer *g_server_p = NULL;
-static char g_execpath[1024] = {0};
+static char g_logpath[1024] = {0};
 static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("main"));
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -47,7 +48,7 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("main"));
 ///////////////////////////////////////////////////////////////////////////////
 
 static void kill_cb(struct ev_loop *loop_p, ev_signal *w_p, int revents);
-static void populate_execpath(char *execpath_p, size_t path_length);
+static void populate_logpath(char *execpath_p, size_t path_length);
 
 ///////////////////////////////////////////////////////////////////////////////
 // public function declarations
@@ -55,13 +56,13 @@ static void populate_execpath(char *execpath_p, size_t path_length);
 
 int main(int argc, char *argv[])
 {
-	// use console logging for now
-	log4cxx::BasicConfigurator::configure();
+	// figure out where the config file is located
+	populate_logpath(g_logpath, sizeof g_logpath);
+
+	// setup the logging layer
+	log4cxx::PropertyConfigurator::configure(g_logpath);
 
 	LOG4CXX_INFO(g_logger, "Starting " << NAME << " - version " << VERSION);
-
-	// figure out where our executable is located
-	populate_execpath(g_execpath, sizeof g_execpath);
 
 	// create the UUID for our SPP server
  	sdp_uuid128_create(&g_uuid, &c_uuid_int); 
@@ -78,6 +79,9 @@ int main(int argc, char *argv[])
     	ev_signal_init(&kill_watcher, kill_cb, SIGKILL);
     	ev_signal_start(loop_p, &kill_watcher);
 
+	// notify that we're running
+	LOG4CXX_INFO(g_logger, NAME << " running"); 
+
 	// run forever
     	ev_run(loop_p, 0);   
 
@@ -92,9 +96,17 @@ void kill_cb(struct ev_loop *loop_p, ev_signal *w_p, int revents)
 	exit(1);
 }
 
-void populate_execpath(char *path_p, size_t path_length)
+void populate_logpath(char *path_p, size_t path_length)
 {
-	ssize_t data_length = readlink(PROCFS_SELF_EXE, path_p, path_length);
-	ASSERT(data_length < path_length);
-	path_p[data_length] = 0;
+	// setup a string for us to read in our executable' path
+	char exec_path[1024];
+	// read the full path of our executable
+	ssize_t data_length = readlink(PROCFS_SELF_EXE, exec_path, sizeof(exec_path));
+	ASSERT(data_length < sizeof(exec_path));
+	exec_path[data_length] = 0;
+	// remove everything after the last slash
+	char *chptr = strrchr(exec_path, '/');
+	*chptr = '\0';
+	// setup the log path
+	snprintf(path_p, path_length, "%s/%s", exec_path, LOG_CONFIG_FILE);
 }

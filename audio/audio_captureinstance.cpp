@@ -42,6 +42,7 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("audio.captureinst
 ///////////////////////////////////////////////////////////////////////////////
 
 AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const char *device) :
+	m_device(strdup(device)),
 	m_handle_p(NULL),
 	m_formatter_p(NULL),
 	m_channel_count(0),
@@ -194,6 +195,9 @@ AUDIOCaptureInstance::~AUDIOCaptureInstance()
 	}
 	delete [] m_channels_pp;
 
+	// free the device name
+	delete m_device;
+
 	// delete the formatter
 	delete m_formatter_p;
 
@@ -229,6 +233,8 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
 		LOG4CXX_ERROR(g_logger, "snd_pcm_prepare returned error=" << rc << " " << snd_strerror(rc));
         	return NULL;
     	}
+
+	LOG4CXX_INFO(g_logger, "Collection started for " << instance_p->m_device);
 
     	// debug counter to see how many samples we've captured
     	int samples = 0;
