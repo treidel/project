@@ -76,13 +76,14 @@ SPPServer::SPPServer(uuid_t uuid) :
 	LOG4CXX_DEBUG(g_logger, "SPPServer::SPPServer channel=" << channel);
 
 	// listen for connections with no backlog
-	listen(m_socket, 0);
+	listen(m_socket, 1);
 
 	// create the SDP record
 	sdp_record_t *record_p = sdp_record_alloc();
-
-	// set the general service ID
-	sdp_set_service_id(record_p, m_uuid);
+	
+	// setup the service class id list
+	sdp_list_t *service_class_id_list_p = sdp_list_append(0, &m_uuid);
+	sdp_set_service_classes(record_p, service_class_id_list_p);
 
 	// make the service record publicly browsable
 	uuid_t root_uuid;
@@ -130,7 +131,7 @@ SPPServer::SPPServer(uuid_t uuid) :
 	sdp_list_free(access_proto_list_p, 0);
 
 	// initialize an io watcher for the socket
-	ev_io_init(&m_watcher, socket_cb, m_socket, EV_READ);
+	ev_io_init(&m_watcher, socket_cb, m_socket, EV_READ | EV_WRITE);
 	m_watcher.data = (void *) this;
 
 	// register the listener with the loop
