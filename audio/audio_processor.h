@@ -40,7 +40,7 @@ public:
 	class Handler 
 	{
 	public:
-		virtual ResultCode handle_results(const Data results[]) = 0;
+		virtual ResultCode handle_results(const size_t num_results, const Data results[]) = 0;
 	};
 
 ///////////////////////////////////////////////////////////////////////////////

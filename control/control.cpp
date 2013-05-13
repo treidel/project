@@ -130,7 +130,7 @@ ResultCode Control::handle_request(const APPManager::Message *request_p, APPMana
 // AUDIOProcessor::Handler implementation
 ///////////////////////////////////////////////////////////////////////////////
 
-ResultCode Control::handle_results(const AUDIOProcessor::Data results[])
+ResultCode Control::handle_results(const size_t num_results, const AUDIOProcessor::Data results[])
 {
 	LOG4CXX_DEBUG(g_logger, "Control::handle_results enter " << results);
 
@@ -141,7 +141,7 @@ ResultCode Control::handle_results(const AUDIOProcessor::Data results[])
 	v1::LevelNotification *level_p =  notification.mutable_level();
 	
 	// iterate through all results
-	for (int counter = 0; counter < sizeof results; counter++)
+	for (int counter = 0; counter < num_results; counter++)
 	{
 		// get the peak sample's level
 		AUDIOChannel::Sample peak = results[counter].peak;

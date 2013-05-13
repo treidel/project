@@ -59,6 +59,7 @@ AUDIOProcessor::AUDIOProcessor(Handler *handler_p) :
 
     	// setup the periodic timer 
     	ev_timer_init(&m_timer, timer_cb, 1.0/UPDATES_PER_SECOND, 0.0);
+    	m_timer.data = (void *)this;
     	ev_timer_start(m_loop_p, &m_timer); 
 
 	LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::AUDIOProcessor exit");
@@ -66,7 +67,7 @@ AUDIOProcessor::AUDIOProcessor(Handler *handler_p) :
 
 AUDIOProcessor::~AUDIOProcessor() 
 {
-	LOG4CXX_DEBUG(g_logger, "AUDIOProcsesor::~AUDIOProcessor enter");
+	LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::~AUDIOProcessor enter");
 
 	// deregister
 	AUDIOCaptureManager::getInstance()->removeHandler(this);
@@ -77,7 +78,7 @@ AUDIOProcessor::~AUDIOProcessor()
 	// stop the timer
 	ev_timer_stop(m_loop_p, &m_timer);
 
-	LOG4CXX_DEBUG(g_logger, "AUDIOProcsesor::~AUDIOProcessor exit");
+	LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::~AUDIOProcessor exit");
 }
 
 
@@ -87,7 +88,7 @@ AUDIOProcessor::~AUDIOProcessor()
 
 ResultCode AUDIOProcessor::handle_samples(AUDIOChannel::Index index, const size_t buffer_length, AUDIOChannel::Sample *buffer_p)
 {
-	LOG4CXX_DEBUG(g_logger, "AUDIOProcsesor::handler_samples enter " << index << " " << buffer_length << " " << buffer_p);
+	LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::handler_samples enter " << index << " " << buffer_length << " " << buffer_p);
 
 	// range check input
 	ASSERT((index > 0) && (index <= sizeof m_channel_data));
@@ -108,7 +109,7 @@ ResultCode AUDIOProcessor::handle_samples(AUDIOChannel::Index index, const size_
        		}
     	}
 
-	LOG4CXX_DEBUG(g_logger, "AUDIOProcsesor::handler_samples exit");
+	LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::handler_samples exit");
 
     	return RESULT_CODE_OK;
 }
@@ -119,18 +120,20 @@ ResultCode AUDIOProcessor::handle_samples(AUDIOChannel::Index index, const size_
 
 void AUDIOProcessor::timer_cb(EV_P_ ev_timer *w_p, int revents)
 {
-	LOG4CXX_DEBUG(g_logger, "AUDIOProcsesor::timer_cb enter " << w_p << " " << revents);
+	LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::timer_cb enter " << w_p << " " << revents);
 
 	// get the object
 	AUDIOProcessor *processor_p = (AUDIOProcessor *)w_p->data;
+	// fetch the number of channels we have
+    	size_t channel_count = AUDIOCaptureManager::getInstance()->channel_count();
 	// call the handler
-	processor_p->m_handler_p->handle_results(processor_p->m_channel_data);
+	processor_p->m_handler_p->handle_results(channel_count, processor_p->m_channel_data);
     	// clear each channel
-    	for (int counter = 0; counter < sizeof m_channel_data; counter++)
+    	for (int counter = 0; counter < channel_count; counter++)
     	{
        		Data &data = processor_p->m_channel_data[counter];
 		memset(&data, 0, sizeof(Data));
         } 
 
-	LOG4CXX_DEBUG(g_logger, "AUDIOProcsesor::timer_cb exit");
+	LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::timer_cb exit");
 }
