@@ -6,6 +6,7 @@
 #include "audio_capturemgr.h"
 
 #include <ev.h>
+#include <map>
 
 ///////////////////////////////////////////////////////////////////////////////
 // macros
@@ -15,8 +16,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // forward declarations
 ///////////////////////////////////////////////////////////////////////////////
-
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -34,13 +33,57 @@ public:
 
 	typedef union 
 	{
-		AUDIOChannel::Sample peak;
-	} Data;
+		int32_t peakInDB;
+		int32_t rmsInDB;
+	} ResultData;
 
 	class Handler 
 	{
 	public:
-		virtual ResultCode handle_results(const size_t num_results, const Data results[]) = 0;
+		virtual ResultCode handle_results(const size_t num_results, const ResultData results[]) = 0;
+	};
+
+	typedef enum 
+	{
+		LEVEL_TYPE_NONE = 0,
+		LEVEL_TYPE_PEAK = 1,
+		LEVEL_TYPE_VU = 2
+	} LevelType;
+
+private:
+
+	class Meter
+	{
+	public:
+		virtual ~Meter();
+		virtual void process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p) = 0;
+		virtual ResultData create_result_data() = 0;
+	protected:
+		Meter(AUDIOChannel *channel_p);
+	};
+
+	class PeakMeter : public Meter
+	{
+	public:
+		PeakMeter(AUDIOChannel *channel_p);
+		virtual ~PeakMeter();
+		void process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p);
+		ResultData create_result_data();
+	private:
+		AUDIOChannel::Sample m_peak;
+	};
+
+	class VUMeter : public Meter
+	{
+	public:
+		VUMeter(AUDIOChannel *channel_p);
+		virtual ~VUMeter();
+		void process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p);
+		ResultData create_result_data();
+	private:
+		unsigned int m_sample_count;
+		unsigned int m_sample_index;
+		AUDIOChannel::Sample *m_samples_p;
 	};
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,8 +91,14 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 public:
-	AUDIOProcessor(Handler *handler_p);
+	AUDIOProcessor();
 	virtual ~AUDIOProcessor();
+
+	void set_level_type(LevelType level_type);
+	inline LevelType get_level_type() const;
+
+	void add_handler(Handler *handler_p);
+	void remove_handler(Handler *handler_p);
 
 ///////////////////////////////////////////////////////////////////////////////
 // AUDIOCaptureManager::Handler declarations
@@ -74,7 +123,18 @@ private:
 	struct ev_loop *m_loop_p;
 	struct ev_timer m_timer;
 	Handler *m_handler_p;
-	Data *m_channel_data;
+	std::map<AUDIOChannel::Index, Meter *> m_meters_map;
+	LevelType m_level_type;
+
 };
+
+///////////////////////////////////////////////////////////////////////////////
+// inline function implementations
+///////////////////////////////////////////////////////////////////////////////
+
+inline AUDIOProcessor::LevelType AUDIOProcessor::get_level_type() const
+{
+	return m_level_type;
+}
 
 #endif

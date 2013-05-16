@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 	g_server_p = new SPPServer(g_uuid);
 
 	// create the audio layer
-  	AUDIOCaptureManager::getInstance();	
+  	AUDIOCaptureManager::get_instance();
 
     	// setup the default event loop
     	struct ev_loop *loop_p = EV_DEFAULT;

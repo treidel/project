@@ -12,9 +12,6 @@
 // macros
 ///////////////////////////////////////////////////////////////////////////////
 
-#define BUFFER_SIZE_IN_SAMPLES (2048)
-#define BUFFER_SIZE_IN_BYTES (BUFFER_SIZE_IN_SAMPLES * sizeof(AUDIOChannel::Sample))
-
 ///////////////////////////////////////////////////////////////////////////////
 // type defintions
 ///////////////////////////////////////////////////////////////////////////////
@@ -45,11 +42,12 @@ static AUDIOChannel::Sample g_buffer[BUFFER_SIZE_IN_BYTES];
 // public function implementations
 ///////////////////////////////////////////////////////////////////////////////
 
-AUDIOChannel::AUDIOChannel(Index index) :
+AUDIOChannel::AUDIOChannel(Index index, unsigned int sample_rate) :
 	m_index(index),
+	m_sample_rate(sample_rate),
 	m_loop_p(ev_default_loop(0))
 {
-	LOG4CXX_DEBUG(g_logger, "AUDIOChannel::AUDIOChannel enter " << index);
+	LOG4CXX_DEBUG(g_logger, "AUDIOChannel::AUDIOChannel enter " << index << " " << sample_rate);
 
         // allocate the pipe file descriptors
         int fds[2];
@@ -96,21 +94,21 @@ void AUDIOChannel::read_cb(struct ev_loop *loop_p, struct ev_io *w_p, int revent
 	// get our object
 	AUDIOChannel *channel_p = (AUDIOChannel *)w_p->data;
 	// read the data from the pipe
-	int rc = read(channel_p->getReadFD(), g_buffer, BUFFER_SIZE_IN_BYTES);
+	int rc = read(channel_p->get_read_fd(), g_buffer, BUFFER_SIZE_IN_BYTES);
 	if (0 > rc)
 	{
 		LOG4CXX_ERROR(g_logger, "read returned error " << rc);
 		return;
 	}
 	// iterate through all handlers
-	AUDIOCaptureManager *manager_p = AUDIOCaptureManager::getInstance();
+	AUDIOCaptureManager *manager_p = AUDIOCaptureManager::get_instance();
 	for (std::list<AUDIOCaptureManager::Handler *>::iterator iter=manager_p->m_handlers.begin(); 
              iter != manager_p->m_handlers.end(); 
              ++iter)
 	{
 		// call the handler to do something useful with this audio frame
 		AUDIOCaptureManager::Handler *handler_p = *iter;
-		ResultCode result = handler_p->handle_samples(channel_p->getIndex(), BUFFER_SIZE_IN_SAMPLES, g_buffer);
+		ResultCode result = handler_p->handle_samples(channel_p->get_index(), BUFFER_SIZE_IN_SAMPLES, g_buffer);
 		if (RESULT_CODE_OK != result)
 		{
 			LOG4CXX_ERROR(g_logger, "handler_p->handle_samples returned error " << result);

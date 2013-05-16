@@ -39,8 +39,8 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("app.sppconnector"
 ///////////////////////////////////////////////////////////////////////////////
 
 SPPConnector::SPPConnector(APPManager::NotificationHandler *handler_p) :
-	m_control_p(new Control(handler_p)),
-	m_processor_p(new AUDIOProcessor(m_control_p))
+	m_processor_p(new AUDIOProcessor()),
+	m_control_p(new Control(m_processor_p, handler_p))
 {
 	LOG4CXX_DEBUG(g_logger, "SPPConnector::SPPConnector enter " << handler_p);
 	LOG4CXX_DEBUG(g_logger, "SPPConnector::SPPConnector exit");

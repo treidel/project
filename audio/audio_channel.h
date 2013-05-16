@@ -9,7 +9,9 @@
 // macros
 ///////////////////////////////////////////////////////////////////////////////
 
-#define AUDIO_CHANNEL_ZERO_LEVEL	(0)
+#define AUDIO_CHANNEL_ZERO_LEVEL	(0.0f)
+#define BUFFER_SIZE_IN_SAMPLES (2048)
+#define BUFFER_SIZE_IN_BYTES (BUFFER_SIZE_IN_SAMPLES * sizeof(AUDIOChannel::Sample))
 
 ///////////////////////////////////////////////////////////////////////////////
 // forward declarations
@@ -37,23 +39,13 @@ public:
 
 public:
 
-	AUDIOChannel(Index index);
+	AUDIOChannel(Index index, unsigned int sample_rate);
 	virtual ~AUDIOChannel();
 
-	Index getIndex() 
-	{
-		return m_index;
-	}
-
-	int getReadFD() 
-	{
-		return m_read_fd;
-	}
-
-	int getWriteFD() 
-	{
-		return m_write_fd;
-	}
+	inline Index get_index() const;
+	inline unsigned int get_sample_rate() const;
+	inline int get_read_fd();
+	inline int get_write_fd();
 
 ///////////////////////////////////////////////////////////////////////////////
 // inner class declarations
@@ -73,9 +65,37 @@ private:
 
 private:
 	Index m_index;
+	unsigned int m_sample_rate;
 	int m_read_fd;
 	int m_write_fd;
 	struct ev_loop *m_loop_p;
 	struct ev_io m_watcher;
 };
+
+///////////////////////////////////////////////////////////////////////////////
+// inline function implementaiton 
+///////////////////////////////////////////////////////////////////////////////
+
+AUDIOChannel::Index AUDIOChannel::get_index() const
+{
+	return m_index;
+}
+
+unsigned int AUDIOChannel::get_sample_rate() const
+{
+	return m_sample_rate;
+}
+
+int AUDIOChannel::get_read_fd() 
+{
+	return m_read_fd;
+}
+
+int AUDIOChannel::get_write_fd()
+{
+	return m_write_fd;
+}
+
+
+
 #endif

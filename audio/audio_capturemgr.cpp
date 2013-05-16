@@ -25,8 +25,6 @@
 // constants
 ///////////////////////////////////////////////////////////////////////////////
 
-#define BUFFER_SIZE_IN_SAMPLES (128)
-#define BUFFER_SIZE_IN_BYTES (BUFFER_SIZE_IN_SAMPLES * sizeof(AUDIOChannel::Sample))
 
 ///////////////////////////////////////////////////////////////////////////////
 // module variables
@@ -46,16 +44,16 @@ AUDIOCaptureManager *AUDIOCaptureManager::g_instance_p = NULL;
 // public function implementations
 ///////////////////////////////////////////////////////////////////////////////
 
-AUDIOCaptureManager *AUDIOCaptureManager::getInstance()
+AUDIOCaptureManager *AUDIOCaptureManager::get_instance()
 {
-	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::getInstance enter");
+	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::get_instance enter");
 
 	if (NULL == g_instance_p)
 	{
 		g_instance_p = new AUDIOCaptureManager();
 	}
 
-	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::getInstance exit " << g_instance_p);
+	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::get_instance exit " << g_instance_p);
 
 	return g_instance_p; 
 }
@@ -64,34 +62,54 @@ AUDIOCaptureManager::~AUDIOCaptureManager()
 {
 	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::~AUDIOCaptureManager enter");
 
-	for (int index = 0; index < sizeof m_instances; index++)
+	for (std::list<AUDIOCaptureInstance *>::iterator it = m_instances.begin();
+             it != m_instances.end();
+             it++)
 	{
-		delete m_instances[index];
+		delete *it;
 	}	
-	delete [] m_instances;
+	g_instance_p = NULL;
 
 	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::~AUDIOCaptureManager enter");
 }
 
-void AUDIOCaptureManager::addHandler(Handler *handler_p)
+void AUDIOCaptureManager::add_handler(Handler *handler_p)
 {
-	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::addHandler enter " << handler_p);
+	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::add_handler enter " << handler_p);
 
 	m_handlers.push_front(handler_p);
 
-	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::addHandler exit");
+	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::add_handler exit");
 }
 
-void AUDIOCaptureManager::removeHandler(Handler *handler_p)
+void AUDIOCaptureManager::remove_handler(Handler *handler_p)
 {
-	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::removeHandler enter " << handler_p);
+	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::remove_handler enter " << handler_p);
 
 	m_handlers.remove(handler_p);
 
-	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::removeHandler exit");
+	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::remove_handler exit");
 }
 
+AUDIOChannel *AUDIOCaptureManager::find_channel(const AUDIOChannel::Index index)
+{
+	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::find_channel enter " << index);
 
+	AUDIOChannel *channel_p = m_channels_map[index];
+
+	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::find_channel exit channel_p=" << channel_p);
+	return channel_p;
+}
+
+void AUDIOCaptureManager::add_channel(AUDIOChannel *channel_p)
+{
+	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::add_channel enter " << channel_p);
+
+	m_channels_map[channel_p->get_index()] = channel_p;
+
+	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::add_channel exit");
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // private function implementations
@@ -107,8 +125,7 @@ AUDIOCaptureManager::AUDIOCaptureManager() :
 	// TBD: dynamically discover the available audio capture devices
 
 	// allocate the array for the capture instances
-	m_instances = new AUDIOCaptureInstance *[1];
-	m_instances[0] = new AUDIOCaptureInstance(this, CAPTURE_DEVICE);
+  	AUDIOCaptureInstance *instance_p = new AUDIOCaptureInstance(this, CAPTURE_DEVICE);
 
 	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager:AUDIOCaptureManager exit");
 }

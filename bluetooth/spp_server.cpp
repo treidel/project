@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <string.h>
 #include <sys/socket.h>
 
 #include <string>
@@ -67,16 +69,19 @@ SPPServer::SPPServer(uuid_t uuid) :
 
 	// bind socket to the first RFCOMM port on the first available
 	// local bluetooth adapter
-	struct sockaddr_rc loc_addr = { 0, 0, 0 };
+	struct sockaddr_rc loc_addr;
+	memset(&loc_addr, 0, sizeof(loc_addr));
 	loc_addr.rc_family = AF_BLUETOOTH;
-	loc_addr.rc_bdaddr = g_bluetooth_any_addr;
-	loc_addr.rc_channel = (uint8_t) 0;
+	memcpy(&loc_addr.rc_bdaddr, &g_bluetooth_any_addr, sizeof(bdaddr_t));
+	loc_addr.rc_channel = 0;
+
+	// allocate the channel
 	uint8_t channel = allocate_channel(m_socket, &loc_addr);
 
-	LOG4CXX_DEBUG(g_logger, "SPPServer::SPPServer channel=" << channel);
+	LOG4CXX_DEBUG(g_logger, "SPPServer::SPPServer channel=" << loc_addr.rc_channel);
 
 	// listen for connections with no backlog
-	listen(m_socket, 1);
+	listen(m_socket, 0);
 
 	// create the SDP record
 	sdp_record_t *record_p = sdp_record_alloc();
@@ -129,9 +134,10 @@ SPPServer::SPPServer(uuid_t uuid) :
 	sdp_list_free(rfcomm_list_p, 0);
 	sdp_list_free(root_list_p, 0);
 	sdp_list_free(access_proto_list_p, 0);
+	sdp_list_free(service_class_id_list_p, 0);
 
 	// initialize an io watcher for the socket
-	ev_io_init(&m_watcher, socket_cb, m_socket, EV_READ | EV_WRITE);
+	ev_io_init(&m_watcher, socket_cb, m_socket, EV_READ);
 	m_watcher.data = (void *) this;
 
 	// register the listener with the loop
@@ -194,11 +200,11 @@ void SPPServer::socket_cb(EV_P_ ev_io *w_p, int revents)
 }
 
 uint8_t allocate_channel(int sock, struct sockaddr_rc *sockaddr_p) {
-	for (int port = 1; port <= 31; port++) {
+	for (int port = 2; port <= 31; port++) {
 		sockaddr_p->rc_channel = port;
 		int err = bind(sock, (struct sockaddr *) sockaddr_p,
 				sizeof(struct sockaddr_rc));
-		if ((0 != err) || (errno == EINVAL)) {
+		if ((0 == err) && (errno != EINVAL)) {
 			return port;
 		}
 	}

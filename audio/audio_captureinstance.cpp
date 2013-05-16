@@ -12,7 +12,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define SAMPLE_RATE_IN_HZ (41000)
-#define BUFFER_SIZE_IN_SAMPLES (128)
 
 ///////////////////////////////////////////////////////////////////////////////
 // type defintions
@@ -50,9 +49,6 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
 {
 	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::AUDIOCaptureInstance enter " << manager_p << " " << device);
 
-	// allocate the channel array
-	m_channels_pp = new AUDIOChannel *[m_channel_count];
-
     	// setup the HW params pointer so that we can free it in case of errors
     	snd_pcm_hw_params_t *hw_params_p = NULL;
     	unsigned int rate = SAMPLE_RATE_IN_HZ;
@@ -81,13 +77,13 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
 		return;
     	}
 
-		// read the number channels
-		rc = snd_pcm_hw_params_get_channels_max(hw_params_p, &m_channel_count);
-		if (rc < 0)
-	    	{
-			LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_get_channels_max returned error=" << rc << " " << snd_strerror(rc));
-			return;
-	    	}
+	// read the number channels
+	rc = snd_pcm_hw_params_get_channels_max(hw_params_p, &m_channel_count);
+	if (rc < 0)
+    	{
+		LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_get_channels_max returned error=" << rc << " " << snd_strerror(rc));
+		return;
+    	}
 
     	// specify that we want non-interleaved data
     	rc = snd_pcm_hw_params_set_access(m_handle_p, hw_params_p, SND_PCM_ACCESS_RW_INTERLEAVED);
@@ -158,8 +154,8 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
     	for (int counter = 0; counter < m_channel_count; counter++)
     	{
 		AUDIOChannel::Index index = manager_p->allocate_index();
-		AUDIOChannel *channel_p = new AUDIOChannel(index);
-		m_channels_pp[counter] = channel_p;
+		AUDIOChannel *channel_p = new AUDIOChannel(index, SAMPLE_RATE_IN_HZ);
+		m_channels[counter] = channel_p;
 	}
 
         // launch the processing thread
@@ -189,17 +185,21 @@ AUDIOCaptureInstance::~AUDIOCaptureInstance()
         snd_pcm_close(m_handle_p);
 
 	// delete the channels
-	for (int counter = 0; counter < m_channel_count; counter++)
+	for (std::vector<AUDIOChannel *>::iterator it = m_channels.begin(); 
+             it != m_channels.end();
+             it++)
 	{
-		delete m_channels_pp[counter];
+		delete *it;
 	}
-	delete [] m_channels_pp;
 
 	// free the device name
 	delete m_device;
 
 	// delete the formatter
 	delete m_formatter_p;
+
+	// free the string
+	free(m_device);
 
 	LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::~AUDIOCaptureInstance exit");
 }
@@ -268,16 +268,6 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
         	// we successfully collected a sample
         	samples++;
 
-		// output a debug log every second
-#if 0
-		if (0 == (samples % (SAMPLE_RATE_IN_HZ / BUFFER_SIZE_IN_SAMPLES)))
-		{
-#endif
-//			LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::thread_handler samples " << samples);
-#if 0
-		}
-#endif
-
         	// go through and handle the audio data for each channel
 		for (int counter = 0; counter < channel_count; counter++)
 		{ 
@@ -285,9 +275,9 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
 			instance_p->m_formatter_p->format_samples(raw_buffer_p, counter, channel_buffer_p, BUFFER_SIZE_IN_SAMPLES);
 
         		// now feed the samples to our consumer e.g. the channel
-            		AUDIOChannel *channel_p = instance_p->m_channels_pp[counter];
+            		AUDIOChannel *channel_p = instance_p->m_channels[counter];
             		// write the data to the pipe
-            		rc = write(channel_p->getWriteFD(), channel_buffer_p, BUFFER_SIZE_IN_SAMPLES * sizeof(AUDIOChannel::Sample));
+            		rc = write(channel_p->get_write_fd(), channel_buffer_p, BUFFER_SIZE_IN_SAMPLES * sizeof(AUDIOChannel::Sample));
 			if (rc < 0)
             		{
 				LOG4CXX_ERROR(g_logger, "write returned error=" << rc)

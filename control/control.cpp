@@ -5,7 +5,6 @@
 #include "proto/v1.pb.h"
 
 #include <google/protobuf/message_lite.h>
-#include <math.h>
 
 #include <log4cxx/logger.h>
 
@@ -37,16 +36,24 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("control.v1"));
 // private function declarations
 ///////////////////////////////////////////////////////////////////////////////
 
+static APPManager::Message *populate_response(::google::protobuf::MessageLite& message);
+static void process_peak_results(v1::PeakLevelNotification *peak_p, const size_t num_results, const AUDIOProcessor::ResultData results[]);
+static void process_vu_results(v1::VULevelNotification *vu_p, const size_t num_results, const AUDIOProcessor::ResultData results[]);
+
 ///////////////////////////////////////////////////////////////////////////////
 // public function implementations
 ///////////////////////////////////////////////////////////////////////////////
 
-Control::Control(APPManager::NotificationHandler *handler_p) :
+Control::Control(AUDIOProcessor *processor_p, APPManager::NotificationHandler *handler_p) :
+	m_processor_p(processor_p),
 	m_handler_p(handler_p)
 {
 	LOG4CXX_DEBUG(g_logger, "Control::Control enter " << handler_p);
 
 	GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+	// add ourselves as a handler
+	m_processor_p->add_handler(this);
 
 	LOG4CXX_DEBUG(g_logger, "Control::Control exit");
 }
@@ -54,6 +61,10 @@ Control::Control(APPManager::NotificationHandler *handler_p) :
 Control::~Control()
 {
 	LOG4CXX_DEBUG(g_logger, "Control::Contol enter");
+	
+	// remove ourselves as a handler
+	m_processor_p->remove_handler(this);
+
 	LOG4CXX_DEBUG(g_logger, "Control::Contol exit");
 }
 
@@ -94,7 +105,26 @@ ResultCode Control::handle_request(const APPManager::Message *request_p, APPMana
 		{
 			case v1::Request_RequestType_SETLEVEL:
 			{
-			  	// do something to set the level type	
+				// get the request
+				const ::v1::SetLevelRequest& setlevel = request.setlevel();
+			  	// validate the requested level type
+				switch (setlevel.type())
+				{
+					case v1::NONE:
+					case v1::PEAK:
+					case v1::VU:
+					{
+						// set the type in the audio processor 
+						m_processor_p->	set_level_type((AUDIOProcessor::LevelType)setlevel.type());
+						// populate the response
+						v1::SetLevelResponse *sl_p = response_p->mutable_setlevel();
+					}
+					break;
+
+					default:
+						LOG4CXX_ERROR(g_logger, "unknown level type=" << setlevel.type());
+						break;
+				}
 			}
 			break;
 			
@@ -102,8 +132,14 @@ ResultCode Control::handle_request(const APPManager::Message *request_p, APPMana
 			{
 				// do something to query the channels
 				v1::QueryAudioChannelsResponse *qac_p = response_p->mutable_queryaudiochannels();
-				qac_p->add_channels(1);
-				qac_p->add_channels(2);
+				AUDIOCaptureManager *manager_p = AUDIOCaptureManager::get_instance();
+				for (AUDIOCaptureManager::ChannelIterator it = manager_p->begin();
+				     it != manager_p->end();
+				     it++)
+				{
+					AUDIOChannel *channel_p = it->second;
+					qac_p->add_channels(channel_p->get_index());
+				}
 			}	
 			break;
 			
@@ -130,33 +166,38 @@ ResultCode Control::handle_request(const APPManager::Message *request_p, APPMana
 // AUDIOProcessor::Handler implementation
 ///////////////////////////////////////////////////////////////////////////////
 
-ResultCode Control::handle_results(const size_t num_results, const AUDIOProcessor::Data results[])
+ResultCode Control::handle_results(const size_t num_results, const AUDIOProcessor::ResultData results[])
 {
 	LOG4CXX_DEBUG(g_logger, "Control::handle_results enter " << results);
 
 	// setup the notification
 	v1::Notification notification;
+	notification.set_type(v1::Notification::LEVEL);
 	
-	// only support level for now
+	// get the level notification and set the type
 	v1::LevelNotification *level_p =  notification.mutable_level();
-	
-	// iterate through all results
-	for (int counter = 0; counter < num_results; counter++)
+
+	switch (m_processor_p->get_level_type())
 	{
-		// get the peak sample's level
-		AUDIOChannel::Sample peak = results[counter].peak;
-		// assume the level is zero for now
-		int32_t levelInDB = c_zero_level_in_db;
-		// if this is zero then the level is dB is negative infinity
-		if (AUDIO_CHANNEL_ZERO_LEVEL != peak)
+		case AUDIOProcessor::LEVEL_TYPE_PEAK:
 		{
-			// do the dBm calcuation
-			levelInDB = (int32_t)(20.0 * log10(peak));
+			level_p->set_type(v1::PEAK);
+			process_peak_results(level_p->mutable_peak(), num_results, results);
 		}
-		// add the level to the notification
-		level_p->add_levelindecibels(levelInDB);
+		break;
+
+		case AUDIOProcessor::LEVEL_TYPE_VU:
+		{
+			level_p->set_type(v1::VU);
+			process_vu_results(level_p->mutable_vu(), num_results, results);
+		}
+		break;
+
+		default:
+			LOG4CXX_ERROR(g_logger, "invalid level type=" << m_processor_p->get_level_type());
+			return RESULT_CODE_ERROR;
 	}
-	
+
 	// encode the notification
 	APPManager::Message *message_p = populate_response(notification);
 
@@ -183,7 +224,7 @@ ResultCode Control::handle_results(const size_t num_results, const AUDIOProcesso
 // private function implementations
 ///////////////////////////////////////////////////////////////////////////////
 
-APPManager::Message *Control::populate_response(::google::protobuf::MessageLite& message)
+APPManager::Message *populate_response(::google::protobuf::MessageLite& message)
 {
 	LOG4CXX_DEBUG(g_logger, "Control::populate_response enter " << &message);
 
@@ -205,3 +246,33 @@ APPManager::Message *Control::populate_response(::google::protobuf::MessageLite&
 	LOG4CXX_DEBUG(g_logger, "Control::populate_response exit " << response_p);
 	return response_p;
 }
+
+void process_peak_results(v1::PeakLevelNotification *peak_p, const size_t num_results, const AUDIOProcessor::ResultData results[])
+{	
+	LOG4CXX_DEBUG(g_logger, "process_peak_results enter " << peak_p << " " << num_results << " " << results);
+
+	// iterate through all results
+	for (int counter = 0; counter < num_results; counter++)
+	{
+		// add the level to the notification
+		peak_p->add_levelindb(results[counter].peakInDB);
+	}	
+
+	LOG4CXX_DEBUG(g_logger, "process_peak_results exit");
+}
+
+void process_vu_results(v1::VULevelNotification *vu_p, const size_t num_results, const AUDIOProcessor::ResultData results[])
+{
+	LOG4CXX_DEBUG(g_logger, "process_vu_results enter " << vu_p << " " << num_results << " "  << results);
+
+	// iterate through all results
+	for (int counter = 0; counter < num_results; counter++)
+	{
+		// add the level to the notification
+		vu_p->add_levelindb(results[counter].rmsInDB);
+	}
+
+	LOG4CXX_DEBUG(g_logger, "process_vu_results exit");
+}
+
+

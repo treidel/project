@@ -10,6 +10,7 @@
 #include <ev.h>
 #include <alsa/asoundlib.h>
 #include <pthread.h>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 // macros
@@ -65,7 +66,7 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 
 private:
-	AUDIOChannel **m_channels_pp;
+	std::vector<AUDIOChannel *> m_channels;
 	AUDIOFormatter *m_formatter_p;
 	snd_pcm_t *m_handle_p;
 	char *m_device;
