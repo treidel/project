@@ -50,8 +50,8 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 private:
-	Control *m_control_p;
 	AUDIOProcessor *m_processor_p;
+	Control *m_control_p;
 
 };
 

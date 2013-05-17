@@ -150,6 +150,9 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
 		return;
     	}
 
+    	// resize the vector to hold the number of channels we have
+    	m_channels.resize(m_channel_count);
+
     	// setup the channels
     	for (int counter = 0; counter < m_channel_count; counter++)
     	{

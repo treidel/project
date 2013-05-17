@@ -68,6 +68,7 @@ SPPConnection::~SPPConnection()
 	// close the socket
 	if (-1 != m_socket)
 	{
+		LOG4CXX_INFO(g_logger, "disconnecting connection");
 		close(m_socket);
 		m_socket = -1;
 	}	
