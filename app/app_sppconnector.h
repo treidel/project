@@ -34,15 +34,15 @@ class SPPConnector : public APPManager::RequestHandler
 ///////////////////////////////////////////////////////////////////////////////
 
 public:
-	SPPConnector(APPManager::NotificationHandler *handler_p);
-	virtual ~SPPConnector();
+    SPPConnector(APPManager::NotificationHandler *handler_p);
+    virtual ~SPPConnector();
 
 ///////////////////////////////////////////////////////////////////////////////
 // APPManager::RequestHandler declarations
 ///////////////////////////////////////////////////////////////////////////////
 
 public:
-	ResultCode handle_request(const APPManager::Message *request_p, APPManager::Message **response_pp);
+    ResultCode handle_request(const APPManager::Message *request_p, APPManager::Message **response_pp);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -50,8 +50,8 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 private:
-	AUDIOProcessor *m_processor_p;
-	Control *m_control_p;
+    AUDIOProcessor *m_processor_p;
+    Control *m_control_p;
 
 };
 

@@ -4,7 +4,7 @@
 #include "common.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// macros 
+// macros
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -14,7 +14,7 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// type definitions 
+// type definitions
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -23,23 +23,23 @@ class APPManager
 
 public:
 
-	typedef struct
-	{
-		uint16_t length;
-    		uint8_t *data_p;
-	} Message;
+    typedef struct
+    {
+        uint16_t length;
+        uint8_t *data_p;
+    } Message;
 
-	class RequestHandler
-	{
-	public:
-		virtual ResultCode handle_request(const Message *request_p, Message **response_pp) = 0;
-	};
+    class RequestHandler
+    {
+    public:
+        virtual ResultCode handle_request(const Message *request_p, Message **response_pp) = 0;
+    };
 
-	class NotificationHandler
-	{
-	public:
-		virtual ResultCode send_notification(Message **notification_pp) = 0;
-	};
+    class NotificationHandler
+    {
+    public:
+        virtual ResultCode send_notification(Message **notification_pp) = 0;
+    };
 
 ///////////////////////////////////////////////////////////////////////////////
 // public function declarations
@@ -47,7 +47,7 @@ public:
 
 public:
 
-	static RequestHandler *createSPPConnector(NotificationHandler *handler_p);
+    static RequestHandler *createSPPConnector(NotificationHandler *handler_p);
 
 
 ///////////////////////////////////////////////////////////////////////////////

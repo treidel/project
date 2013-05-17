@@ -30,8 +30,8 @@ class AUDIOChannel
 ///////////////////////////////////////////////////////////////////////////////
 
 public:
-	typedef uint16_t Index;
-	typedef float Sample;
+    typedef uint16_t Index;
+    typedef float Sample;
 
 ///////////////////////////////////////////////////////////////////////////////
 // public function declarations
@@ -39,13 +39,13 @@ public:
 
 public:
 
-	AUDIOChannel(Index index, unsigned int sample_rate);
-	virtual ~AUDIOChannel();
+    AUDIOChannel(Index index, unsigned int sample_rate);
+    virtual ~AUDIOChannel();
 
-	inline Index get_index() const;
-	inline unsigned int get_sample_rate() const;
-	inline int get_read_fd();
-	inline int get_write_fd();
+    inline Index get_index() const;
+    inline unsigned int get_sample_rate() const;
+    inline int get_read_fd();
+    inline int get_write_fd();
 
 ///////////////////////////////////////////////////////////////////////////////
 // inner class declarations
@@ -55,45 +55,45 @@ public:
 // private function declarations
 ///////////////////////////////////////////////////////////////////////////////
 
-private: 
+private:
 
-	static void read_cb(struct ev_loop *loop_p, struct ev_io *w, int revents);
+    static void read_cb(struct ev_loop *loop_p, struct ev_io *w, int revents);
 
 ///////////////////////////////////////////////////////////////////////////////
 // private variable definitions
 ///////////////////////////////////////////////////////////////////////////////
 
 private:
-	Index m_index;
-	unsigned int m_sample_rate;
-	int m_read_fd;
-	int m_write_fd;
-	struct ev_loop *m_loop_p;
-	struct ev_io m_watcher;
+    Index m_index;
+    unsigned int m_sample_rate;
+    int m_read_fd;
+    int m_write_fd;
+    struct ev_loop *m_loop_p;
+    struct ev_io m_watcher;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// inline function implementaiton 
+// inline function implementaiton
 ///////////////////////////////////////////////////////////////////////////////
 
 AUDIOChannel::Index AUDIOChannel::get_index() const
 {
-	return m_index;
+    return m_index;
 }
 
 unsigned int AUDIOChannel::get_sample_rate() const
 {
-	return m_sample_rate;
+    return m_sample_rate;
 }
 
-int AUDIOChannel::get_read_fd() 
+int AUDIOChannel::get_read_fd()
 {
-	return m_read_fd;
+    return m_read_fd;
 }
 
 int AUDIOChannel::get_write_fd()
 {
-	return m_write_fd;
+    return m_write_fd;
 }
 
 

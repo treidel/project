@@ -28,8 +28,8 @@ class AUDIOChannel;
 
 class AUDIOCaptureManager
 {
-	friend class AUDIOCaptureInstance;
-	friend class AUDIOChannel;	
+    friend class AUDIOCaptureInstance;
+    friend class AUDIOChannel;
 
 ///////////////////////////////////////////////////////////////////////////////
 // type defitions
@@ -37,13 +37,13 @@ class AUDIOCaptureManager
 
 public:
 
-	class Handler 
-	{
-	public:
-		virtual ResultCode handle_samples(AUDIOChannel::Index index, const size_t buffer_length, AUDIOChannel::Sample *buffer_p) = 0;
-	};
+    class Handler
+    {
+    public:
+        virtual ResultCode handle_samples(AUDIOChannel::Index index, const size_t buffer_length, AUDIOChannel::Sample *buffer_p) = 0;
+    };
 
-	typedef std::map<AUDIOChannel::Index, AUDIOChannel *>::iterator ChannelIterator;
+    typedef std::map<AUDIOChannel::Index, AUDIOChannel *>::iterator ChannelIterator;
 
 ///////////////////////////////////////////////////////////////////////////////
 // public function declarations
@@ -51,16 +51,16 @@ public:
 
 public:
 
-	static AUDIOCaptureManager *get_instance();
+    static AUDIOCaptureManager *get_instance();
 
-	void add_handler(Handler *handler_p);
-	void remove_handler(Handler *handler_p);
+    void add_handler(Handler *handler_p);
+    void remove_handler(Handler *handler_p);
 
- 	AUDIOChannel *find_channel(const AUDIOChannel::Index index);
-	inline const size_t channel_count() const;
+    AUDIOChannel *find_channel(const AUDIOChannel::Index index);
+    inline const size_t channel_count() const;
 
-	inline ChannelIterator begin();
-	inline ChannelIterator end();
+    inline ChannelIterator begin();
+    inline ChannelIterator end();
 
 ///////////////////////////////////////////////////////////////////////////////
 // private function declarations
@@ -68,44 +68,44 @@ public:
 
 private:
 
-	AUDIOCaptureManager();
-	virtual ~AUDIOCaptureManager();
+    AUDIOCaptureManager();
+    virtual ~AUDIOCaptureManager();
 
-	AUDIOChannel::Index allocate_index();
-	void add_channel(AUDIOChannel *channel_p);
+    AUDIOChannel::Index allocate_index();
+    void add_channel(AUDIOChannel *channel_p);
 
 ///////////////////////////////////////////////////////////////////////////////
 // private variable definitions
 ///////////////////////////////////////////////////////////////////////////////
 
 private:
-	static AUDIOCaptureManager *g_instance_p;
+    static AUDIOCaptureManager *g_instance_p;
 
-	struct ev_loop *m_loop_p;
-	std::list<Handler *> m_handlers;
-	std::list<AUDIOCaptureInstance *> m_instances;
-	std::map<AUDIOChannel::Index, AUDIOChannel *> m_channels_map;
-	size_t m_channel_count;
+    struct ev_loop *m_loop_p;
+    std::list<Handler *> m_handlers;
+    std::list<AUDIOCaptureInstance *> m_instances;
+    std::map<AUDIOChannel::Index, AUDIOChannel *> m_channels_map;
+    size_t m_channel_count;
 
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// inline function implementations 
+// inline function implementations
 ///////////////////////////////////////////////////////////////////////////////
 
 const size_t AUDIOCaptureManager::channel_count() const
 {
-	return m_channel_count;
+    return m_channel_count;
 }
 
 AUDIOCaptureManager::ChannelIterator AUDIOCaptureManager::begin()
 {
-	return m_channels_map.begin();
+    return m_channels_map.begin();
 }
 
 AUDIOCaptureManager::ChannelIterator AUDIOCaptureManager::end()
 {
-	return m_channels_map.end();
+    return m_channels_map.end();
 }
 
 #endif

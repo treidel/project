@@ -36,11 +36,11 @@ class AUDIOFormatter
 
 public:
 
-	virtual ~AUDIOFormatter();
+    virtual ~AUDIOFormatter();
 
-	virtual const snd_pcm_format_t format() = 0;
-	virtual void format_samples(uint8_t *raw_buffer_p, AUDIOChannel::Index index, AUDIOChannel::Sample *sample_buffer_p, size_t num_samples) = 0;
-	virtual const size_t sample_sizeof() = 0;
+    virtual const snd_pcm_format_t format() = 0;
+    virtual void format_samples(uint8_t *raw_buffer_p, AUDIOChannel::Index index, AUDIOChannel::Sample *sample_buffer_p, size_t num_samples) = 0;
+    virtual const size_t sample_sizeof() = 0;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ public:
 
 protected:
 
-	AUDIOFormatter();
+    AUDIOFormatter();
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ class AUDIOFormatterFactory
 
 public:
 
-	static AUDIOFormatter *createAudioFormatter_p(snd_pcm_format_t format);
+    static AUDIOFormatter *createAudioFormatter_p(snd_pcm_format_t format);
 
 };
 
@@ -89,7 +89,7 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 
-class AUDIOSigned16BitFormatter : public AUDIOFormatter 
+class AUDIOSigned16BitFormatter : public AUDIOFormatter
 {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -97,8 +97,8 @@ class AUDIOSigned16BitFormatter : public AUDIOFormatter
 ///////////////////////////////////////////////////////////////////////////////
 
 public:
-	AUDIOSigned16BitFormatter();
-	~AUDIOSigned16BitFormatter();
+    AUDIOSigned16BitFormatter();
+    ~AUDIOSigned16BitFormatter();
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -106,17 +106,17 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 public:
-	const snd_pcm_format_t format() 
-	{
-		return SND_PCM_FORMAT_S16_LE;
-	}
+    const snd_pcm_format_t format()
+    {
+        return SND_PCM_FORMAT_S16_LE;
+    }
 
-	void format_samples(uint8_t *raw_buffer_p, AUDIOChannel::Index index, AUDIOChannel::Sample *sample_buffer_p, size_t num_samples);
+    void format_samples(uint8_t *raw_buffer_p, AUDIOChannel::Index index, AUDIOChannel::Sample *sample_buffer_p, size_t num_samples);
 
-	const size_t sample_sizeof() 
-	{
-		return sizeof(uint16_t);
-	}
+    const size_t sample_sizeof()
+    {
+        return sizeof(uint16_t);
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -124,7 +124,7 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 
-class AUDIOFloatFormatter : public AUDIOFormatter 
+class AUDIOFloatFormatter : public AUDIOFormatter
 {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -132,8 +132,8 @@ class AUDIOFloatFormatter : public AUDIOFormatter
 ///////////////////////////////////////////////////////////////////////////////
 
 public:
-	AUDIOFloatFormatter();
-	~AUDIOFloatFormatter();
+    AUDIOFloatFormatter();
+    ~AUDIOFloatFormatter();
 
 ///////////////////////////////////////////////////////////////////////////////
 // AUDIOFormatter declarations
@@ -141,17 +141,17 @@ public:
 
 
 public:
-	const snd_pcm_format_t format() 
-	{
-		return SND_PCM_FORMAT_FLOAT_LE;
-	}
+    const snd_pcm_format_t format()
+    {
+        return SND_PCM_FORMAT_FLOAT_LE;
+    }
 
-	void format_samples(uint8_t *raw_buffer_p, AUDIOChannel::Index index, AUDIOChannel::Sample *sample_buffer_p, size_t num_samples);
+    void format_samples(uint8_t *raw_buffer_p, AUDIOChannel::Index index, AUDIOChannel::Sample *sample_buffer_p, size_t num_samples);
 
-	const size_t sample_sizeof() 
-	{
-		return sizeof(float);
-	}
+    const size_t sample_sizeof()
+    {
+        return sizeof(float);
+    }
 };
 
 

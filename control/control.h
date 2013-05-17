@@ -43,38 +43,38 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 
 public:
-	Control(AUDIOProcessor *processor_p, APPManager::NotificationHandler *handler_p);
-	virtual ~Control();
+    Control(AUDIOProcessor *processor_p, APPManager::NotificationHandler *handler_p);
+    virtual ~Control();
 
 ///////////////////////////////////////////////////////////////////////////////
 // APPManager::RequestHandler declarations
 ///////////////////////////////////////////////////////////////////////////////
-	
+
 public:
-	ResultCode handle_request(const APPManager::Message *request_p, APPManager::Message **response_pp);
+    ResultCode handle_request(const APPManager::Message *request_p, APPManager::Message **response_pp);
 
 ///////////////////////////////////////////////////////////////////////////////
 // AUDIOProcessor::Handler declarations
 ///////////////////////////////////////////////////////////////////////////////
 
 public:
-	ResultCode handle_results(const size_t num_results, const AUDIOProcessor::ResultData results[]);
-	
+    ResultCode handle_results(const size_t num_results, const AUDIOProcessor::ResultData results[]);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // private function declarations
 ///////////////////////////////////////////////////////////////////////////////
 
 private:
-	//APPManager::Message *populate_response(::google::protobuf::MessageLite& message);
+    //APPManager::Message *populate_response(::google::protobuf::MessageLite& message);
 
 ///////////////////////////////////////////////////////////////////////////////
 // private variable definitions
 ///////////////////////////////////////////////////////////////////////////////
 
 private:
-	AUDIOProcessor *m_processor_p;
-	APPManager::NotificationHandler *m_handler_p;
+    AUDIOProcessor *m_processor_p;
+    APPManager::NotificationHandler *m_handler_p;
 
 };
 #endif
