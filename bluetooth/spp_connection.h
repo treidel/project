@@ -4,7 +4,12 @@
 #include "common.h"
 #include "app/app_mgr.h"
 
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/rfcomm.h>
+
 #include <ev.h>
+
+#include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
 // macros
@@ -34,9 +39,10 @@ class SPPConnection : public APPManager::NotificationHandler
 ///////////////////////////////////////////////////////////////////////////////
 
 public:
-    SPPConnection(SPPServer *server_p, int socket);
+    SPPConnection(SPPServer *server_p, int socket, const bdaddr_t *remote_addr_p);
     virtual ~SPPConnection();
 
+    static std::string format_mac_addr(const bdaddr_t *addr_p);
 
 ///////////////////////////////////////////////////////////////////////////////
 // APPManager:NotificationHandler declarations
@@ -62,6 +68,7 @@ private:
     SPPServer *m_server_p;
     APPManager::RequestHandler *m_handler_p;
     struct ev_loop *m_loop_p;
+    bdaddr_t m_remote_addr;
     ev_io m_watcher;
     int m_socket;
 };

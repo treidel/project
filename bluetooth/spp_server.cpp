@@ -17,7 +17,6 @@
 // macros
 ///////////////////////////////////////////////////////////////////////////////
 
-#define MAC_ADDR_STRING_LENGTH ((2*6)+5)
 
 ///////////////////////////////////////////////////////////////////////////////
 // type defintions
@@ -50,7 +49,6 @@ static log4cxx::LoggerPtr g_logger(
 ///////////////////////////////////////////////////////////////////////////////
 
 static uint8_t allocate_channel(int sock, struct sockaddr_rc *sockaddr);
-static std::string format_mac_addr(const bdaddr_t *addr_p);
 
 ///////////////////////////////////////////////////////////////////////////////
 // public function implementations
@@ -132,6 +130,8 @@ SPPServer::SPPServer(uuid_t uuid) :
         return;
     }
 
+    LOG4CXX_INFO(g_logger, "Listening for SPP connections on channel=" << channel);
+
     // cleanup
     sdp_data_free(channel_p);
     sdp_list_free(l2cap_list_p, 0);
@@ -183,14 +183,14 @@ void SPPServer::socket_cb(EV_P_ ev_io *w_p, int revents)
         return;
     }
 
-    std::string mac_addr_s = format_mac_addr(&remote_addr.rc_bdaddr);
+    std::string mac_addr_s = SPPConnection::format_mac_addr(&remote_addr.rc_bdaddr);
     LOG4CXX_INFO(g_logger, "received connection from " << mac_addr_s);
 
     // see if we already have a connection
     if (NULL == server_p->m_connection_p)
     {
         // create the connection
-        server_p->m_connection_p = new SPPConnection(server_p, client_socket);
+        server_p->m_connection_p = new SPPConnection(server_p, client_socket, &remote_addr.rc_bdaddr);
     }
     else
     {
@@ -220,12 +220,5 @@ uint8_t allocate_channel(int sock, struct sockaddr_rc *sockaddr_p)
     return 0;
 }
 
-std::string format_mac_addr(const bdaddr_t *addr_p)
-{
-    std::string buffer_s(MAC_ADDR_STRING_LENGTH, ' ');
-    snprintf((char *) buffer_s.c_str(), buffer_s.capacity(),
-             "%02X:%02X:%02X:%02X:%02X:%02X", addr_p->b[0], addr_p->b[1],
-             addr_p->b[2], addr_p->b[3], addr_p->b[4], addr_p->b[5]);
-    return buffer_s;
-}
+
 

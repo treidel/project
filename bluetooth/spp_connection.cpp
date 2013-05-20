@@ -13,6 +13,12 @@
 #include <log4cxx/logger.h>
 
 ///////////////////////////////////////////////////////////////////////////////
+// macros
+///////////////////////////////////////////////////////////////////////////////
+
+#define MAC_ADDR_STRING_LENGTH ((2*6)+5)
+
+///////////////////////////////////////////////////////////////////////////////
 // type defintions
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -41,13 +47,16 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("bluetooth.spp.con
 // public function implementations
 ///////////////////////////////////////////////////////////////////////////////
 
-SPPConnection::SPPConnection(SPPServer *server_p, int socket) :
+SPPConnection::SPPConnection(SPPServer *server_p, int socket, const bdaddr_t *remote_addr_p) :
     m_server_p(server_p),
     m_socket(socket),
     m_loop_p(ev_default_loop(0)),
     m_handler_p(APPManager::createSPPConnector(this))
 {
     LOG4CXX_DEBUG(g_logger, "SPPConnection::SPPConnection enter " << server_p << " " << socket);
+
+    // store the remote address
+    memcpy(&m_remote_addr, remote_addr_p, sizeof(bdaddr_t));
 
     // initialize the io watcher for the socket
     ev_io_init(&m_watcher, socket_cb, m_socket, EV_READ);
@@ -68,7 +77,7 @@ SPPConnection::~SPPConnection()
     // close the socket
     if (-1 != m_socket)
     {
-        LOG4CXX_INFO(g_logger, "disconnecting connection");
+        LOG4CXX_INFO(g_logger, "disconnecting connection from " << format_mac_addr(&m_remote_addr));
         close(m_socket);
         m_socket = -1;
     }
@@ -78,6 +87,20 @@ SPPConnection::~SPPConnection()
 
     LOG4CXX_DEBUG(g_logger, "SPPConnection::~SPPConnection exit");
 }
+
+std::string SPPConnection::format_mac_addr(const bdaddr_t *addr_p)
+{
+    std::string buffer_s(MAC_ADDR_STRING_LENGTH, ' ');
+    snprintf((char *) buffer_s.c_str(), buffer_s.capacity(),
+             "%02X:%02X:%02X:%02X:%02X:%02X", addr_p->b[0], addr_p->b[1],
+             addr_p->b[2], addr_p->b[3], addr_p->b[4], addr_p->b[5]);
+    return buffer_s;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// APPManager:NotificationHandler implementation
+///////////////////////////////////////////////////////////////////////////////
 
 ResultCode SPPConnection::send_notification(APPManager::Message **notification_pp)
 {
@@ -132,8 +155,12 @@ void SPPConnection::socket_cb (EV_P_ ev_io *w_p, int revents)
             int rc = read(w_p->fd, &network_length, sizeof(network_length));
             if (0 > rc)
             {
-                LOG4CXX_ERROR(g_logger, "read returned error=" + rc);
-                // force a disconnect
+                LOG4CXX_INFO(g_logger, "connection from " << format_mac_addr(&(connection_p->m_remote_addr)) << " closed");
+                // the socket is already closed but we'll call close here and cleanup the connection object to avoid a 
+                // spurious log message in the destructor
+                close(connection_p->m_socket);
+                connection_p->m_socket = -1;
+                // cleanup the connection  
                 delete connection_p;
                 break;
             }
