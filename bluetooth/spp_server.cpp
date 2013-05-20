@@ -130,7 +130,7 @@ SPPServer::SPPServer(uuid_t uuid) :
         return;
     }
 
-    LOG4CXX_INFO(g_logger, "Listening for SPP connections on channel=" << channel);
+    LOG4CXX_INFO(g_logger, "Listening for SPP connections on channel=" << to_string(channel));
 
     // cleanup
     sdp_data_free(channel_p);

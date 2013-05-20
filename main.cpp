@@ -51,7 +51,7 @@ static void kill_cb(struct ev_loop *loop_p, ev_signal *w_p, int revents);
 static void populate_logpath(char *execpath_p, size_t path_length);
 
 ///////////////////////////////////////////////////////////////////////////////
-// public function declarations
+// public function implementations
 ///////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char *argv[])
@@ -89,6 +89,28 @@ int main(int argc, char *argv[])
     LOG4CXX_FATAL(g_logger, "main loop exited");
     return -1;
 }
+
+std::string to_string(int value)
+{
+    std::stringstream ss;
+    std::string s;
+    ss << value;
+    s = ss.str();
+    return s;
+}
+
+std::string to_string(uint8_t value)
+{
+    std::stringstream ss;
+    std::string s;
+    ss << (int)value;
+    s = ss.str();
+    return s;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// private function implementations 
+///////////////////////////////////////////////////////////////////////////////
 
 void kill_cb(struct ev_loop *loop_p, ev_signal *w_p, int revents)
 {
