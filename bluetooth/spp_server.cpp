@@ -64,7 +64,7 @@ SPPServer::SPPServer(uuid_t uuid) :
     m_socket = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
     if (0 > m_socket)
     {
-        LOG4CXX_ERROR(g_logger, "socket returned error " << m_socket);
+        LOG4CXX_ERROR(g_logger, "socket returned error " + m_socket);
         return;
     }
 
@@ -79,7 +79,7 @@ SPPServer::SPPServer(uuid_t uuid) :
     // allocate the channel
     uint8_t channel = allocate_channel(m_socket, &loc_addr);
 
-    LOG4CXX_DEBUG(g_logger, "SPPServer::SPPServer channel=" << to_string(loc_addr.rc_channel));
+    LOG4CXX_DEBUG(g_logger, "SPPServer::SPPServer channel=" + to_string(loc_addr.rc_channel));
 
     // listen for connections with no backlog
     listen(m_socket, 0);
@@ -126,11 +126,11 @@ SPPServer::SPPServer(uuid_t uuid) :
     int rc = sdp_record_register(m_session_p, record_p, 0);
     if (0 > rc)
     {
-        LOG4CXX_ERROR(g_logger, "sdp_record_register returned error " << rc);
+        LOG4CXX_ERROR(g_logger, "sdp_record_register returned error " + to_string(rc));
         return;
     }
 
-    LOG4CXX_INFO(g_logger, "Listening for SPP connections on channel=" << to_string(channel));
+    LOG4CXX_INFO(g_logger, "Listening for SPP connections on channel=" + to_string(channel));
 
     // cleanup
     sdp_data_free(channel_p);
@@ -170,7 +170,7 @@ SPPServer::~SPPServer()
 
 void SPPServer::socket_cb(EV_P_ ev_io *w_p, int revents)
 {
-    LOG4CXX_DEBUG(g_logger, "SPPServer::socket_cb enter " << w_p << " " <<revents);
+    LOG4CXX_DEBUG(g_logger, "SPPServer::socket_cb enter " << w_p << " " << revents);
     // get the object
     SPPServer *server_p = (SPPServer *)(w_p->data);
     // we're only signalled when a new connection has arrived so let's accept it
