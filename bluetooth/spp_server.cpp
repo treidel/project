@@ -79,7 +79,7 @@ SPPServer::SPPServer(uuid_t uuid) :
     // allocate the channel
     uint8_t channel = allocate_channel(m_socket, &loc_addr);
 
-    LOG4CXX_DEBUG(g_logger, "SPPServer::SPPServer channel=" << loc_addr.rc_channel);
+    LOG4CXX_DEBUG(g_logger, "SPPServer::SPPServer channel=" << to_string(loc_addr.rc_channel));
 
     // listen for connections with no backlog
     listen(m_socket, 0);

@@ -42,7 +42,7 @@ public:
     SPPConnection(SPPServer *server_p, int socket, const bdaddr_t *remote_addr_p);
     virtual ~SPPConnection();
 
-    static std::string format_mac_addr(const bdaddr_t *addr_p);
+    static const std::string format_mac_addr(const bdaddr_t *addr_p);
 
 ///////////////////////////////////////////////////////////////////////////////
 // APPManager:NotificationHandler declarations
@@ -59,6 +59,8 @@ public:
 private:
     static void socket_cb(EV_P_ ev_io *w_p, int revents);
     static void send_cb(EV_P_ ev_io *w_p, int revents);
+
+    void disconnect();
 
 ///////////////////////////////////////////////////////////////////////////////
 // private variable declarations

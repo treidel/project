@@ -16,7 +16,7 @@
 // macros
 ///////////////////////////////////////////////////////////////////////////////
 
-#define MAC_ADDR_STRING_LENGTH ((2*6)+5)
+#define MAC_ADDR_STRING_LENGTH ((2*6)+5+1)
 
 ///////////////////////////////////////////////////////////////////////////////
 // type defintions
@@ -53,7 +53,7 @@ SPPConnection::SPPConnection(SPPServer *server_p, int socket, const bdaddr_t *re
     m_loop_p(ev_default_loop(0)),
     m_handler_p(APPManager::createSPPConnector(this))
 {
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::SPPConnection enter " << server_p << " " << socket);
+    LOG4CXX_DEBUG(g_logger, "SPPConnection::SPPConnection enter " << server_p << " " << to_string(socket) << " " << format_mac_addr(remote_addr_p));
 
     // store the remote address
     memcpy(&m_remote_addr, remote_addr_p, sizeof(bdaddr_t));
@@ -88,13 +88,13 @@ SPPConnection::~SPPConnection()
     LOG4CXX_DEBUG(g_logger, "SPPConnection::~SPPConnection exit");
 }
 
-std::string SPPConnection::format_mac_addr(const bdaddr_t *addr_p)
+const std::string SPPConnection::format_mac_addr(const bdaddr_t *addr_p)
 {
-    std::string buffer_s(MAC_ADDR_STRING_LENGTH, ' ');
-    snprintf((char *) buffer_s.c_str(), buffer_s.capacity(),
+    char buffer[MAC_ADDR_STRING_LENGTH + 1];
+    snprintf(buffer, MAC_ADDR_STRING_LENGTH, 
              "%02X:%02X:%02X:%02X:%02X:%02X", addr_p->b[0], addr_p->b[1],
              addr_p->b[2], addr_p->b[3], addr_p->b[4], addr_p->b[5]);
-    return buffer_s;
+    return buffer;
 }
 
 
@@ -142,6 +142,8 @@ void SPPConnection::socket_cb (EV_P_ ev_io *w_p, int revents)
         if (0 != (revents & EV_ERROR))
         {
             LOG4CXX_DEBUG(g_logger, "SPPConnection::socket_cb EV_ERROR");
+            // disconnect
+            connection_p->disconnect();
             // delete the connection
             delete connection_p;
             // done
@@ -155,11 +157,8 @@ void SPPConnection::socket_cb (EV_P_ ev_io *w_p, int revents)
             int rc = read(w_p->fd, &network_length, sizeof(network_length));
             if (0 > rc)
             {
-                LOG4CXX_INFO(g_logger, "connection from " << format_mac_addr(&(connection_p->m_remote_addr)) << " closed");
-                // the socket is already closed but we'll call close here and cleanup the connection object to avoid a 
-                // spurious log message in the destructor
-                close(connection_p->m_socket);
-                connection_p->m_socket = -1;
+                // disconnect
+                connection_p->disconnect();
                 // cleanup the connection  
                 delete connection_p;
                 break;
@@ -177,13 +176,18 @@ void SPPConnection::socket_cb (EV_P_ ev_io *w_p, int revents)
             rc = read(w_p->fd, (void *)request.data_p, request.length);
             if (0 > rc)
             {
-                LOG4CXX_ERROR(g_logger, "read returned error=" + rc);
+                LOG4CXX_ERROR(g_logger, "read returned error=" << to_string(rc));
                 // free the memory we just allocated
                 free(request.data_p);
                 // force a disconnect since we were unable to read the message
+                connection_p->disconnect();
                 delete connection_p;
                 // done
                 break;
+            }
+            else if (rc < request.length)
+            {
+                LOG4CXX_ERROR(g_logger, "read returned less than we wanted request.length=" << to_string(request.length) << " rc=" << to_string(rc));
             }
 
             // this is a pointer to the response message
@@ -306,3 +310,11 @@ void SPPConnection::send_cb(EV_P_ ev_io *w_p, int revents)
     LOG4CXX_DEBUG(g_logger, "SPPConnection::send_cb exit");
 }
 
+void SPPConnection::disconnect()
+{
+    LOG4CXX_INFO(g_logger, "connection from " + format_mac_addr(&m_remote_addr) + " closed");
+    // the socket is already closed but we'll call close here and cleanup the connection object to avoid a 
+    // spurious log message in the destructor
+    close(m_socket);
+    m_socket = -1;
+}
