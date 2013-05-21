@@ -156,9 +156,14 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
     // setup the channels
     for (int counter = 0; counter < m_channel_count; counter++)
     {
+    	// allocate a unique index for the channel
         AUDIOChannel::Index index = manager_p->allocate_index();
+        // craete the channel object
         AUDIOChannel *channel_p = new AUDIOChannel(index, SAMPLE_RATE_IN_HZ);
+        // store it in our list
         m_channels[counter] = channel_p;
+        // register it with the manager
+        manager_p->add_channel(channel_p);
     }
 
     // launch the processing thread

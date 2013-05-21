@@ -270,7 +270,7 @@ void SPPConnection::send_cb(EV_P_ ev_io *w_p, int revents)
         }
         if (0 != (revents & EV_WRITE))
         {
-            LOG4CXX_DEBUG(g_logger, "SPPConnection::socket_cb EV_ERROR");
+            LOG4CXX_DEBUG(g_logger, "SPPConnection::socket_cb EV_WRITE");
 
             // send the length
             uint16_t network_length = htons(message_p->length);
