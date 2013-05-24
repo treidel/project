@@ -95,9 +95,13 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
         // get the response message ready
         v1::ResponseOrNotification responseornotification;
         v1::Response *response_p = responseornotification.mutable_response();
+        responseornotification.set_type(v1::ResponseOrNotification_ResponseOrNotificationType_RESPONSE);
 
         // assume failure
         response_p->set_success(false);
+
+        // send back the same response type as the request
+        response_p->set_type(request.type());
 
         // see what kind of request we got
         switch (request.type())

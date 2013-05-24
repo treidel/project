@@ -104,7 +104,7 @@ private:
 
 bool SPPConnection::Buffer::is_empty()
 {
-    return (NULL != m_message_p);
+    return (NULL == m_message_p);
 }
 
 APPManager::Message *SPPConnection::Buffer::get_message_p()
