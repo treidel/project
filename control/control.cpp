@@ -72,7 +72,7 @@ Control::~Control()
 // APPManager::RequestHandler implementation
 ///////////////////////////////////////////////////////////////////////////////
 
-ResultCode Control::handle_request(const APPManager::Message *request_p, APPManager::Message **response_pp)
+ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::Message **response_pp)
 {
     LOG4CXX_DEBUG(g_logger, "Control::handler_request enter " << request_p << " " << response_pp);
 
@@ -86,9 +86,9 @@ ResultCode Control::handle_request(const APPManager::Message *request_p, APPMana
     {
         // decode the message
         v1::Request request;
-        if (false == request.ParseFromArray((void *)request_p->data_p, request_p->length))
+        if (false == request.ParseFromArray(request_p->get_data_p(), request_p->get_length()))
         {
-            LOG4CXX_ERROR(g_logger, "unable to parse request protocol buffer len=" << request_p->length);
+            LOG4CXX_ERROR(g_logger, "unable to parse request protocol buffer len=" << request_p->get_length());
             result_code = RESULT_CODE_ERROR;
             break;
         }
@@ -102,7 +102,7 @@ ResultCode Control::handle_request(const APPManager::Message *request_p, APPMana
         // see what kind of request we got
         switch (request.type())
         {
-        case v1::Request_RequestType_SETLEVEL:
+        case v1::SETLEVEL:
         {
             // get the request
             const ::v1::SetLevelRequest& setlevel = request.setlevel();
@@ -127,7 +127,7 @@ ResultCode Control::handle_request(const APPManager::Message *request_p, APPMana
         }
         break;
 
-        case v1::Request_RequestType_QUERYAUDIOCHANNELS:
+        case v1::QUERYAUDIOCHANNELS:
         {
             // do something to query the channels
             v1::QueryAudioChannelsResponse *qac_p = response_p->mutable_queryaudiochannels();
@@ -171,7 +171,7 @@ ResultCode Control::handle_results(const size_t num_results, const AUDIOProcesso
 
     // setup the notification
     v1::Notification notification;
-    notification.set_type(v1::Notification::LEVEL);
+    notification.set_type(v1::LEVEL);
 
     // get the level notification and set the type
     v1::LevelNotification *level_p =  notification.mutable_level();
@@ -228,17 +228,12 @@ APPManager::Message *populate_response(::google::protobuf::MessageLite& message)
     LOG4CXX_DEBUG(g_logger, "Control::populate_response enter " << &message);
 
     // allocate the memory for the response
-    APPManager::Message *response_p = (APPManager::Message *)calloc(1, sizeof(APPManager::Message));
-    // calculate how large the response will be
-    response_p->length = (uint16_t)message.ByteSize();
-    // allocate a buffer for the response
-    response_p->data_p = (uint8_t *)malloc(response_p->length);
+    APPManager::Message *response_p = new APPManager::Message(message.ByteSize());
     // serialize the response
-    if (false == message.SerializeToArray((void *)(response_p->data_p), response_p->length))
+    if (false == message.SerializeToArray((void *)(response_p->get_data_p()), response_p->get_length()))
     {
         LOG4CXX_ERROR(g_logger, "unable to serialize response to protocol buffer");
-        free(response_p->data_p);
-        free(response_p);
+        delete response_p;
         return NULL;
     }
     // done

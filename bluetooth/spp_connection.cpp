@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
 
 #include <ev.h>
 
@@ -22,12 +23,6 @@
 // type defintions
 ///////////////////////////////////////////////////////////////////////////////
 
-struct connection_io
-{
-    struct ev_io io;
-    APPManager::Message *message_p;
-    bool close;
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 // constants
@@ -58,12 +53,23 @@ SPPConnection::SPPConnection(SPPServer *server_p, int socket, const bdaddr_t *re
     // store the remote address
     memcpy(&m_remote_addr, remote_addr_p, sizeof(bdaddr_t));
 
-    // initialize the io watcher for the socket
-    ev_io_init(&m_watcher, socket_cb, m_socket, EV_READ);
-    m_watcher.data = (void *)this;
+    // turn on non-blocking io on the socket
+    int on = 1;
+    int rc = ioctl(socket, FIONBIO, (char *)&on);
+    if (0 != rc)
+    {
+        LOG4CXX_ERROR(g_logger, "unable to set non-blocking i/o on socket=" + to_string(socket));
+        return;
+    }
 
-    // register the listener with the loop
-    ev_io_start(m_loop_p, &m_watcher);
+    // initialize the io watchers 
+    ev_io_init(&m_receive_watcher, receive_cb, m_socket, EV_READ);
+    m_receive_watcher.data = (void *)this;
+    ev_io_init(&m_transmit_watcher, transmit_cb, m_socket, EV_WRITE);
+    m_transmit_watcher.data = (void *)this;
+
+    // only register the rx size listener with the loop
+    ev_io_start(m_loop_p, &m_receive_watcher);
 
     LOG4CXX_DEBUG(g_logger, "SPPConnection::SPPConnection exit");
 }
@@ -72,18 +78,20 @@ SPPConnection::~SPPConnection()
 {
     LOG4CXX_DEBUG(g_logger, "SPPConnection::~SPPConnection enter");
 
-    // remove the watcher
-    ev_io_stop(m_loop_p, &m_watcher);
+    // remove the watchers
+    ev_io_stop(m_loop_p, &m_receive_watcher);
+    ev_io_stop(m_loop_p, &m_transmit_watcher);
+
     // close the socket
     if (-1 != m_socket)
     {
-        LOG4CXX_INFO(g_logger, "disconnecting connection from " << format_mac_addr(&m_remote_addr));
+        LOG4CXX_INFO(g_logger, "disconnecting from " << format_mac_addr(&m_remote_addr));
         close(m_socket);
         m_socket = -1;
     }
+
     // clear ourselves in the server
     m_server_p->m_connection_p = NULL;
-
 
     LOG4CXX_DEBUG(g_logger, "SPPConnection::~SPPConnection exit");
 }
@@ -97,7 +105,52 @@ const std::string SPPConnection::format_mac_addr(const bdaddr_t *addr_p)
     return buffer;
 }
 
+SPPConnection::Buffer::Buffer() :
+    m_message_p(NULL),
+    m_remaining(0)
+{
+    LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::Buffer enter");
+    LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::Buffer exit");
+}
 
+SPPConnection::Buffer::~Buffer()
+{
+    LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::~Buffer enter");
+    if (NULL != m_message_p)
+    {
+        delete m_message_p;
+    }
+    LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::~Buffer exit");
+}
+
+void SPPConnection::Buffer::clear()
+{
+   LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::clear enter");
+   if (NULL != m_message_p)
+   {
+       delete m_message_p;
+       m_message_p = NULL;
+       m_remaining = 0;
+   }
+   LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::clear exit");
+}
+
+size_t SPPConnection::Buffer::calculate_offset()
+{
+   LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::Buffer enter");
+   ASSERT(NULL != m_message_p);
+   return (m_message_p->get_length() - m_remaining);
+   LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::Buffer exit");
+}
+
+void SPPConnection::Buffer::set_message(APPManager::Message *message_p)
+{
+    LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::set_message enter " << message_p);
+    ASSERT(NULL != message_p);
+    m_message_p = message_p;
+    m_remaining = message_p->get_length();
+    LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::set_message exit");
+}
 ///////////////////////////////////////////////////////////////////////////////
 // APPManager:NotificationHandler implementation
 ///////////////////////////////////////////////////////////////////////////////
@@ -106,17 +159,12 @@ ResultCode SPPConnection::send_notification(APPManager::Message **notification_p
 {
     LOG4CXX_DEBUG(g_logger, "SPPConnection::send_notification enter " << notification_pp);
 
-    // get the message pointer
-    APPManager::Message *notification_p = *notification_pp;
     // queue the message to send when the socket is ready to write
-    connection_io send_watcher;
-    ev_io_init(&send_watcher.io, send_cb, m_socket, EV_WRITE);
-    // set the watcher data
-    send_watcher.io.data = (void *)notification_p;
-    send_watcher.message_p = notification_p;
-    send_watcher.close = false;
-    // send the event
-    ev_io_start(m_loop_p, &send_watcher.io);
+    m_transmit_queue.push(*notification_pp);
+
+    // trigger the write callback 
+    ev_io_start(m_loop_p, &m_transmit_watcher);
+
     // tell the caller we took overship of the message
     *notification_pp = NULL;
 
@@ -129,192 +177,228 @@ ResultCode SPPConnection::send_notification(APPManager::Message **notification_p
 // private function implementations
 ///////////////////////////////////////////////////////////////////////////////
 
-void SPPConnection::socket_cb (EV_P_ ev_io *w_p, int revents)
+void SPPConnection::receive_cb (EV_P_ ev_io *w_p, int revents)
 {
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::socket_cb enter " << w_p << " " << revents);
-
-    // get the object
-    SPPConnection *connection_p = (SPPConnection *)(w_p->data);
+    LOG4CXX_DEBUG(g_logger, "SPPConnection::receive_cb enter " << w_p << " " << revents);
 
     do
     {
+        // get the object
+        SPPConnection *connection_p = (SPPConnection *)(w_p->data);
+
+        // get the receive buffer
+        Buffer *receive_p = &(connection_p->m_receive);
+
         // handling for when clients disconnect
         if (0 != (revents & EV_ERROR))
         {
-            LOG4CXX_DEBUG(g_logger, "SPPConnection::socket_cb EV_ERROR");
+            LOG4CXX_DEBUG(g_logger, "SPPConnection::receive_cb EV_ERROR");
             // disconnect
-            connection_p->disconnect();
-            // delete the connection
-            delete connection_p;
+            disconnect(&connection_p);
             // done
             break;
         }
         if (0 != (revents & EV_READ))
         {
-            LOG4CXX_DEBUG(g_logger, "SPPConnection::socket_cb EV_READ");
-            // read the number of bytes we should expect in the message
-            uint16_t network_length;
-            int rc = read(w_p->fd, &network_length, sizeof(network_length));
-            if (0 > rc)
+            LOG4CXX_DEBUG(g_logger, "SPPConnection::receive_cb EV_READ");
+
+            // see if we need to read the size
+            if (true == receive_p->is_empty())
             {
-                // disconnect
-                connection_p->disconnect();
-                // cleanup the connection  
-                delete connection_p;
-                break;
-            }
-            // create the request and response message containers
-            APPManager::Message request;
+                // read the number of bytes we should expect in the message
+                uint16_t network_length;
+                int rc = read(w_p->fd, &network_length, sizeof(network_length));
+                if (0 > rc)
+                {
+                    LOG4CXX_ERROR(g_logger, "read returned error=" + to_string(rc) + " errno=" + to_string(errno));
+                    // disconnect
+                    disconnect(&connection_p);
+                    break;
+                }
+            
+                LOG4CXX_DEBUG(g_logger, "read length=" + to_string(ntohs(network_length)));
 
-            // convert from network order
-            request.length = ntohs(network_length);
-
-            // allocate the amount of memory we need to hold the message
-            request.data_p = (uint8_t *)malloc(request.length);
-
-            // read the actual data
-            rc = read(w_p->fd, (void *)request.data_p, request.length);
-            if (0 > rc)
-            {
-                LOG4CXX_ERROR(g_logger, "read returned error=" << to_string(rc));
-                // free the memory we just allocated
-                free(request.data_p);
-                // force a disconnect since we were unable to read the message
-                connection_p->disconnect();
-                delete connection_p;
-                // done
-                break;
-            }
-            else if (rc < request.length)
-            {
-                LOG4CXX_ERROR(g_logger, "read returned less than we wanted request.length=" << to_string(request.length) << " rc=" << to_string(rc));
-            }
-
-            // this is a pointer to the response message
-            APPManager::Message *response_p = NULL;
-
-            // call the handler
-            ResultCode result_code = connection_p->m_handler_p->handle_request(&request, &response_p);
-            if (RESULT_CODE_OK == result_code)
-            {
-                ASSERT(NULL != response_p);
-
-                LOG4CXX_DEBUG(g_logger, "SPPConnection::socket_cb request handler returned ok");
-
-                // queue the response to send when the socket is ready to write
-                connection_io send_watcher;
-                ev_io_init(&send_watcher.io, send_cb, w_p->fd, EV_WRITE);
-                // set the user data
-                send_watcher.io.data = (void *)connection_p;
-                send_watcher.message_p = response_p;
-                send_watcher.close = false;
-                // send the event
-                ev_io_start(connection_p->m_loop_p, &send_watcher.io);
+                // setup the receive buffer params
+                APPManager::Message *message_p = new APPManager::Message(ntohs(network_length));
+                // store the message in the buffer
+                receive_p->set_message(message_p);
             }
             else
             {
-                LOG4CXX_ERROR(g_logger, "SPPConnection::socket_cb request handler returned error=" << result_code << " " << response_p);
-                // returning an error tells us we should disconnect
-                // however they can still ask us to send back a message before disconnecting
-                if (NULL != response_p)
+                // calculate the offset
+                const size_t offset = receive_p->calculate_offset();
+
+                // read the actual data
+                int rc = read(w_p->fd, (void *)(receive_p->get_message_p()->get_data_p() + offset), receive_p->get_remaining_r());
+                if (0 > rc)
                 {
-                    // queue the message to send when the socket is ready to write
-                    connection_io send_and_close_watcher;
-                    ev_io_init(&send_and_close_watcher.io, send_cb, w_p->fd, EV_WRITE);
-                    // set the user data
-                    send_and_close_watcher.io.data = (void *)connection_p;
-                    send_and_close_watcher.message_p = response_p;
-                    send_and_close_watcher.close = true;
-                    // send the event
-                    ev_io_start(connection_p->m_loop_p, &send_and_close_watcher.io);
+                    LOG4CXX_ERROR(g_logger, "read returned error=" + to_string(rc) + " errno=" + to_string(errno));
+                    // force a disconnect since we were unable to read the message
+                    disconnect(&connection_p);
+                    // done
+                    break;
                 }
-                else
+
+                LOG4CXX_DEBUG(g_logger, "read bytes=" + to_string(rc) + " data=" + to_string(receive_p->get_message_p()->get_data_p() + offset, rc));
+
+                // update the remaining data
+                receive_p->get_remaining_r() -= rc;
+
+                // see if we've read the whole message
+                if (0 == receive_p->get_remaining_r())
                 {
-                    // close now
-                    delete connection_p;
+                    // this is a pointer to the response message
+                    APPManager::Message *response_p = NULL;
+
+                    // call the handler
+                    ResultCode result_code = connection_p->m_handler_p->handle_request(receive_p->get_message_p(), &response_p);
+                    if (RESULT_CODE_OK == result_code)
+                    {
+                        ASSERT(NULL != response_p);
+
+                        LOG4CXX_DEBUG(g_logger, "SPPConnection::rx_message_cb request handler returned ok");
+
+                        // use the notification send method to queue the message
+                        connection_p->send_notification(&response_p);
+                    }
+                    else
+                    {
+                        ASSERT(NULL == response_p);
+
+                        LOG4CXX_ERROR(g_logger, "SPPConnection::rx_message_cb request handler returned error=" << result_code << " " << response_p);
+
+                        // disconnect
+                        disconnect(&connection_p);
+                    }
+                    // cleanup the receive buffer
+                    receive_p->clear();
                 }
             }
-            // free the buffer
-            free(request.data_p);
         }
     }
     while (false);
 
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::socket_cb exit");
+    LOG4CXX_DEBUG(g_logger, "SPPConnection::receive_cb exit");
 }
 
-void SPPConnection::send_cb(EV_P_ ev_io *w_p, int revents)
+void SPPConnection::transmit_cb(EV_P_ ev_io *w_p, int revents)
 {
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::send_cb enter " << w_p << " " << revents);
-
-    // get the object
-    SPPConnection *connection_p = (SPPConnection *)(w_p->data);
-
-    // get the message
-    APPManager::Message *message_p = ((connection_io *)w_p)->message_p;
-
-    // this is a one-shot event
-    ev_io_stop (EV_A_ w_p);
+    LOG4CXX_DEBUG(g_logger, "SPPConnection::transmit_cb enter " << w_p << " " << revents);
 
     // use a do-while to provide a simple break-out
     do
     {
+        // get the object
+        SPPConnection *connection_p = (SPPConnection *)(w_p->data);
+
+        // get the transmit buffer
+        Buffer *transmit_p = &(connection_p->m_transmit);
+
         if (0 != (revents & EV_ERROR))
         {
-            LOG4CXX_DEBUG(g_logger, "SPPConnection::socket_cb EV_ERROR");
-
-            // cleanup the client
-            delete connection_p;
+            LOG4CXX_DEBUG(g_logger, "SPPConnection::transmit_cb EV_ERROR");
+            // disconnect
+            disconnect(&connection_p);
             // done
             break;
         }
         if (0 != (revents & EV_WRITE))
         {
             LOG4CXX_DEBUG(g_logger, "SPPConnection::socket_cb EV_WRITE");
-
-            // send the length
-            uint16_t network_length = htons(message_p->length);
-            int rc = write(w_p->fd, &network_length, sizeof(network_length));
-            if (0 > rc)
+            
+            // see if we are already transmitting
+            if (true == transmit_p->is_empty())
             {
-                LOG4CXX_ERROR(g_logger, "error returned from write " << rc);
+                // if the transmit queue is empty we can disable ourselves
+                if (true == connection_p->m_transmit_queue.empty())
+                {
+                    LOG4CXX_DEBUG(g_logger, "SPPConnection::transmit_cb queue empty");
+                    // stop this callback from firing again
+			        ev_io_stop (EV_A_ w_p);
+                    // done
+                    break;
+                }
 
-                // if we can't write then the client must have disconnected
-                delete connection_p;
-                // done
-                break;
+                // retrieve + remove from queue
+                APPManager::Message *message_p = connection_p->m_transmit_queue.front();
+                connection_p->m_transmit_queue.pop();
+
+                // store in the buffer
+                transmit_p->set_message(message_p);
+
+				// send the length
+				uint16_t network_length = htons(message_p->get_length());
+				int rc = write(w_p->fd, &network_length, sizeof(network_length));
+				if (0 > rc)
+				{
+					LOG4CXX_ERROR(g_logger, "write returned error=" + to_string(rc) + " errno=" + to_string(errno));
+					// if we can't write then the client must have disconnected
+					disconnect(&connection_p);
+					// done
+					break;
+				}
             }
-            // send the message
-            if (0 > write(w_p->fd, message_p->data_p, message_p->length))
+            else
             {
-                LOG4CXX_ERROR(g_logger, "error returned from write " << rc);
+                // calculate the offset
+                const size_t offset = transmit_p->calculate_offset();
 
-                // have to disconnect as we were unable to write the whole message
-                delete connection_p;
-                // done
-                break;
-            }
-            // if they asked us to close the connection do so now
-            if (true == ((connection_io *)w_p)->close)
-            {
-                LOG4CXX_WARN(g_logger, "closing connection");
-                delete connection_p;
+				// send the message
+				int rc = write(w_p->fd, transmit_p->get_message_p()->get_data_p() + offset, transmit_p->get_remaining_r());
+                if (0 > rc)
+				{
+					LOG4CXX_ERROR(g_logger, "write retruned error=" + to_string(rc) + " errono=" + to_string(errno));
+					// have to disconnect as we were unable to write the whole message
+					disconnect(&connection_p);
+					// done
+					break;
+				}
+
+                LOG4CXX_DEBUG(g_logger, "wrote bytes=" + to_string(rc) + " data=" + to_string(transmit_p->get_message_p()->get_data_p() + offset, rc));
+
+                // update the remaining data
+                transmit_p->get_remaining_r() -= rc;
+
+                // see if we've wrote the whole message
+                if (0 == transmit_p->get_remaining_r())
+                {
+                    // clean up the transmit buffer
+                    transmit_p->clear();
+
+                    // if there no messages pending then we can stop the event from firing
+                    if (true == connection_p->m_transmit_queue.empty())
+                    {
+                        LOG4CXX_DEBUG(g_logger, "SPPConnection::transmit_cb queue empty after transmit");
+                        // stop this callback from firing again
+			            ev_io_stop (EV_A_ w_p);
+                    }
+                }
             }
         }
     }
     while (false);
 
-    // free the memory
-    free(message_p);
-
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::send_cb exit");
+    LOG4CXX_DEBUG(g_logger, "SPPConnection::transmit_cb exit");
 }
 
-void SPPConnection::disconnect()
+void SPPConnection::disconnect(SPPConnection **connection_pp)
 {
-    LOG4CXX_INFO(g_logger, "connection from " + format_mac_addr(&m_remote_addr) + " closed");
+	LOG4CXX_DEBUG(g_logger, "SPPConnection::disconnect enter " << connection_pp);
+
+	// get the object itself
+	SPPConnection *connection_p = *connection_pp;
+
+    LOG4CXX_INFO(g_logger, "connection from " + format_mac_addr(&connection_p->m_remote_addr) + " closed");
     // the socket is already closed but we'll call close here and cleanup the connection object to avoid a 
     // spurious log message in the destructor
-    close(m_socket);
-    m_socket = -1;
+    close(connection_p->m_socket);
+    connection_p->m_socket = -1;
+
+    // clear the pointer
+    *connection_pp = NULL;
+
+    // delete the connection
+    delete connection_p;
+
+    LOG4CXX_DEBUG(g_logger, "SPPConnection::disconnect exit");
 }

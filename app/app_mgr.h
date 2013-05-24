@@ -23,16 +23,25 @@ class APPManager
 
 public:
 
-    typedef struct
+    class Message 
     {
-        uint16_t length;
-        uint8_t *data_p;
-    } Message;
+    public:
+        Message(const size_t length);
+        ~Message();
+
+        inline const size_t get_length() const;
+        inline uint8_t *get_data_p();
+
+    private:
+
+        size_t m_length;
+        uint8_t *m_data_p;
+    };
 
     class RequestHandler
     {
     public:
-        virtual ResultCode handle_request(const Message *request_p, Message **response_pp) = 0;
+        virtual ResultCode handle_request(Message *request_p, Message **response_pp) = 0;
     };
 
     class NotificationHandler
@@ -57,5 +66,15 @@ public:
 private:
 
 };
+
+const size_t APPManager::Message::get_length() const
+{
+    return m_length;
+}
+ 
+uint8_t *APPManager::Message::get_data_p()
+{
+    return m_data_p;
+}
 
 #endif

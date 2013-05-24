@@ -51,7 +51,7 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 public:
-    ResultCode handle_request(const APPManager::Message *request_p, APPManager::Message **response_pp);
+    ResultCode handle_request(APPManager::Message *request_p, APPManager::Message **response_pp);
 
 ///////////////////////////////////////////////////////////////////////////////
 // AUDIOProcessor::Handler declarations

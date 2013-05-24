@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
     return -1;
 }
 
-std::string to_string(int value)
+const std::string to_string(int value)
 {
     std::stringstream ss;
     std::string s;
@@ -99,13 +99,24 @@ std::string to_string(int value)
     return s;
 }
 
-std::string to_string(uint8_t value)
+const std::string to_string(uint8_t value)
 {
     std::stringstream ss;
     std::string s;
     ss << (int)value;
     s = ss.str();
     return s;
+}
+
+const std::string to_string(uint8_t *data_p, size_t length)
+{
+  char buffer[(2 * length) + 1];
+  for (int counter = 0; counter < length; counter++)
+  {
+      uint8_t value = *(data_p + counter);
+      snprintf(buffer + (2 * counter), 3, "%02X", value);
+  }
+  return buffer;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -18,8 +18,9 @@ typedef enum
     RESULT_CODE_ERROR,
 } ResultCode;
 
-std::string to_string(int value);
-std::string to_string(uint8_t value);
+const std::string to_string(int value);
+const std::string to_string(uint8_t value);
+const std::string to_string(uint8_t *data_p, size_t length);
 
 #endif
 

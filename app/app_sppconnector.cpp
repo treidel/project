@@ -58,7 +58,7 @@ SPPConnector::~SPPConnector()
 // APPManager::RequestHandler implementations
 ///////////////////////////////////////////////////////////////////////////////
 
-ResultCode SPPConnector::handle_request(const APPManager::Message *request_p, APPManager::Message **response_pp)
+ResultCode SPPConnector::handle_request(APPManager::Message *request_p, APPManager::Message **response_pp)
 {
     LOG4CXX_DEBUG(g_logger, "SPPConnector::handle_request enter");
 

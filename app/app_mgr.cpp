@@ -2,6 +2,8 @@
 #include "app_mgr.h"
 #include "app_sppconnector.h"
 
+#include <stdlib.h>
+
 #include <log4cxx/logger.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -22,6 +24,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // module variables
 ///////////////////////////////////////////////////////////////////////////////
+
 static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("app.mgr"));
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -42,5 +45,20 @@ APPManager::RequestHandler *APPManager::createSPPConnector(NotificationHandler *
     LOG4CXX_DEBUG(g_logger, "APPManager::createSPPConnector exit " << connector_p);
 
     return connector_p;
+}
+
+
+APPManager::Message::Message(const size_t length) :
+    m_length(length),
+    m_data_p((uint8_t *)malloc(length))
+{
+}
+
+APPManager::Message::~Message()
+{
+    if (NULL != m_data_p)
+    {
+        free(m_data_p);
+    }
 }
 
