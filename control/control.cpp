@@ -122,6 +122,8 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
                 // populate the response
                 v1::SetLevelResponse *sl_p = response_p->mutable_setlevel();
             }
+            // success
+            response_p->set_success(true);
             break;
 
             default:
@@ -143,6 +145,7 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
                 AUDIOChannel *channel_p = it->second;
                 qac_p->add_channels(channel_p->get_index());
             }
+            response_p->set_success(true);
         }
         break;
 
@@ -173,12 +176,16 @@ ResultCode Control::handle_results(const size_t num_results, const AUDIOProcesso
 {
     LOG4CXX_DEBUG(g_logger, "Control::handle_results enter " << results);
 
+    // get the response message ready
+    v1::ResponseOrNotification responseornotification;
+    v1::Notification *notification_p = responseornotification.mutable_notification();
+    responseornotification.set_type(v1::ResponseOrNotification_ResponseOrNotificationType_NOTIFICATION);
+
     // setup the notification
-    v1::Notification notification;
-    notification.set_type(v1::LEVEL);
+    notification_p->set_type(v1::LEVEL);
 
     // get the level notification and set the type
-    v1::LevelNotification *level_p =  notification.mutable_level();
+    v1::LevelNotification *level_p =  notification_p->mutable_level();
 
     switch (m_processor_p->get_level_type())
     {
@@ -202,7 +209,7 @@ ResultCode Control::handle_results(const size_t num_results, const AUDIOProcesso
     }
 
     // encode the notification
-    APPManager::Message *message_p = populate_response(notification);
+    APPManager::Message *message_p = populate_response(responseornotification);
 
     // off she goes
     ResultCode rc = m_handler_p->send_notification(&message_p);
