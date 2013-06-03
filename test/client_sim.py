@@ -22,7 +22,7 @@ def read_message(handle):
         print >> sys.stderr, "type=" + str(message.response.type) 
         print >> sys.stderr, "success=" + str(message.response.success) 
     elif (message.type == v1_pb2.ResponseOrNotification.NOTIFICATION):
-        print >> sys.stderr, "type=" + str(mesage.notification.type)
+        print >> sys.stderr, "type=" + str(message.notification.type)
     
     # done
     return message 
