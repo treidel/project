@@ -41,6 +41,7 @@ public:
     class RequestHandler
     {
     public:
+        virtual ~RequestHandler();
         virtual ResultCode handle_request(Message *request_p, Message **response_pp) = 0;
     };
 

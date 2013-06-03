@@ -49,8 +49,8 @@ SPPConnector::SPPConnector(APPManager::NotificationHandler *handler_p) :
 SPPConnector::~SPPConnector()
 {
     LOG4CXX_DEBUG(g_logger, "SPPConnector::~SPPConnector enter");
-    delete m_processor_p;
     delete m_control_p;
+    delete m_processor_p;
     LOG4CXX_DEBUG(g_logger, "SPPConnector::~SPPConnector exit");
 }
 

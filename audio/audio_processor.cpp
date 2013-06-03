@@ -19,6 +19,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define UPDATES_PER_SECOND (10)
+#define UPDATE_FREQUENCY (1.0/UPDATES_PER_SECOND)
 #define VU_NUMBER_OF_SAMPLES(x)	   ((3 * x) / 10)   // 300ms of samples
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -57,7 +58,7 @@ AUDIOProcessor::AUDIOProcessor() :
     AUDIOCaptureManager::get_instance()->add_handler(this);
 
     // setup the periodic timer
-    ev_timer_init(&m_timer, timer_cb, 1.0/UPDATES_PER_SECOND, 0.0);
+    ev_timer_init(&m_timer, timer_cb, UPDATE_FREQUENCY, UPDATE_FREQUENCY);
     m_timer.data = (void *)this;
     ev_timer_start(m_loop_p, &m_timer);
 
@@ -159,9 +160,10 @@ ResultCode AUDIOProcessor::handle_samples(AUDIOChannel::Index index, const size_
     ASSERT((index > 0) && (index <= channel_count));
 
     // if we have a meter let it do its thing
-    Meter *meter_p = m_meters_map[index];
-    if (NULL != meter_p)
+    std::map<AUDIOChannel::Index, Meter *>::iterator it = m_meters_map.find(index);
+    if (m_meters_map.end() != it)
     {
+        Meter *meter_p = it->second;
         meter_p->process_samples(buffer_length, buffer_p);
     }
 

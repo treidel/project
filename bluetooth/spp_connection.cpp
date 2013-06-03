@@ -90,6 +90,9 @@ SPPConnection::~SPPConnection()
         m_socket = -1;
     }
 
+    // delete the handler
+    delete m_handler_p;
+
     // clear ourselves in the server
     m_server_p->m_connection_p = NULL;
 

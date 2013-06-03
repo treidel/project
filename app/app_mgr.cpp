@@ -47,6 +47,11 @@ APPManager::RequestHandler *APPManager::createSPPConnector(NotificationHandler *
     return connector_p;
 }
 
+APPManager::RequestHandler::~RequestHandler()
+{
+    LOG4CXX_DEBUG(g_logger, "APPManager::RequestHandler::~RequestHandler enter");
+     LOG4CXX_DEBUG(g_logger, "APPManager::RequestHandler::~RequestHandler exit");
+}
 
 APPManager::Message::Message(const size_t length) :
     m_length(length),
