@@ -251,13 +251,16 @@ AUDIOProcessor::ResultData AUDIOProcessor::PeakMeter::create_result_data()
     AUDIOProcessor::ResultData data;
     memset(&data, 0, sizeof(data));
 
+    // populate the channel
+    data.channel = get_channel_p()->get_index();
+
     // assume the level is zero for now
-    data.peakInDB = c_zero_level_in_db;
+    data.levelInDB = c_zero_level_in_db;
     // if this is zero then the level is dB is negative infinity
     if (AUDIO_CHANNEL_ZERO_LEVEL != m_peak)
     {
         // do the dBm calcuation
-        data.peakInDB = (int32_t)(20.0 * log10(m_peak));
+        data.levelInDB = (int32_t)(20.0 * log10(m_peak));
     }
 
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PeakMeter::create_result_data exit");
@@ -302,8 +305,11 @@ AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
     AUDIOProcessor::ResultData data;
     memset(&data, 0, sizeof(data));
 
+    // populate the channel
+    data.channel = get_channel_p()->get_index();
+
     // assume for now that there is no signal
-    data.rmsInDB = c_zero_level_in_db;
+    data.levelInDB = c_zero_level_in_db;
 
     // we need to calculate the root-mean-squared (RMS) value of the 300ms of audio
     // we have cached
@@ -318,11 +324,11 @@ AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
     // only convert to DB if there was a signal
     if (0.0f < sum_squares)
     {
-        data.rmsInDB = (int32_t)(20.0f * log10(sum_squares / m_sample_count));
+        data.levelInDB = (int32_t)(20.0f * log10(sum_squares / m_sample_count));
     }
 
     // can't go lower than the minimum
-    data.rmsInDB = std::max(data.rmsInDB, c_zero_level_in_db);
+    data.levelInDB = std::max(data.levelInDB, c_zero_level_in_db);
 
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::VUMeter::create_result_data exit");
     return data;
@@ -332,7 +338,8 @@ AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
 // protected function implementations
 ///////////////////////////////////////////////////////////////////////////////
 
-AUDIOProcessor::Meter::Meter(AUDIOChannel *channel_p)
+AUDIOProcessor::Meter::Meter(AUDIOChannel *channel_p) :
+    m_channel_p(channel_p)
 {
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::Meter::Meter enter");
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::Meter::Meter exit");
