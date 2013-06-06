@@ -36,8 +36,8 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("control.v1"));
 ///////////////////////////////////////////////////////////////////////////////
 
 static APPManager::Message *populate_response(::google::protobuf::MessageLite& message);
-static void process_peak_results(v1::PeakLevelNotification *peak_p, const size_t num_results, const AUDIOProcessor::ResultData results[]);
-static void process_vu_results(v1::VULevelNotification *vu_p, const size_t num_results, const AUDIOProcessor::ResultData results[]);
+static void process_peak_results(v1::LevelNotification *level_p, const size_t num_results, const AUDIOProcessor::ResultData results[]);
+static void process_vu_results(v1::LevelNotification *level_p, const size_t num_results, const AUDIOProcessor::ResultData results[]);
 
 ///////////////////////////////////////////////////////////////////////////////
 // public function implementations
@@ -191,15 +191,13 @@ ResultCode Control::handle_results(const size_t num_results, const AUDIOProcesso
     {
     case AUDIOProcessor::LEVEL_TYPE_PEAK:
     {
-        level_p->set_type(v1::PEAK);
-        process_peak_results(level_p->mutable_peak(), num_results, results);
+        process_peak_results(level_p, num_results, results);
     }
     break;
 
     case AUDIOProcessor::LEVEL_TYPE_VU:
     {
-        level_p->set_type(v1::VU);
-        process_vu_results(level_p->mutable_vu(), num_results, results);
+        process_vu_results(level_p, num_results, results);
     }
     break;
 
@@ -252,29 +250,37 @@ APPManager::Message *populate_response(::google::protobuf::MessageLite& message)
     return response_p;
 }
 
-void process_peak_results(v1::PeakLevelNotification *peak_p, const size_t num_results, const AUDIOProcessor::ResultData results[])
+void process_peak_results(v1::LevelNotification *level_p, const size_t num_results, const AUDIOProcessor::ResultData results[])
 {
-    LOG4CXX_DEBUG(g_logger, "process_peak_results enter " << peak_p << " " << num_results << " " << results);
+    LOG4CXX_DEBUG(g_logger, "process_peak_results enter " << level_p << " " << num_results << " " << results);
 
     // iterate through all results
     for (int counter = 0; counter < num_results; counter++)
     {
-        // add the level to the notification
-        peak_p->add_levelindb(results[counter].peakInDB);
+        // create the record
+        v1::LevelRecord* record_p = level_p->mutable_records(counter);
+        // populate the record
+        record_p->set_channel(results[counter].channel);
+        record_p->set_type(v1::PEAK);
+        record_p->set_levelindb(results[counter].levelInDB);
     }
 
     LOG4CXX_DEBUG(g_logger, "process_peak_results exit");
 }
 
-void process_vu_results(v1::VULevelNotification *vu_p, const size_t num_results, const AUDIOProcessor::ResultData results[])
+void process_vu_results(v1::LevelNotification *level_p, const size_t num_results, const AUDIOProcessor::ResultData results[])
 {
-    LOG4CXX_DEBUG(g_logger, "process_vu_results enter " << vu_p << " " << num_results << " "  << results);
+    LOG4CXX_DEBUG(g_logger, "process_vu_results enter " << level_p << " " << num_results << " "  << results);
 
     // iterate through all results
     for (int counter = 0; counter < num_results; counter++)
     {
-        // add the level to the notification
-        vu_p->add_levelindb(results[counter].rmsInDB);
+        // create the record
+        v1::LevelRecord* record_p = level_p->mutable_records(counter);
+        // populate the record
+        record_p->set_channel(results[counter].channel);
+        record_p->set_type(v1::VU);
+        record_p->set_levelindb(results[counter].levelInDB);
     }
 
     LOG4CXX_DEBUG(g_logger, "process_vu_results exit");
