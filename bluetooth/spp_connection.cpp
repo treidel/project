@@ -213,7 +213,7 @@ void SPPConnection::receive_cb (EV_P_ ev_io *w_p, int revents)
                 int rc = read(w_p->fd, &network_length, sizeof(network_length));
                 if (0 > rc)
                 {
-                    LOG4CXX_ERROR(g_logger, "read returned error=" + to_string(rc) + " errno=" + to_string(errno));
+                    LOG4CXX_ERROR(g_logger, "disconnecting for reason=" << strerror(errno));
                     // disconnect
                     disconnect(&connection_p);
                     break;
@@ -235,7 +235,7 @@ void SPPConnection::receive_cb (EV_P_ ev_io *w_p, int revents)
                 int rc = read(w_p->fd, (void *)(receive_p->get_message_p()->get_data_p() + offset), receive_p->get_remaining_r());
                 if (0 > rc)
                 {
-                    LOG4CXX_ERROR(g_logger, "read returned error=" + to_string(rc) + " errno=" + to_string(errno));
+                    LOG4CXX_ERROR(g_logger, "disconnecting for reason=" << strerror(errno));
                     // force a disconnect since we were unable to read the message
                     disconnect(&connection_p);
                     // done
@@ -334,7 +334,7 @@ void SPPConnection::transmit_cb(EV_P_ ev_io *w_p, int revents)
 				int rc = write(w_p->fd, &network_length, sizeof(network_length));
 				if (0 > rc)
 				{
-					LOG4CXX_ERROR(g_logger, "write returned error=" + to_string(rc) + " errno=" + to_string(errno));
+                    LOG4CXX_ERROR(g_logger, "disconnecting for reason=" << strerror(errno));
 					// if we can't write then the client must have disconnected
 					disconnect(&connection_p);
 					// done
@@ -350,7 +350,7 @@ void SPPConnection::transmit_cb(EV_P_ ev_io *w_p, int revents)
 				int rc = write(w_p->fd, transmit_p->get_message_p()->get_data_p() + offset, transmit_p->get_remaining_r());
                 if (0 > rc)
 				{
-					LOG4CXX_ERROR(g_logger, "write retruned error=" + to_string(rc) + " errono=" + to_string(errno));
+                    LOG4CXX_ERROR(g_logger, "disconnecting for reason=" << strerror(errno));
 					// have to disconnect as we were unable to write the whole message
 					disconnect(&connection_p);
 					// done
