@@ -31,10 +31,10 @@ class AUDIOProcessor : public AUDIOCaptureManager::Handler
 
 public:
 
-    typedef union
+    typedef struct
     {
-        int32_t peakInDB;
-        int32_t rmsInDB;
+        AUDIOChannel::Index channel;
+        int32_t levelInDB;
     } ResultData;
 
     class Handler
@@ -58,8 +58,11 @@ private:
         virtual ~Meter();
         virtual void process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p) = 0;
         virtual ResultData create_result_data() = 0;
+        inline const AUDIOChannel *get_channel_p() const;
     protected:
         Meter(AUDIOChannel *channel_p);
+    private:
+        AUDIOChannel *m_channel_p;
     };
 
     class PeakMeter : public Meter
@@ -135,6 +138,11 @@ private:
 inline AUDIOProcessor::LevelType AUDIOProcessor::get_level_type() const
 {
     return m_level_type;
+}
+
+inline const AUDIOChannel *AUDIOProcessor::Meter::get_channel_p() const
+{
+    return m_channel_p;
 }
 
 #endif
