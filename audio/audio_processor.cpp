@@ -232,7 +232,7 @@ void AUDIOProcessor::PeakMeter::process_samples(const size_t buffer_length, AUDI
     for (int counter = 0; counter < buffer_length; counter++)
     {
         // take the absolute value
-        AUDIOChannel::Sample amplitude = abs(buffer_p[counter]);
+        AUDIOChannel::Sample amplitude = fabs(buffer_p[counter]);
         // if this sample is larger then last one calculated for the channel then
         // store it
         if (amplitude > m_peak)

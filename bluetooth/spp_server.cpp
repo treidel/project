@@ -206,7 +206,7 @@ void SPPServer::socket_cb(EV_P_ ev_io *w_p, int revents)
 
 uint8_t allocate_channel(int sock, struct sockaddr_rc *sockaddr_p)
 {
-    for (int port = 1; port <= 31; port++)
+    for (int port = 2; port <= 31; port++)
     {
         sockaddr_p->rc_channel = port;
         int err = bind(sock, (struct sockaddr *) sockaddr_p,
