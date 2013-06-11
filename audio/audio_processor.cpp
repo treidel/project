@@ -31,7 +31,8 @@
 // constants
 ///////////////////////////////////////////////////////////////////////////////
 
-static const int32_t c_zero_level_in_db = -98;
+static const int32_t c_peak_zero_level_in_db = -50;
+static const int32_t c_power_zero_level_in_db = -100;
 
 ///////////////////////////////////////////////////////////////////////////////
 // module variables
@@ -255,13 +256,16 @@ AUDIOProcessor::ResultData AUDIOProcessor::PeakMeter::create_result_data()
     data.channel = get_channel_p()->get_index();
 
     // assume the level is zero for now
-    data.levelInDB = c_zero_level_in_db;
+    data.values.peakInDB = c_peak_zero_level_in_db;
     // if this is zero then the level is dB is negative infinity
     if (AUDIO_CHANNEL_ZERO_LEVEL != m_peak)
     {
-        // do the dBm calcuation
-        data.levelInDB = (int32_t)(20.0 * log10(m_peak));
+        // do the dBm for level calcuation
+        data.values.peakInDB = (int32_t)(10.0 * log10(m_peak));
     }
+
+    // reset the peak
+    m_peak = AUDIO_CHANNEL_ZERO_LEVEL;
 
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PeakMeter::create_result_data exit");
     return data;
@@ -309,7 +313,7 @@ AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
     data.channel = get_channel_p()->get_index();
 
     // assume for now that there is no signal
-    data.levelInDB = c_zero_level_in_db;
+    data.values.powerInDB = c_power_zero_level_in_db;
 
     // we need to calculate the root-mean-squared (RMS) value of the 300ms of audio
     // we have cached
@@ -324,11 +328,11 @@ AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
     // only convert to DB if there was a signal
     if (0.0f < sum_squares)
     {
-        data.levelInDB = (int32_t)(20.0f * log10(sum_squares / m_sample_count));
+        data.values.powerInDB = (int32_t)(20.0f * log10(sum_squares / m_sample_count));
     }
 
     // can't go lower than the minimum
-    data.levelInDB = std::max(data.levelInDB, c_zero_level_in_db);
+    data.values.powerInDB = std::max(data.values.powerInDB, c_power_zero_level_in_db);
 
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::VUMeter::create_result_data exit");
     return data;

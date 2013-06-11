@@ -36,8 +36,6 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("control.v1"));
 ///////////////////////////////////////////////////////////////////////////////
 
 static APPManager::Message *populate_response(::google::protobuf::MessageLite& message);
-static void process_peak_results(v1::LevelNotification *level_p, const size_t num_results, const AUDIOProcessor::ResultData results[]);
-static void process_vu_results(v1::LevelNotification *level_p, const size_t num_results, const AUDIOProcessor::ResultData results[]);
 
 ///////////////////////////////////////////////////////////////////////////////
 // public function implementations
@@ -184,26 +182,31 @@ ResultCode Control::handle_results(const size_t num_results, const AUDIOProcesso
     // setup the notification
     notification_p->set_type(v1::LEVEL);
 
-    // get the level notification and set the type
+    // get the level notification 
     v1::LevelNotification *level_p =  notification_p->mutable_level();
-
-    switch (m_processor_p->get_level_type())
+    
+    // iterate through all results
+    for (int counter = 0; counter < num_results; counter++)
     {
-    case AUDIOProcessor::LEVEL_TYPE_PEAK:
-    {
-        process_peak_results(level_p, num_results, results);
-    }
-    break;
-
-    case AUDIOProcessor::LEVEL_TYPE_VU:
-    {
-        process_vu_results(level_p, num_results, results);
-    }
-    break;
-
-    default:
-        LOG4CXX_ERROR(g_logger, "invalid level type=" << m_processor_p->get_level_type());
-        return RESULT_CODE_ERROR;
+        // create the record
+        v1::LevelRecord* record_p = level_p->add_records();
+        // populate the record
+        record_p->set_channel(results[counter].channel);
+        // fill the special stuff
+        switch (results[counter].type)
+        {
+            case AUDIOProcessor::LEVEL_TYPE_PEAK:
+                record_p->set_type(v1::PEAK);
+                record_p->set_peakindb(results[counter].values.peakInDB);
+                break;
+            case AUDIOProcessor::LEVEL_TYPE_VU:
+                record_p->set_type(v1::VU);
+                record_p->set_powerindb(results[counter].values.powerInDB);
+                break;
+            default:
+                LOG4CXX_ERROR(g_logger, "unknown level type=" + to_string(results[counter].type));
+                return RESULT_CODE_ERROR;
+        }
     }
 
     // encode the notification
@@ -249,41 +252,4 @@ APPManager::Message *populate_response(::google::protobuf::MessageLite& message)
     LOG4CXX_DEBUG(g_logger, "Control::populate_response exit " << response_p);
     return response_p;
 }
-
-void process_peak_results(v1::LevelNotification *level_p, const size_t num_results, const AUDIOProcessor::ResultData results[])
-{
-    LOG4CXX_DEBUG(g_logger, "process_peak_results enter " << level_p << " " << num_results << " " << results);
-
-    // iterate through all results
-    for (int counter = 0; counter < num_results; counter++)
-    {
-        // create the record
-        v1::LevelRecord* record_p = level_p->mutable_records(counter);
-        // populate the record
-        record_p->set_channel(results[counter].channel);
-        record_p->set_type(v1::PEAK);
-        record_p->set_levelindb(results[counter].levelInDB);
-    }
-
-    LOG4CXX_DEBUG(g_logger, "process_peak_results exit");
-}
-
-void process_vu_results(v1::LevelNotification *level_p, const size_t num_results, const AUDIOProcessor::ResultData results[])
-{
-    LOG4CXX_DEBUG(g_logger, "process_vu_results enter " << level_p << " " << num_results << " "  << results);
-
-    // iterate through all results
-    for (int counter = 0; counter < num_results; counter++)
-    {
-        // create the record
-        v1::LevelRecord* record_p = level_p->mutable_records(counter);
-        // populate the record
-        record_p->set_channel(results[counter].channel);
-        record_p->set_type(v1::VU);
-        record_p->set_levelindb(results[counter].levelInDB);
-    }
-
-    LOG4CXX_DEBUG(g_logger, "process_vu_results exit");
-}
-
 

@@ -31,10 +31,22 @@ class AUDIOProcessor : public AUDIOCaptureManager::Handler
 
 public:
 
+    typedef enum
+    {
+        LEVEL_TYPE_NONE = 0,
+        LEVEL_TYPE_PEAK = 1,
+        LEVEL_TYPE_VU = 2
+    } LevelType;
+
     typedef struct
     {
         AUDIOChannel::Index channel;
-        int32_t levelInDB;
+        LevelType type;
+        union
+        {
+            int32_t powerInDB;
+            int32_t peakInDB;
+        } values;
     } ResultData;
 
     class Handler
@@ -42,13 +54,6 @@ public:
     public:
         virtual ResultCode handle_results(const size_t num_results, const ResultData results[]) = 0;
     };
-
-    typedef enum
-    {
-        LEVEL_TYPE_NONE = 0,
-        LEVEL_TYPE_PEAK = 1,
-        LEVEL_TYPE_VU = 2
-    } LevelType;
 
 private:
 
