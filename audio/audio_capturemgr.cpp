@@ -94,8 +94,14 @@ void AUDIOCaptureManager::remove_handler(Handler *handler_p)
 AUDIOChannel *AUDIOCaptureManager::find_channel(const AUDIOChannel::Index index)
 {
     LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::find_channel enter " << index);
-
-    AUDIOChannel *channel_p = m_channels_map[index];
+    // assume we won't find it 
+    AUDIOChannel *channel_p = NULL;
+    // if we have a meter let it do its thing
+    std::map<AUDIOChannel::Index, AUDIOChannel *>::iterator it = m_channels_map.find(index);
+    if (m_channels_map.end() != it)
+    {
+        channel_p = it->second;
+    }
 
     LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::find_channel exit channel_p=" << channel_p);
     return channel_p;

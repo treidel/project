@@ -108,7 +108,7 @@ void AUDIOChannel::read_cb(struct ev_loop *loop_p, struct ev_io *w_p, int revent
     {
         // call the handler to do something useful with this audio frame
         AUDIOCaptureManager::Handler *handler_p = *iter;
-        ResultCode result = handler_p->handle_samples(channel_p->get_index(), BUFFER_SIZE_IN_SAMPLES, g_buffer);
+        ResultCode result = handler_p->handle_samples(channel_p, BUFFER_SIZE_IN_SAMPLES, g_buffer);
         if (RESULT_CODE_OK != result)
         {
             LOG4CXX_ERROR(g_logger, "handler_p->handle_samples returned error " << result);

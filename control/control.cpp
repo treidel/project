@@ -108,6 +108,14 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
         {
             // get the request
             const ::v1::SetLevelRequest& setlevel = request.setlevel();
+            // validate the channel
+            AUDIOChannel *channel_p = AUDIOCaptureManager::get_instance()->find_channel((AUDIOChannel::Index)setlevel.channel());
+            if (NULL == channel_p)
+            {
+                LOG4CXX_ERROR(g_logger, "invalid channel=" << setlevel.channel() << " received from client");
+                result_code = RESULT_CODE_ERROR;
+                break;
+            }
             // validate the requested level type
             switch (setlevel.type())
             {
@@ -116,7 +124,7 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
             case v1::VU:
             {
                 // set the type in the audio processor
-                m_processor_p->	set_level_type((AUDIOProcessor::LevelType)setlevel.type());
+                m_processor_p->	set_level_type_for_channel((AUDIOProcessor::LevelType)setlevel.type(), channel_p);
                 // populate the response
                 v1::SetLevelResponse *sl_p = response_p->mutable_setlevel();
             }

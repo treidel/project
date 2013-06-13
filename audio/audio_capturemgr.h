@@ -40,7 +40,7 @@ public:
     class Handler
     {
     public:
-        virtual ResultCode handle_samples(AUDIOChannel::Index index, const size_t buffer_length, AUDIOChannel::Sample *buffer_p) = 0;
+        virtual ResultCode handle_samples(AUDIOChannel *channel_p, const size_t buffer_length, AUDIOChannel::Sample *buffer_p) = 0;
     };
 
     typedef std::map<AUDIOChannel::Index, AUDIOChannel *>::iterator ChannelIterator;

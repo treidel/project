@@ -50,8 +50,7 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("audio.processor")
 
 AUDIOProcessor::AUDIOProcessor() :
     m_handler_p(NULL),
-    m_loop_p(ev_default_loop(0)),
-    m_level_type(LEVEL_TYPE_NONE)
+    m_loop_p(ev_default_loop(0))
 {
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::AUDIOProcessor enter");
 
@@ -88,23 +87,19 @@ AUDIOProcessor::~AUDIOProcessor()
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::~AUDIOProcessor exit");
 }
 
-void AUDIOProcessor::set_level_type(LevelType level_type)
+void AUDIOProcessor::set_level_type_for_channel(LevelType level_type, AUDIOChannel *channel_p)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::level_type enter " << level_type);
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::set_level_type_for_channel enter " + to_string(level_type) + " " << channel_p);
 
-    AUDIOCaptureManager *manager_p = AUDIOCaptureManager::get_instance();
-
-    // release the meters (if they exist)
-    for(std::map<AUDIOChannel::Index, Meter *>::iterator it = m_meters_map.begin();
-            it != m_meters_map.end();
-            it++)
+    // release the meter (if t exist)
+    std::map<AUDIOChannel::Index, Meter *>::iterator it = m_meters_map.find(channel_p->get_index());
+    if (it != m_meters_map.end())
     {
         Meter *meter_p = it->second;
         delete meter_p;
     }
-    m_meters_map.clear();
 
-    // depending on the type we need to setup the meters
+    // depending on the type we need to setup the meter
     switch(level_type)
     {
     case LEVEL_TYPE_NONE:
@@ -113,29 +108,19 @@ void AUDIOProcessor::set_level_type(LevelType level_type)
 
     case LEVEL_TYPE_PEAK:
     {
-        for(AUDIOCaptureManager::ChannelIterator it = manager_p->begin();
-                it != manager_p->end();
-                it++)
-        {
-            // create the peak meter
-            Meter *meter_p = new PeakMeter(it->second);
-            // store it
-            m_meters_map[it->first] = meter_p;
-        }
+        // create the peak meter
+        Meter *meter_p = new PeakMeter(channel_p);
+        // store it
+        m_meters_map[channel_p->get_index()] = meter_p;
     }
     break;
 
     case LEVEL_TYPE_VU:
     {
-        for(AUDIOCaptureManager::ChannelIterator it = manager_p->begin();
-                it != manager_p->end();
-                it++)
-        {
-            // create the peak meter
-            Meter *meter_p = new VUMeter(it->second);
-            // store it
-            m_meters_map[it->first] = meter_p;
-        }
+        // create the peak meter
+        Meter *meter_p = new VUMeter(channel_p);
+        // store it
+        m_meters_map[channel_p->get_index()] = meter_p;
     }
     break;
 
@@ -144,24 +129,32 @@ void AUDIOProcessor::set_level_type(LevelType level_type)
         return;
     }
 
-    // store the level
-    m_level_type = level_type;
-
-    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::level_type exit");
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::set_level_type_for_channel exit");
 }
 
-ResultCode AUDIOProcessor::handle_samples(AUDIOChannel::Index index, const size_t buffer_length, AUDIOChannel::Sample *buffer_p)
+AUDIOProcessor::LevelType AUDIOProcessor::get_level_type_for_channel(AUDIOChannel *channel_p) const
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::handler_samples enter " << index << " " << buffer_length << " " << buffer_p);
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::set_level_type_for_channel enter " << channel_p);
 
-    // fetch the number of channels we have
-    size_t channel_count = AUDIOCaptureManager::get_instance()->channel_count();
+    // find the meter (if it exists)
+    LevelType type = LEVEL_TYPE_NONE;
+    std::map<AUDIOChannel::Index, Meter *>::const_iterator it = m_meters_map.find(channel_p->get_index());
+    if (it != m_meters_map.end())
+    {
+        Meter *meter_p = it->second;
+        type = meter_p->get_level_type();
+    }
 
-    // range check input
-    ASSERT((index > 0) && (index <= channel_count));
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::get_level_type_for_channel exit " << type);
+    return type;
+}
+
+ResultCode AUDIOProcessor::handle_samples(AUDIOChannel *channel_p, const size_t buffer_length, AUDIOChannel::Sample *buffer_p)
+{
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::handler_samples enter " << channel_p << " " << buffer_length << " " << buffer_p);
 
     // if we have a meter let it do its thing
-    std::map<AUDIOChannel::Index, Meter *>::iterator it = m_meters_map.find(index);
+    std::map<AUDIOChannel::Index, Meter *>::iterator it = m_meters_map.find(channel_p->get_index());
     if (m_meters_map.end() != it)
     {
         Meter *meter_p = it->second;
@@ -360,8 +353,8 @@ void AUDIOProcessor::timer_cb(EV_P_ ev_timer *w_p, int revents)
     // get the object
     AUDIOProcessor *processor_p = (AUDIOProcessor *)w_p->data;
 
-    // we only call the handler we are not disabled and we have a handler
-    if ((NULL != processor_p->m_handler_p) && (LEVEL_TYPE_NONE != processor_p->m_level_type))
+    // we only call the handler if we have a handler
+    if (NULL != processor_p->m_handler_p)
     {
         // get the manager object
         AUDIOCaptureManager *manager_p = AUDIOCaptureManager::get_instance();

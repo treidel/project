@@ -63,6 +63,7 @@ private:
         virtual ~Meter();
         virtual void process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p) = 0;
         virtual ResultData create_result_data() = 0;
+        virtual LevelType get_level_type() = 0;
         inline const AUDIOChannel *get_channel_p() const;
     protected:
         Meter(AUDIOChannel *channel_p);
@@ -77,6 +78,7 @@ private:
         virtual ~PeakMeter();
         void process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p);
         ResultData create_result_data();
+        inline LevelType get_level_type();
     private:
         AUDIOChannel::Sample m_peak;
     };
@@ -88,6 +90,7 @@ private:
         virtual ~VUMeter();
         void process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p);
         ResultData create_result_data();
+        inline LevelType get_level_type();
     private:
         unsigned int m_sample_count;
         unsigned int m_sample_index;
@@ -102,8 +105,8 @@ public:
     AUDIOProcessor();
     virtual ~AUDIOProcessor();
 
-    void set_level_type(LevelType level_type);
-    inline LevelType get_level_type() const;
+    void set_level_type_for_channel(LevelType level_type, AUDIOChannel *channel_p);
+    LevelType get_level_type_for_channel(AUDIOChannel *channel_p) const;
 
     void add_handler(Handler *handler_p);
     void remove_handler(Handler *handler_p);
@@ -113,7 +116,7 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 public:
-    virtual ResultCode handle_samples(AUDIOChannel::Index index, const size_t buffer_length, AUDIOChannel::Sample *buffer_p);
+    virtual ResultCode handle_samples(AUDIOChannel *channel_p, const size_t buffer_length, AUDIOChannel::Sample *buffer_p);
 
 ///////////////////////////////////////////////////////////////////////////////
 // private function declarations
@@ -132,7 +135,6 @@ private:
     struct ev_timer m_timer;
     Handler *m_handler_p;
     std::map<AUDIOChannel::Index, Meter *> m_meters_map;
-    LevelType m_level_type;
 
 };
 
@@ -140,14 +142,19 @@ private:
 // inline function implementations
 ///////////////////////////////////////////////////////////////////////////////
 
-inline AUDIOProcessor::LevelType AUDIOProcessor::get_level_type() const
-{
-    return m_level_type;
-}
-
 inline const AUDIOChannel *AUDIOProcessor::Meter::get_channel_p() const
 {
     return m_channel_p;
+}
+
+inline AUDIOProcessor::LevelType AUDIOProcessor::PeakMeter::get_level_type() 
+{
+    return LEVEL_TYPE_PEAK;
+}
+
+inline AUDIOProcessor::LevelType AUDIOProcessor::VUMeter::get_level_type()
+{
+    return LEVEL_TYPE_VU;
 }
 
 #endif
