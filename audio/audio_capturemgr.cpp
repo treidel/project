@@ -14,7 +14,6 @@
 // macros
 ///////////////////////////////////////////////////////////////////////////////
 
-#define CAPTURE_DEVICE "hw:1,0"
 
 ///////////////////////////////////////////////////////////////////////////////
 // type defintions
@@ -128,10 +127,60 @@ AUDIOCaptureManager::AUDIOCaptureManager() :
 {
     LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::AUDIOCaptureManager enter");
 
-    // TBD: dynamically discover the available audio capture devices
+    // iterate for all cards
+    int card_index = -1;
+    while (0 <= snd_card_next(&card_index))
+    {
+        LOG4CXX_DEBUG(g_logger, "found card=" + to_string(card_index));
 
-    // allocate the array for the capture instances
-    AUDIOCaptureInstance *instance_p = new AUDIOCaptureInstance(this, CAPTURE_DEVICE);
+        char card[3 + 10 + 1];
+        sprintf(card, "hw:%d", card_index);
+
+        snd_ctl_t *handle_p = NULL;
+        if (0 > snd_ctl_open(&handle_p, card, 0))
+        {
+            LOG4CXX_ERROR(g_logger, "error opening card=" + to_string(card_index));
+            return;
+        }
+        // allocate the memory for the card info
+        snd_ctl_card_info_t *card_info_p = NULL;
+        snd_ctl_card_info_alloca(&card_info_p);
+        // query the card info
+        if (0 > snd_ctl_card_info(handle_p, card_info_p))
+        {
+            LOG4CXX_ERROR(g_logger, "error querying card=" + to_string(card_index));
+            return;
+        }
+        // iterate for all devices
+        int device_index = -1;
+        while (0 <= snd_ctl_pcm_next_device(handle_p, &device_index))
+        {
+            char device[3 + 10 + 1 + 10 + 1];
+            sprintf(device, "hw:%d,%d", card_index, device_index);
+            // query the device info asking for capture devices only
+            snd_pcm_info_t *device_info_p = NULL;
+            snd_pcm_info_alloca(&device_info_p);
+            snd_pcm_info_set_device(device_info_p, device_index);
+            snd_pcm_info_set_subdevice(device_info_p, 0);
+            snd_pcm_info_set_stream(device_info_p, SND_PCM_STREAM_CAPTURE);
+            int rc = snd_ctl_pcm_info(handle_p, device_info_p);
+            if ((0 > rc) && (-ENOENT != rc))
+            {
+                LOG4CXX_ERROR(g_logger, "error querying device info card=" + to_string(card_index) + " device=" + to_string(device_index));
+                return;
+            }
+            // allocate the capture instance
+            AUDIOCaptureInstance *instance_p = new AUDIOCaptureInstance(this, device);
+            // store it 
+            m_instances.push_back(instance_p);
+            // release the memory
+            snd_pcm_info_free(device_info_p);
+        }
+        // release the memory
+        snd_ctl_card_info_free(card_info_p);
+        // release the handler
+        snd_ctl_close(handle_p);
+    }
 
     LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager:AUDIOCaptureManager exit");
 }
