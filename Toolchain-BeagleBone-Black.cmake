@@ -7,8 +7,13 @@ SET(CMAKE_SYSTEM_VERSION 1)
 SET(CMAKE_C_COMPILER arm-linux-gnueabi-gcc)
 SET(CMAKE_CXX_COMPILER arm-linux-gnueabi-g++)
 
+# make sure they are telling us where the staging is 
+IF(NOT EXISTS "$ENV{STAGING}")
+    MESSAGE(FATAL_ERROR "STAGING environment variable not set")
+ENDIF(NOT EXISTS "$ENV{STAGING}")
+
 # where is the target environment
-SET(CMAKE_FIND_ROOT_PATH $ENV{CHROOT})
+SET(CMAKE_FIND_ROOT_PATH $ENV{STAGING})
 
 # add an extra directory to the header search path
 INCLUDE_DIRECTORIES("${CMAKE_FIND_ROOT_PATH}/usr/include")
@@ -24,5 +29,5 @@ SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 LIST(APPEND CMAKE_SYSTEM_LIBRARY_PATH "${CMAKE_FIND_ROOT_PATH}/usr/lib/arm-linux-gnueabihf")
 
 # add the extra directories to the linker search path
-SET(LINKER_FLAGS "-Wl,-rpath-link,${CMAKE_FIND_ROOT_PATH}/usr/lib:${CMAKE_FIND_ROOT_PATH}/lib:${CMAKE_FIND_ROOT_PATH}/lib/arm-linux-gnueabihf")
+SET(LINKER_FLAGS "-Wl,-dynamic-linker,/lib/ld-linux-armhf.so.3  -Wl,-rpath-link,${CMAKE_FIND_ROOT_PATH}/usr/lib:${CMAKE_FIND_ROOT_PATH}/lib:${CMAKE_FIND_ROOT_PATH}/lib/arm-linux-gnueabihf")
 SET(CMAKE_EXE_LINKER_FLAGS "${LINKER_FLAGS}" CACHE STRING "linker flags" FORCE)
