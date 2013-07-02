@@ -40,29 +40,21 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("audio.captureinst
 // public function implementations
 ///////////////////////////////////////////////////////////////////////////////
 
-AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const char *device) :
+AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const char* device, snd_pcm_t *handle_p) :
     m_device(strdup(device)),
-    m_handle_p(NULL),
+    m_handle_p(handle_p),
     m_formatter_p(NULL),
     m_channel_count(0),
     m_abort(false)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::AUDIOCaptureInstance enter " << manager_p << " " << device);
+    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::AUDIOCaptureInstance enter " << manager_p << " " << handle_p);
 
     // setup the HW params pointer so that we can free it in case of errors
     snd_pcm_hw_params_t *hw_params_p = NULL;
     unsigned int rate = SAMPLE_RATE_IN_HZ;
 
-    // open the sound device
-    int rc = snd_pcm_open(&m_handle_p, device, SND_PCM_STREAM_CAPTURE, SND_PCM_CLASS_GENERIC);
-    if (rc < 0)
-    {
-        LOG4CXX_ERROR(g_logger, "snd_pcm_open returned error=" << rc << " " << snd_strerror(rc));
-        return;
-    }
-
     // allocate the hardware params data structure
-    rc = snd_pcm_hw_params_malloc(&hw_params_p);
+    int rc = snd_pcm_hw_params_malloc(&hw_params_p);
     if (rc < 0)
     {
         LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_malloc returned error=" << rc << " " << snd_strerror(rc));
@@ -106,11 +98,11 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
     // check for our preferred format
     if (0 != snd_pcm_format_mask_test(format_mask_p, SND_PCM_FORMAT_FLOAT_LE))
     {
-        m_formatter_p = AUDIOFormatterFactory::createAudioFormatter_p(SND_PCM_FORMAT_FLOAT_LE);
+        m_formatter_p = AUDIOFormatterFactory::create_audio_formatter_p(SND_PCM_FORMAT_FLOAT_LE);
     }
     else if (0 != snd_pcm_format_mask_test(format_mask_p, SND_PCM_FORMAT_S16_LE))
     {
-        m_formatter_p = AUDIOFormatterFactory::createAudioFormatter_p(SND_PCM_FORMAT_S16_LE);
+        m_formatter_p = AUDIOFormatterFactory::create_audio_formatter_p(SND_PCM_FORMAT_S16_LE);
     }
     else
     {
@@ -199,9 +191,6 @@ AUDIOCaptureInstance::~AUDIOCaptureInstance()
     {
         delete *it;
     }
-
-    // free the device name
-    delete m_device;
 
     // delete the formatter
     delete m_formatter_p;

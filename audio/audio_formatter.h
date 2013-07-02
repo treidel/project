@@ -4,6 +4,8 @@
 #include "common.h"
 #include "audio_channel.h"
 
+#include <list>
+
 #include <alsa/asoundlib.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -80,8 +82,8 @@ class AUDIOFormatterFactory
 
 public:
 
-    static AUDIOFormatter *createAudioFormatter_p(snd_pcm_format_t format);
-
+    static AUDIOFormatter *create_audio_formatter_p(snd_pcm_format_t format);
+    static std::list<snd_pcm_format_t> fetch_audio_format_list();
 };
 
 ///////////////////////////////////////////////////////////////////////////////

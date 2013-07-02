@@ -3,6 +3,7 @@
 #include "audio_capturemgr.h"
 #include "audio_captureinstance.h"
 #include "audio_channel.h"
+#include "audio_formatter.h"
 
 #include <ev.h>
 #include <stdlib.h>
@@ -136,8 +137,8 @@ AUDIOCaptureManager::AUDIOCaptureManager() :
         char card[3 + 10 + 1];
         sprintf(card, "hw:%d", card_index);
 
-        snd_ctl_t *handle_p = NULL;
-        if (0 > snd_ctl_open(&handle_p, card, 0))
+        snd_ctl_t *card_handle_p = NULL;
+        if (0 > snd_ctl_open(&card_handle_p, card, 0))
         {
             LOG4CXX_ERROR(g_logger, "error opening card=" + to_string(card_index));
             return;
@@ -146,40 +147,81 @@ AUDIOCaptureManager::AUDIOCaptureManager() :
         snd_ctl_card_info_t *card_info_p = NULL;
         snd_ctl_card_info_alloca(&card_info_p);
         // query the card info
-        if (0 > snd_ctl_card_info(handle_p, card_info_p))
+        if (0 > snd_ctl_card_info(card_handle_p, card_info_p))
         {
             LOG4CXX_ERROR(g_logger, "error querying card=" + to_string(card_index));
             return;
         }
         // iterate for all devices
         int device_index = -1;
-        while (0 <= snd_ctl_pcm_next_device(handle_p, &device_index))
+        while (0 <= snd_ctl_pcm_next_device(card_handle_p, &device_index))
         {
             char device[3 + 10 + 1 + 10 + 1];
             sprintf(device, "hw:%d,%d", card_index, device_index);
-            // query the device info asking for capture devices only
-            snd_pcm_info_t *device_info_p = NULL;
-            snd_pcm_info_alloca(&device_info_p);
-            snd_pcm_info_set_device(device_info_p, device_index);
-            snd_pcm_info_set_subdevice(device_info_p, 0);
-            snd_pcm_info_set_stream(device_info_p, SND_PCM_STREAM_CAPTURE);
-            int rc = snd_ctl_pcm_info(handle_p, device_info_p);
-            if ((0 > rc) && (-ENOENT != rc))
+            // try to open the sound device
+            snd_pcm_t *device_handle_p = NULL;
+            int rc = snd_pcm_open(&device_handle_p, device, SND_PCM_STREAM_CAPTURE, SND_PCM_CLASS_GENERIC);
+            if (0 > rc)
             {
-                LOG4CXX_ERROR(g_logger, "error querying device info card=" + to_string(card_index) + " device=" + to_string(device_index));
+                LOG4CXX_DEBUG(g_logger, "snd_pcm_open returned error=" + to_string(rc) + " " + snd_strerror(rc) + " for device=" + device);
+                continue;
+            }
+            
+            // query the hardware params
+            snd_pcm_hw_params_t *hw_params_p = NULL;
+            // allocate the hardware params data structure
+            snd_pcm_hw_params_malloc(&hw_params_p);
+
+            // initialize the default hardware params
+            rc = snd_pcm_hw_params_any(device_handle_p, hw_params_p);
+            if (rc < 0)
+            {
+                LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_any returned error=" << rc << " " << snd_strerror(rc));
                 return;
             }
-            // allocate the capture instance
-            AUDIOCaptureInstance *instance_p = new AUDIOCaptureInstance(this, device);
-            // store it 
-            m_instances.push_back(instance_p);
+
+            // query the list of formats we support
+            std::list<snd_pcm_format_t> format_list = AUDIOFormatterFactory::fetch_audio_format_list();
+
+            // query the list of formats this device supports
+            snd_pcm_format_mask_t *format_mask_p = NULL;
+            snd_pcm_format_mask_malloc(&format_mask_p);
+
+            // iterate for each supported list
+            bool format_found = false;
+            for (std::list<snd_pcm_format_t>::iterator iterator = format_list.begin();
+                 iterator != format_list.end();
+                 ++iterator)
+            {
+                if (0 != snd_pcm_format_mask_test(format_mask_p, *iterator))
+                {
+                    format_found = true;
+                }
+            }
+
             // release the memory
-            snd_pcm_info_free(device_info_p);
+            snd_pcm_format_mask_free(format_mask_p);
+
+            // check if we found a supported format
+            if (true == format_found)
+            {
+                // allocate the capture instance
+                AUDIOCaptureInstance *instance_p = new AUDIOCaptureInstance(this, device, device_handle_p);
+                // store it 
+                m_instances.push_back(instance_p);
+            }
+            else
+            {
+                LOG4CXX_DEBUG(g_logger, "no supported audio formats found for device=" << device);
+                snd_pcm_close(device_handle_p);
+            }
+            // release the memory
+            snd_pcm_hw_params_free(hw_params_p);            
         }
         // release the memory
         snd_ctl_card_info_free(card_info_p);
         // release the handler
-        snd_ctl_close(handle_p);
+        snd_ctl_close(card_handle_p);
     }
 
     LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager:AUDIOCaptureManager exit");

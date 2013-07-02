@@ -40,9 +40,9 @@ AUDIOFormatter::~AUDIOFormatter()
     LOG4CXX_DEBUG(g_logger, "AUDIOFormatter::~AUDIOFormatter exit");
 }
 
-AUDIOFormatter *AUDIOFormatterFactory::createAudioFormatter_p(snd_pcm_format_t format)
+AUDIOFormatter *AUDIOFormatterFactory::create_audio_formatter_p(snd_pcm_format_t format)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOFormatterFactory::createAudioFormatter_p enter " << format);
+    LOG4CXX_DEBUG(g_logger, "AUDIOFormatterFactory::create_audi_formatter_p enter " << format);
 
     AUDIOFormatter *formatter_p = NULL;
 
@@ -59,8 +59,21 @@ AUDIOFormatter *AUDIOFormatterFactory::createAudioFormatter_p(snd_pcm_format_t f
         break;
     }
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOFormatterFactory::createAudioFormatter_p exit " << formatter_p);
+    LOG4CXX_DEBUG(g_logger, "AUDIOFormatterFactory::create_audio_formatter_p exit " << formatter_p);
     return formatter_p;
+}
+
+std::list<snd_pcm_format_t> AUDIOFormatterFactory::fetch_audio_format_list()
+{
+    LOG4CXX_DEBUG(g_logger, "AUDIOFormatterFactory::fetch_audio_format_list entry");
+
+    std::list<snd_pcm_format_t> list;
+    list.push_back(SND_PCM_FORMAT_FLOAT_LE);
+    list.push_back(SND_PCM_FORMAT_S16_LE);
+
+    LOG4CXX_DEBUG(g_logger, "AUDIOFormatterFactory::fetch_audio_format_list exit");
+
+    return list;
 }
 
 AUDIOSigned16BitFormatter::AUDIOSigned16BitFormatter()
