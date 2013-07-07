@@ -11,7 +11,6 @@
 // macros
 ///////////////////////////////////////////////////////////////////////////////
 
-#define SAMPLE_RATE_IN_HZ (41000)
 
 ///////////////////////////////////////////////////////////////////////////////
 // type defintions
@@ -40,107 +39,14 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("audio.captureinst
 // public function implementations
 ///////////////////////////////////////////////////////////////////////////////
 
-AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const char* device, snd_pcm_t *handle_p) :
+AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const char* device, size_t channel_count, snd_pcm_format_t format, unsigned int rate, snd_pcm_t *handle_p) :
     m_device(strdup(device)),
     m_handle_p(handle_p),
-    m_formatter_p(NULL),
-    m_channel_count(0),
+    m_formatter_p(AUDIOFormatterFactory::create_audio_formatter_p(format)),
+    m_channel_count(channel_count),
     m_abort(false)
 {
     LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::AUDIOCaptureInstance enter " << manager_p << " " << handle_p);
-
-    // setup the HW params pointer so that we can free it in case of errors
-    snd_pcm_hw_params_t *hw_params_p = NULL;
-    unsigned int rate = SAMPLE_RATE_IN_HZ;
-
-    // allocate the hardware params data structure
-    int rc = snd_pcm_hw_params_malloc(&hw_params_p);
-    if (rc < 0)
-    {
-        LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_malloc returned error=" << rc << " " << snd_strerror(rc));
-        return;
-    }
-
-    // initialize the default hardware params
-    rc = snd_pcm_hw_params_any(m_handle_p, hw_params_p);
-    if (rc < 0)
-    {
-        LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_any returned error=" << rc << " " << snd_strerror(rc));
-        return;
-    }
-
-    // read the number channels
-    rc = snd_pcm_hw_params_get_channels_max(hw_params_p, &m_channel_count);
-    if (rc < 0)
-    {
-        LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_get_channels_max returned error=" << rc << " " << snd_strerror(rc));
-        return;
-    }
-
-    // specify that we want non-interleaved data
-    rc = snd_pcm_hw_params_set_access(m_handle_p, hw_params_p, SND_PCM_ACCESS_RW_INTERLEAVED);
-    if (rc < 0)
-    {
-        LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_set_access returned error=" << rc << " " << snd_strerror(rc));
-        return;
-    }
-
-    // query the list of supported formats
-    snd_pcm_format_mask_t *format_mask_p = NULL;
-    rc = snd_pcm_format_mask_malloc(&format_mask_p);
-    if (0 > rc)
-    {
-        LOG4CXX_ERROR(g_logger, "snd_pcm_format_mask_malloc returned error=" << rc << " " << snd_strerror(rc));
-        return;
-
-    }
-    snd_pcm_hw_params_get_format_mask(hw_params_p, format_mask_p);
-    // check for our preferred format
-    if (0 != snd_pcm_format_mask_test(format_mask_p, SND_PCM_FORMAT_FLOAT_LE))
-    {
-        m_formatter_p = AUDIOFormatterFactory::create_audio_formatter_p(SND_PCM_FORMAT_FLOAT_LE);
-    }
-    else if (0 != snd_pcm_format_mask_test(format_mask_p, SND_PCM_FORMAT_S16_LE))
-    {
-        m_formatter_p = AUDIOFormatterFactory::create_audio_formatter_p(SND_PCM_FORMAT_S16_LE);
-    }
-    else
-    {
-        LOG4CXX_ERROR(g_logger, "no supported sample formats for " << device);
-        return;
-    }
-    snd_pcm_format_mask_free(format_mask_p);
-
-    // set the format of the audio samples
-    rc = snd_pcm_hw_params_set_format(m_handle_p, hw_params_p, m_formatter_p->format());
-    if (rc < 0)
-    {
-        LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_set_format returned error=" << rc << " " << snd_strerror(rc));
-        return;
-    }
-
-    // set the sample rate
-    rc = snd_pcm_hw_params_set_rate_near(m_handle_p, hw_params_p, &rate, NULL);
-    if (rc < 0)
-    {
-        LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_set_rate_near returned error=" << rc << " " << snd_strerror(rc));
-        return;
-    }
-
-    // set the number of channels
-    rc = snd_pcm_hw_params_set_channels(m_handle_p, hw_params_p, m_channel_count);
-    if (rc < 0)
-    {
-        LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params_set_channels returned error=" << rc << " " << snd_strerror(rc));
-        return;
-    }
-
-    // set the hardware params
-    if(0 > snd_pcm_hw_params(m_handle_p, hw_params_p))
-    {
-        LOG4CXX_ERROR(g_logger, "snd_pcm_hw_params returned error=" << rc << " " << snd_strerror(rc));
-        return;
-    }
 
     // resize the vector to hold the number of channels we have
     m_channels.resize(m_channel_count);
@@ -151,7 +57,7 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
     	// allocate a unique index for the channel
         AUDIOChannel::Index index = manager_p->allocate_index();
         // craete the channel object
-        AUDIOChannel *channel_p = new AUDIOChannel(index, SAMPLE_RATE_IN_HZ);
+        AUDIOChannel *channel_p = new AUDIOChannel(index, rate);
         // store it in our list
         m_channels[counter] = channel_p;
         // register it with the manager
@@ -164,9 +70,6 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
         LOG4CXX_ERROR(g_logger, "unable to create thread");
         return;
     }
-
-    // free the sound params in all cases
-    snd_pcm_hw_params_free(hw_params_p);
 
     LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::AUDIOCaptureInstance exit");
 }

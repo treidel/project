@@ -45,7 +45,7 @@ public:
 
 public:
 
-    AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const char* device, snd_pcm_t *handle_p);
+    AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const char* device, size_t channel_count, snd_pcm_format_t format, unsigned int rate, snd_pcm_t *handle_p);
     virtual ~AUDIOCaptureInstance();
 
 ///////////////////////////////////////////////////////////////////////////////
