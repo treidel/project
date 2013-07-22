@@ -125,6 +125,7 @@ public:
 private:
     static void timer_cb(struct ev_loop *loop, struct ev_timer *w, int revents);
 
+    Meter *find_meter_by_channel_index(AUDIOChannel::Index index) const;
 
 ///////////////////////////////////////////////////////////////////////////////
 // private variable definitions
