@@ -4,16 +4,11 @@ SET(CMAKE_SYSTEM_NAME Linux)
 SET(CMAKE_SYSTEM_VERSION 1)
 
 # specify the cross compiler
-SET(CMAKE_C_COMPILER arm-linux-gnueabi-gcc)
-SET(CMAKE_CXX_COMPILER arm-linux-gnueabi-g++)
-
-# make sure they are telling us where the staging is 
-IF(NOT EXISTS "$ENV{STAGING}")
-    MESSAGE(FATAL_ERROR "STAGING environment variable not set")
-ENDIF(NOT EXISTS "$ENV{STAGING}")
+SET(CMAKE_C_COMPILER "arm-linux-gnueabi-gcc")
+SET(CMAKE_CXX_COMPILER "arm-linux-gnueabi-g++")
 
 # where is the target environment
-SET(CMAKE_FIND_ROOT_PATH $ENV{STAGING})
+SET(CMAKE_FIND_ROOT_PATH "${CMAKE_SOURCE_DIR}/staging")
 
 # add an extra directory to the header search path
 INCLUDE_DIRECTORIES("${CMAKE_FIND_ROOT_PATH}/usr/include")

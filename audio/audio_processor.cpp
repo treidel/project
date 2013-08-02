@@ -357,23 +357,27 @@ void AUDIOProcessor::timer_cb(EV_P_ ev_timer *w_p, int revents)
     {
         // size the result array to the number of meters we have
         const size_t channel_count = processor_p->m_meters_map.size();
-        ResultData result_data[channel_count];
-        
-        // iterate through all meters
-        for (std::map<AUDIOChannel::Index, Meter *>::iterator it = processor_p->m_meters_map.begin();
-            it != processor_p->m_meters_map.end();
-            it++)
+        // see if we have any active channels
+        if (0 < channel_count)
         {
-            // get the meter
-            Meter *meter_p = it->second;
-            // get the channel
-            const AUDIOChannel *channel_p = meter_p->get_channel_p();
-            // generate the result data
-            result_data[channel_p->get_index() - 1] = meter_p->create_result_data();
-        }
+            ResultData result_data[channel_count];
+        
+            // iterate through all meters
+            for (std::map<AUDIOChannel::Index, Meter *>::iterator it = processor_p->m_meters_map.begin();
+                it != processor_p->m_meters_map.end();
+                it++)
+            {
+                // get the meter
+                Meter *meter_p = it->second;
+                // get the channel
+                const AUDIOChannel *channel_p = meter_p->get_channel_p();
+                // generate the result data
+                result_data[channel_p->get_index() - 1] = meter_p->create_result_data();
+            }
 
-        // call the handler
-        processor_p->m_handler_p->handle_results(channel_count, result_data);
+            // call the handler
+            processor_p->m_handler_p->handle_results(channel_count, result_data);
+        }
     }
 
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::timer_cb exit");

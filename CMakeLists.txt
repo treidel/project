@@ -12,7 +12,7 @@ FIND_PACKAGE(Log4Cxx REQUIRED)
 FIND_PACKAGE(LibEV REQUIRED)
 
 # set the global compiler flags
-SET(CMAKE_CXX_FLAGS "-Werror")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 
 IF(DEFINED ENV{VERSION})
 	# use the version provided by the external build environment if available
