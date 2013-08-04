@@ -23,21 +23,25 @@ ELSE()
 ENDIF()
 
 # add our own directory as an include
-include_directories(.)
+INCLUDE_DIRECTORIES(.)
 
 # add the module 
-include_directories(${LOG4CXX_INCLUDE_DIRS})
-include_directories(${LIBEV_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${LOG4CXX_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${LIBEV_INCLUDE_DIRS})
 
 # add the subdirectories
-add_subdirectory(bluetooth)
-add_subdirectory(control) 
-add_subdirectory(audio)
-add_subdirectory(app)
-add_subdirectory(proto)
+ADD_SUBDIRECTORY(bluetooth)
+ADD_SUBDIRECTORY(control) 
+ADD_SUBDIRECTORY(audio)
+ADD_SUBDIRECTORY(app)
+ADD_SUBDIRECTORY(proto)
 
 # define the executable
-add_executable(leveling-glass main.cpp)
+ADD_EXECUTABLE(leveling-glass main.cpp log.cfg)
 
 # add the libraries to the executable
-target_link_libraries(leveling-glass app proto bluetooth control audio pthread ${LOG4CXX_LIBRARIES} ${LIBEV_LIBRARIES}) 
+TARGET_LINK_LIBRARIES(leveling-glass app proto bluetooth control audio pthread ${LOG4CXX_LIBRARIES} ${LIBEV_LIBRARIES}) 
+
+# support for make install
+INSTALL(TARGETS leveling-glass DESTINATION ${CMAKE_BINARY_DIR}/target/usr/bin COMPONENT binaries)
+INSTALL(FILES log.cfg DESTINATION ${CMAKE_BINARY_DIR}/target/etc/leveling-glass COMPONENT config)
