@@ -43,5 +43,5 @@ ADD_EXECUTABLE(leveling-glass main.cpp log.cfg)
 TARGET_LINK_LIBRARIES(leveling-glass app proto bluetooth control audio pthread ${LOG4CXX_LIBRARIES} ${LIBEV_LIBRARIES}) 
 
 # support for make install
-INSTALL(TARGETS leveling-glass DESTINATION ${CMAKE_BINARY_DIR}/target/usr/bin COMPONENT binaries)
-INSTALL(FILES log.cfg DESTINATION ${CMAKE_BINARY_DIR}/target/etc/leveling-glass COMPONENT config)
+INSTALL(TARGETS leveling-glass DESTINATION ${CMAKE_FIND_ROOT_PATH}/usr/bin COMPONENT binaries)
+INSTALL(FILES log.cfg DESTINATION ${CMAKE_FIND_ROOT_PATH}/etc/leveling-glass COMPONENT config)
