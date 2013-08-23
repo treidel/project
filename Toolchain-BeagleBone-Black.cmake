@@ -24,5 +24,5 @@ SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 LIST(APPEND CMAKE_SYSTEM_LIBRARY_PATH "${CMAKE_FIND_ROOT_PATH}/usr/lib/arm-linux-gnueabihf")
 
 # add the extra directories to the linker search path
-SET(LINKER_FLAGS "-Wl,-dynamic-linker,/lib/ld-linux-armhf.so.3 -Wl,-rpath,/lib/arm-linux-gnueabihf:/usr/lib/arm-linux-gnueabihf -Wl,-rpath-link,${CMAKE_FIND_ROOT_PATH}/usr/lib:${CMAKE_FIND_ROOT_PATH}/lib:${CMAKE_FIND_ROOT_PATH}/lib/arm-linux-gnueabihf")
+SET(LINKER_FLAGS "-Wl,-dynamic-linker,/lib/ld-linux-armhf.so.3 -Wl,-rpath-link,${CMAKE_FIND_ROOT_PATH}/usr/lib:${CMAKE_FIND_ROOT_PATH}/lib:${CMAKE_FIND_ROOT_PATH}/lib/arm-linux-gnueabihf")
 SET(CMAKE_EXE_LINKER_FLAGS "${LINKER_FLAGS}" CACHE STRING "linker flags" FORCE)

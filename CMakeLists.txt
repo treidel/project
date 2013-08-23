@@ -44,4 +44,5 @@ TARGET_LINK_LIBRARIES(leveling-glass app proto bluetooth control audio pthread $
 
 # support for make install
 INSTALL(TARGETS leveling-glass DESTINATION ${CMAKE_FIND_ROOT_PATH}/usr/bin COMPONENT binaries)
-INSTALL(FILES log.cfg DESTINATION ${CMAKE_FIND_ROOT_PATH}/etc/leveling-glass COMPONENT config)
+INSTALL(FILES config/log.cfg DESTINATION ${CMAKE_FIND_ROOT_PATH}/etc/leveling-glass COMPONENT config)
+INSTALL(FILES config/leveling-glass.conf DESTINATION ${CMAKE_FIND_ROOT_PATH}/etc/init COMPONENT config)

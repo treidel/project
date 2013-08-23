@@ -21,6 +21,7 @@ typedef enum
 const std::string to_string(int value);
 const std::string to_string(uint8_t value);
 const std::string to_string(uint8_t *data_p, size_t length);
+const std::string to_string(const char *string_p);
 
 #endif
 
