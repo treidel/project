@@ -131,6 +131,15 @@ int main(int argc, char *argv[])
     return -1;
 }
 
+const std::string to_string(size_t value)
+{
+    std::stringstream ss;
+    std::string s;
+    ss << value;
+    s = ss.str();
+    return s;
+}
+
 const std::string to_string(int value)
 {
     std::stringstream ss;

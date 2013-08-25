@@ -106,6 +106,7 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
         {
         case v1::SETLEVEL:
         {
+            LOG4CXX_INFO(g_logger, "processing SETLEVEL request");
             // get the request
             const ::v1::SetLevelRequest& setlevel = request.setlevel();
             // validate the channel
@@ -141,6 +142,7 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
 
         case v1::QUERYAUDIOCHANNELS:
         {
+            LOG4CXX_INFO(g_logger, "processing QUERYAUDIOCHANNELS request");
             // do something to query the channels
             v1::QueryAudioChannelsResponse *qac_p = response_p->mutable_queryaudiochannels();
             AUDIOCaptureManager *manager_p = AUDIOCaptureManager::get_instance();

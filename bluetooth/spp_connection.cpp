@@ -250,6 +250,8 @@ void SPPConnection::receive_cb (EV_P_ ev_io *w_p, int revents)
                 // see if we've read the whole message
                 if (0 == receive_p->get_remaining_r())
                 {
+                    LOG4CXX_INFO(g_logger, "received message (" + to_string(receive_p->get_message_p()->get_length()) + " bytes) from " + format_mac_addr(&connection_p->m_remote_addr));
+
                     // this is a pointer to the response message
                     APPManager::Message *response_p = NULL;
 

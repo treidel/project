@@ -15,6 +15,21 @@
 # CMake related files
 CMakeCache.txt
 CMakeFiles
-Makefile
 cmake_install.cmake
+Makefile
 install_manifest.txt
+**/CMakeCache.txt
+**/CMakeFiles
+*/Makefile
+*/cmake_install.cmake
+*/install_manifest.txt
+
+# swap files
+*.sw*
+
+# Eclipse files
+.astylerc
+.cproject
+.metadata
+.project
+.settings
