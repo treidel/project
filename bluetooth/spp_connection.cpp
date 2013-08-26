@@ -268,12 +268,18 @@ void SPPConnection::receive_cb (EV_P_ ev_io *w_p, int revents)
                     }
                     else
                     {
-                        ASSERT(NULL == response_p);
-
                         LOG4CXX_ERROR(g_logger, "SPPConnection::rx_message_cb request handler returned error=" << result_code << " " << response_p);
-
-                        // disconnect
-                        disconnect(&connection_p);
+                        // send back the response if provided
+                        if (NULL != response_p)
+                        {
+                            // use the notification send method to queue the message
+                            connection_p->send_notification(&response_p);
+                        }
+                        else 
+                        {
+                            // disconnect
+                            disconnect(&connection_p);
+                        }
                     }
                     // cleanup the receive buffer
                     receive_p->clear();

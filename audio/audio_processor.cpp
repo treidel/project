@@ -10,7 +10,6 @@
 #include <math.h>
 #include <string.h>
 #include <stdint.h>
-#include <math.h>
 
 #include <log4cxx/logger.h>
 
@@ -244,6 +243,9 @@ AUDIOProcessor::ResultData AUDIOProcessor::PeakMeter::create_result_data()
     AUDIOProcessor::ResultData data;
     memset(&data, 0, sizeof(data));
 
+    // populate the type
+    data.type = LEVEL_TYPE_PEAK;
+
     // populate the channel
     data.channel = get_channel_p()->get_index();
 
@@ -253,7 +255,8 @@ AUDIOProcessor::ResultData AUDIOProcessor::PeakMeter::create_result_data()
     if (AUDIO_CHANNEL_ZERO_LEVEL != m_peak)
     {
         // do the dBm for level calcuation
-        data.values.peakInDB = (int32_t)(10.0 * log10(m_peak));
+    	float value = 10.0f * log10f(m_peak);
+        data.values.peakInDB = (int32_t)(value);
     }
 
     // reset the peak
@@ -301,6 +304,9 @@ AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
     AUDIOProcessor::ResultData data;
     memset(&data, 0, sizeof(data));
 
+    // populate the type
+    data.type = LEVEL_TYPE_VU;
+
     // populate the channel
     data.channel = get_channel_p()->get_index();
 
@@ -320,7 +326,8 @@ AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
     // only convert to DB if there was a signal
     if (0.0f < sum_squares)
     {
-        data.values.powerInDB = (int32_t)(20.0f * log10(sum_squares / m_sample_count));
+    	float value = 20.0f * log10f(sum_squares / m_sample_count);
+        data.values.powerInDB = (int32_t)value;
     }
 
     // can't go lower than the minimum
@@ -363,6 +370,7 @@ void AUDIOProcessor::timer_cb(EV_P_ ev_timer *w_p, int revents)
             ResultData result_data[channel_count];
         
             // iterate through all meters
+            size_t index = 0;
             for (std::map<AUDIOChannel::Index, Meter *>::iterator it = processor_p->m_meters_map.begin();
                 it != processor_p->m_meters_map.end();
                 it++)
@@ -372,7 +380,8 @@ void AUDIOProcessor::timer_cb(EV_P_ ev_timer *w_p, int revents)
                 // get the channel
                 const AUDIOChannel *channel_p = meter_p->get_channel_p();
                 // generate the result data
-                result_data[channel_p->get_index() - 1] = meter_p->create_result_data();
+                result_data[index] = meter_p->create_result_data();
+                index++;
             }
 
             // call the handler
