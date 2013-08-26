@@ -40,7 +40,7 @@ ADD_SUBDIRECTORY(proto)
 ADD_EXECUTABLE(leveling-glass main.cpp)
 
 # add the libraries to the executable
-TARGET_LINK_LIBRARIES(leveling-glass app proto bluetooth control audio pthread ${LOG4CXX_LIBRARIES} ${LIBEV_LIBRARIES}) 
+TARGET_LINK_LIBRARIES(leveling-glass app proto bluetooth control audio pthread ${LOG4CXX_LIBRARIES} ${LIBEV_LIBRARIES} m) 
 
 # support for make install
 INSTALL(TARGETS leveling-glass DESTINATION ${CMAKE_FIND_ROOT_PATH}/usr/bin COMPONENT binaries)

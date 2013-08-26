@@ -4,8 +4,8 @@ SET(CMAKE_SYSTEM_NAME Linux)
 SET(CMAKE_SYSTEM_VERSION 1)
 
 # specify the cross compiler
-SET(CMAKE_C_COMPILER "arm-linux-gnueabi-gcc")
-SET(CMAKE_CXX_COMPILER "arm-linux-gnueabi-g++")
+SET(CMAKE_C_COMPILER "arm-linux-gnueabihf-gcc")
+SET(CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
 
 # where is the target environment
 SET(CMAKE_FIND_ROOT_PATH "${CMAKE_SOURCE_DIR}/staging")
@@ -19,6 +19,10 @@ SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 # for libraries and headers in the target directories
 SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+# force the compiler to use the neon FPU instructions
+SET(CMAKE_C_FLAGS "-march=armv7-a -mfloat-abi=hard -mfpu=neon")
+SET(CMAKE_CXX_FLAGS "-march=armv7-a -mfloat-abi=hard -mfpu=neon")
 
 # add extra directories to the system library search path
 LIST(APPEND CMAKE_SYSTEM_LIBRARY_PATH "${CMAKE_FIND_ROOT_PATH}/usr/lib/arm-linux-gnueabihf")
