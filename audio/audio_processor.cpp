@@ -30,8 +30,8 @@
 // constants
 ///////////////////////////////////////////////////////////////////////////////
 
-static const int32_t c_peak_zero_level_in_db = -50;
-static const int32_t c_power_zero_level_in_db = -100;
+static const float c_peak_zero_level_in_db = -50;
+static const float c_power_zero_level_in_db = -100;
 
 ///////////////////////////////////////////////////////////////////////////////
 // module variables
@@ -255,8 +255,7 @@ AUDIOProcessor::ResultData AUDIOProcessor::PeakMeter::create_result_data()
     if (AUDIO_CHANNEL_ZERO_LEVEL != m_peak)
     {
         // do the dBm for level calcuation
-    	float value = 10.0f * log10f(m_peak);
-        data.values.peakInDB = (int32_t)(value);
+        data.values.peakInDB = 10.f * log10f(m_peak);
     }
 
     // reset the peak
@@ -326,8 +325,7 @@ AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
     // only convert to DB if there was a signal
     if (0.0f < sum_squares)
     {
-    	float value = 20.0f * log10f(sum_squares / m_sample_count);
-        data.values.powerInDB = (int32_t)value;
+    	data.values.powerInDB = 20.0f * log10f(sum_squares / m_sample_count);
     }
 
     // can't go lower than the minimum

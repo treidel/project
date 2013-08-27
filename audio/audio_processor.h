@@ -44,8 +44,8 @@ public:
         LevelType type;
         union
         {
-            int32_t powerInDB;
-            int32_t peakInDB;
+            float powerInDB;
+            float peakInDB;
         } values;
     } ResultData;
 
