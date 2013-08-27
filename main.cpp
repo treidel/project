@@ -46,6 +46,7 @@ static const char* g_default_log_config_p = DEFAULT_LOG_CONFIG_FILE;
 static struct option g_options[] = 
 {
     {"config", optional_argument, 0, 'c'},
+    {"daemon", optional_argument, 0, 'd'},
     {0, 0, 0, 0}
 };
 
@@ -63,13 +64,14 @@ static void populate_logpath(char *execpath_p, size_t path_length);
 int main(int argc, char *argv[])
 {
     // setup default parameters
+    bool daemon = false;
     const char *config_p = g_default_log_config_p;
 
     // parse the command line
     while(true)
     {
         int option_index = 0;
-        int c = getopt_long(argc, argv, "c:", g_options, &option_index);
+        int c = getopt_long(argc, argv, "dc:", g_options, &option_index);
         // detect end of options
         if (-1 == c)
         {
@@ -85,6 +87,10 @@ int main(int argc, char *argv[])
                         LOG4CXX_INFO(g_logger, "using log config file=" + to_string(optarg));
                         config_p = optarg;
                         break;
+                    case 'd':
+                        LOG4CXX_INFO(g_logger, "running in background");
+                        daemon = true;
+                        break;
                     default:
                         LOG4CXX_FATAL(g_logger, "invalid long option " + to_string(g_options[option_index].name));
                         return -1;
@@ -93,6 +99,10 @@ int main(int argc, char *argv[])
             case 'c':
                 LOG4CXX_INFO(g_logger, "using log config file=" + to_string(optarg));
                 config_p = optarg; 
+                break;
+            case 'd':
+                LOG4CXX_INFO(g_logger, "running in background");
+                daemon = true;
                 break;
             default:
                 LOG4CXX_FATAL(g_logger, "invalid option '" + to_string(c) + "'");
@@ -115,10 +125,35 @@ int main(int argc, char *argv[])
 
     // setup the default event loop
     struct ev_loop *loop_p = EV_DEFAULT;
-    // register a signal handler for the KILL event
+
+    // register signal handlers for the TERM + KILL signals
     ev_signal kill_watcher;
     ev_signal_init(&kill_watcher, kill_cb, SIGKILL);
     ev_signal_start(loop_p, &kill_watcher);
+    ev_signal term_watcher;
+    ev_signal_init(&term_watcher, kill_cb, SIGTERM);
+    ev_signal_start(loop_p, &term_watcher);
+
+    // see if we're going to run in daemon mone
+    if (true == daemon)
+    {
+        // fork into two processes
+        pid_t pid = fork();
+        switch (pid)
+        {
+            case -1:
+                LOG4CXX_FATAL(g_logger, "unable to fork");
+                return -1;
+            case 0:
+                LOG4CXX_DEBUG(g_logger, "running in background");
+                // help libev handle the fork
+                ev_default_fork();
+                break;
+            default:
+                LOG4CXX_INFO(g_logger, "background daemon process pid=" + to_string(pid));
+                return 0;
+        }
+    }
 
     // notify that we're running
     LOG4CXX_INFO(g_logger, NAME << " running");
