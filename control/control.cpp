@@ -106,9 +106,11 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
         {
         case v1::SETLEVEL:
         {
-            LOG4CXX_INFO(g_logger, "processing SETLEVEL request");
             // get the request
             const ::v1::SetLevelRequest& setlevel = request.setlevel();
+
+            LOG4CXX_INFO(g_logger, "processing SETLEVEL request, channel=" + to_string(setlevel.channel()) + " level=" + to_string(setlevel.type()));
+
             // validate the channel
             AUDIOChannel *channel_p = AUDIOCaptureManager::get_instance()->find_channel((AUDIOChannel::Index)setlevel.channel());
             if (NULL == channel_p)
