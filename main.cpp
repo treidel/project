@@ -166,6 +166,13 @@ int main(int argc, char *argv[])
     return -1;
 }
 
+const std::string to_string(const void *value_p)
+{
+  char buffer[22 + 1];
+  snprintf(buffer, 22, "0x%p", value_p);
+  return buffer;
+}
+
 const std::string to_string(size_t value)
 {
     std::stringstream ss;
@@ -193,7 +200,7 @@ const std::string to_string(uint8_t value)
     return s;
 }
 
-const std::string to_string(uint8_t *data_p, size_t length)
+const std::string to_string(const uint8_t *data_p, size_t length)
 {
   char buffer[(2 * length) + 1];
   for (int counter = 0; counter < length; counter++)

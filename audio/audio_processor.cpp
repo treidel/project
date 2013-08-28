@@ -95,7 +95,10 @@ void AUDIOProcessor::set_level_type_for_channel(LevelType level_type, AUDIOChann
     if (it != m_meters_map.end())
     {
         Meter *meter_p = it->second;
+        // delete the meter
         delete meter_p;
+        // erase it from the lookup
+        m_meters_map.erase(it);
     }
 
     // depending on the type we need to setup the meter
@@ -218,7 +221,7 @@ AUDIOProcessor::PeakMeter::~PeakMeter()
 
 void AUDIOProcessor::PeakMeter::process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PeakMeter::process_samples enter " << buffer_length << " " << buffer_p);
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PeakMeter::process_samples enter " + to_string(buffer_length) + " " + to_string(buffer_p));
 
     // calculate the peak amplitude for the signal
     for (int counter = 0; counter < buffer_length; counter++)
@@ -283,7 +286,7 @@ AUDIOProcessor::VUMeter::~VUMeter()
 
 void AUDIOProcessor::VUMeter::process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::VUMeter::process_samples enter " << buffer_length << " " << buffer_p);
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::VUMeter::process_samples enter " + to_string(buffer_length) + " " + to_string(buffer_p));
     // store the samples we've received
     for (int counter = 0; counter < m_sample_count; counter++)
     {

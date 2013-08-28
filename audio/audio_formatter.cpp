@@ -90,7 +90,7 @@ AUDIOSigned16BitFormatter::~AUDIOSigned16BitFormatter()
 
 void AUDIOSigned16BitFormatter::format_samples(uint8_t *raw_buffer_p, AUDIOChannel::Index index, AUDIOChannel::Sample *sample_buffer_p, size_t num_samples)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOSigned16BitFormatter::format_samples enter " << index << " " << num_samples);
+    LOG4CXX_DEBUG(g_logger, "AUDIOSigned16BitFormatter::format_samples enter " + to_string(raw_buffer_p) + " " + to_string(index) + " " + to_string(sample_buffer_p) + " " + to_string(num_samples));
 
     for (int counter = 0; counter < num_samples; counter++)
     {
@@ -115,7 +115,8 @@ AUDIOFloatFormatter::~AUDIOFloatFormatter()
 
 void AUDIOFloatFormatter::format_samples(uint8_t *raw_buffer_p, AUDIOChannel::Index index, AUDIOChannel::Sample *sample_buffer_p, size_t num_samples)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOFloatFormatter::format_samples enter " << raw_buffer_p << " " << sample_buffer_p << " " << num_samples);
+    LOG4CXX_DEBUG(g_logger, "AUDIOFloatFormatter::format_samples enter " + to_string(raw_buffer_p) + " " + to_string(index) + " " + to_string(sample_buffer_p) + " " + to_string(num_samples));
+
 
     for (int counter = 0; counter < num_samples; counter++)
     {
