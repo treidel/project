@@ -123,7 +123,8 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
             switch (setlevel.type())
             {
             case v1::NONE:
-            case v1::PEAK:
+            case v1::PPM:
+            case v1::DIGITALPEAK:
             case v1::VU:
             {
                 // set the type in the audio processor
@@ -207,8 +208,12 @@ ResultCode Control::handle_results(const size_t num_results, const AUDIOProcesso
         // fill the special stuff
         switch (results[counter].type)
         {
-            case AUDIOProcessor::LEVEL_TYPE_PEAK:
-                record_p->set_type(v1::PEAK);
+            case AUDIOProcessor::LEVEL_TYPE_PPM:
+                record_p->set_type(v1::PPM);
+                record_p->set_peakindb(results[counter].values.peakInDB);
+                break;            
+            case AUDIOProcessor::LEVEL_TYPE_DIGITALPEAK:
+                record_p->set_type(v1::DIGITALPEAK);
                 record_p->set_peakindb(results[counter].values.peakInDB);
                 break;
             case AUDIOProcessor::LEVEL_TYPE_VU:

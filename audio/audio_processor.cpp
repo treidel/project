@@ -35,6 +35,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 static const float c_zero_level_in_db = -96;
+static const float c_zero_level_in_vu = -20;
 
 ///////////////////////////////////////////////////////////////////////////////
 // module variables
@@ -111,10 +112,19 @@ void AUDIOProcessor::set_level_type_for_channel(LevelType level_type, AUDIOChann
         // nothing to do
         break;
 
-    case LEVEL_TYPE_PEAK:
+    case LEVEL_TYPE_PPM:
     {
         // create the peak meter
-        Meter *meter_p = new PeakMeter(channel_p);
+        Meter *meter_p = new PPMMeter(channel_p);
+        // store it
+        m_meters_map[channel_p->get_index()] = meter_p;
+    }
+    break;
+
+    case LEVEL_TYPE_DIGITALPEAK:
+    {
+        // create the peak meter
+        Meter *meter_p = new DigitalPeakMeter(channel_p);
         // store it
         m_meters_map[channel_p->get_index()] = meter_p;
     }
@@ -208,23 +218,23 @@ AUDIOProcessor::Meter::~Meter()
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::Meter::~Meter exit");
 }
 
-AUDIOProcessor::PeakMeter::PeakMeter(AUDIOChannel *channel_p) :
+AUDIOProcessor::PPMMeter::PPMMeter(AUDIOChannel *channel_p) :
     AUDIOProcessor::Meter(channel_p),
     m_peak(AUDIO_CHANNEL_ZERO_LEVEL)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PeakMeter::PeakMeter enter");
-    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PeakMeter::PeakMeter exit");
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PPMMeter::PPMMeter enter");
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PPMMeter::PPMMeter exit");
 }
 
-AUDIOProcessor::PeakMeter::~PeakMeter()
+AUDIOProcessor::PPMMeter::~PPMMeter()
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PeakMeter::~PeakMeter enter");
-    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PeakMeter::~PeakMeter exit");
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PPMMeter::~PPMMeter enter");
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PPMMeter::~PPMMeter exit");
 }
 
-void AUDIOProcessor::PeakMeter::process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p)
+void AUDIOProcessor::PPMMeter::process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PeakMeter::process_samples enter " + to_string(buffer_length) + " " + to_string(buffer_p));
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PPMMeter::process_samples enter " + to_string(buffer_length) + " " + to_string(buffer_p));
 
     // calculate the peak amplitude for the signal
     for (int counter = 0; counter < buffer_length; counter++)
@@ -239,18 +249,18 @@ void AUDIOProcessor::PeakMeter::process_samples(const size_t buffer_length, AUDI
         }
     }
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PeakMeter::process_samples exit");
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PPMMeter::process_samples exit");
 }
 
-AUDIOProcessor::ResultData AUDIOProcessor::PeakMeter::create_result_data()
+AUDIOProcessor::ResultData AUDIOProcessor::PPMMeter::create_result_data()
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PeakMeter::create_result_data enter");
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PPMMeter::create_result_data enter");
 
     AUDIOProcessor::ResultData data;
     memset(&data, 0, sizeof(data));
 
     // populate the type
-    data.type = LEVEL_TYPE_PEAK;
+    data.type = LEVEL_TYPE_PPM;
 
     // populate the channel
     data.channel = get_channel_p()->get_index();
@@ -260,7 +270,8 @@ AUDIOProcessor::ResultData AUDIOProcessor::PeakMeter::create_result_data()
     // if this is zero then the level is dB is negative infinity
     if (AUDIO_CHANNEL_ZERO_LEVEL != m_peak)
     {
-        float voltage = m_peak * FULL_SCALE_VOLTAGE; 
+        // convert the normalized sample to a voltage
+        float voltage = m_peak * FULL_SCALE_VOLTAGE;    
         // do the voltage to dBu conversion 
         data.values.peakInDB = 20.f * log10f(voltage / ZERO_DB_PEAK_VOLTAGE);
     }
@@ -268,7 +279,70 @@ AUDIOProcessor::ResultData AUDIOProcessor::PeakMeter::create_result_data()
     // reset the peak
     m_peak = AUDIO_CHANNEL_ZERO_LEVEL;
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PeakMeter::create_result_data exit");
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PPMMeter::create_result_data exit");
+    return data;
+}
+
+AUDIOProcessor::DigitalPeakMeter::DigitalPeakMeter(AUDIOChannel *channel_p) :
+    AUDIOProcessor::Meter(channel_p),
+    m_peak(AUDIO_CHANNEL_ZERO_LEVEL)
+{
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::DigitalPeakMeter::DigitalPeakMeter enter");
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::DigitalPeakMeter::DigitalPeakMeter exit");
+}
+
+AUDIOProcessor::DigitalPeakMeter::~DigitalPeakMeter()
+{
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::DigitalPeakMeter::~DigitalPeakMeter enter");
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::DigitalPeakMeter::~DigitalPeakMeter exit");
+}
+
+void AUDIOProcessor::DigitalPeakMeter::process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p)
+{
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::DigitalPeakMeter::process_samples enter " + to_string(buffer_length) + " " + to_string(buffer_p));
+
+    // calculate the peak amplitude for the signal
+    for (int counter = 0; counter < buffer_length; counter++)
+    {
+        // take the absolute value
+        AUDIOChannel::Sample amplitude = fabs(buffer_p[counter]);
+        // if this sample is larger then last one calculated for the channel then
+        // store it
+        if (amplitude > m_peak)
+        {
+            m_peak = amplitude;
+        }
+    }
+
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::DigitalPeakMeter::process_samples exit");
+}
+
+AUDIOProcessor::ResultData AUDIOProcessor::DigitalPeakMeter::create_result_data()
+{
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::DigitalPeakMeter::create_result_data enter");
+
+    AUDIOProcessor::ResultData data;
+    memset(&data, 0, sizeof(data));
+
+    // populate the type
+    data.type = LEVEL_TYPE_DIGITALPEAK;
+
+    // populate the channel
+    data.channel = get_channel_p()->get_index();
+
+    // assume the level is zero for now
+    data.values.peakInDB = c_zero_level_in_db;
+    // if this is zero then the level is dB is negative infinity
+    if (AUDIO_CHANNEL_ZERO_LEVEL != m_peak)
+    {
+        // do the voltage to dB conversion 
+        data.values.peakInDB = 20.f * log10f(m_peak);
+    }
+
+    // reset the peak
+    m_peak = AUDIO_CHANNEL_ZERO_LEVEL;
+
+    LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::DigitalPeakMeter::create_result_data exit");
     return data;
 }
 

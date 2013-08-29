@@ -34,8 +34,9 @@ public:
     typedef enum
     {
         LEVEL_TYPE_NONE = 0,
-        LEVEL_TYPE_PEAK = 1,
-        LEVEL_TYPE_VU = 2
+        LEVEL_TYPE_DIGITALPEAK = 1,
+        LEVEL_TYPE_PPM = 2,
+        LEVEL_TYPE_VU = 3
     } LevelType;
 
     typedef struct
@@ -71,17 +72,29 @@ private:
         AUDIOChannel *m_channel_p;
     };
 
-    class PeakMeter : public Meter
+    class PPMMeter : public Meter
     {
     public:
-        PeakMeter(AUDIOChannel *channel_p);
-        virtual ~PeakMeter();
+        PPMMeter(AUDIOChannel *channel_p);
+        virtual ~PPMMeter();
         void process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p);
         ResultData create_result_data();
         inline LevelType get_level_type();
     private:
         AUDIOChannel::Sample m_peak;
     };
+
+    class DigitalPeakMeter : public Meter
+    {
+    public:
+        DigitalPeakMeter(AUDIOChannel *channel_p);
+        virtual ~DigitalPeakMeter();
+        void process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p);
+        ResultData create_result_data();
+        inline LevelType get_level_type();
+    private:
+        AUDIOChannel::Sample m_peak;
+    };  
 
     class VUMeter : public Meter
     {
@@ -148,9 +161,14 @@ inline const AUDIOChannel *AUDIOProcessor::Meter::get_channel_p() const
     return m_channel_p;
 }
 
-inline AUDIOProcessor::LevelType AUDIOProcessor::PeakMeter::get_level_type() 
+inline AUDIOProcessor::LevelType AUDIOProcessor::PPMMeter::get_level_type() 
 {
-    return LEVEL_TYPE_PEAK;
+    return LEVEL_TYPE_PPM;
+}
+
+inline AUDIOProcessor::LevelType AUDIOProcessor::DigitalPeakMeter::get_level_type() 
+{
+    return LEVEL_TYPE_DIGITALPEAK;
 }
 
 inline AUDIOProcessor::LevelType AUDIOProcessor::VUMeter::get_level_type()
