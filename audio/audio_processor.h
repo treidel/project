@@ -44,7 +44,7 @@ public:
         LevelType type;
         union
         {
-            float powerInDB;
+            float vuInUnits;
             float peakInDB;
         } values;
     } ResultData;

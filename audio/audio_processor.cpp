@@ -18,8 +18,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define UPDATES_PER_SECOND (10)
-#define UPDATE_FREQUENCY (1.0/UPDATES_PER_SECOND)
+#define UPDATE_FREQUENCY (1.0f/UPDATES_PER_SECOND)
 #define VU_NUMBER_OF_SAMPLES(x)	   ((3 * x) / 10)   // 300ms of samples
+#define FULL_SCALE_VOLTAGE  (3.3f)
+#define ZERO_DB_RMS_VOLTAGE (0.775f)
+#define ZERO_DB_PEAK_VOLTAGE (1.0f)
+#define ZERO_VU_LEVEL_IN_DB (4.0f)
 
 ///////////////////////////////////////////////////////////////////////////////
 // type defintions
@@ -30,8 +34,7 @@
 // constants
 ///////////////////////////////////////////////////////////////////////////////
 
-static const float c_peak_zero_level_in_db = -50;
-static const float c_power_zero_level_in_db = -100;
+static const float c_zero_level_in_db = -96;
 
 ///////////////////////////////////////////////////////////////////////////////
 // module variables
@@ -253,12 +256,13 @@ AUDIOProcessor::ResultData AUDIOProcessor::PeakMeter::create_result_data()
     data.channel = get_channel_p()->get_index();
 
     // assume the level is zero for now
-    data.values.peakInDB = c_peak_zero_level_in_db;
+    data.values.peakInDB = c_zero_level_in_db;
     // if this is zero then the level is dB is negative infinity
     if (AUDIO_CHANNEL_ZERO_LEVEL != m_peak)
     {
-        // do the dBm for level calcuation
-        data.values.peakInDB = 10.f * log10f(m_peak);
+        float voltage = m_peak * FULL_SCALE_VOLTAGE; 
+        // do the voltage to dBu conversion 
+        data.values.peakInDB = 20.f * log10f(voltage / ZERO_DB_PEAK_VOLTAGE);
     }
 
     // reset the peak
@@ -288,7 +292,7 @@ void AUDIOProcessor::VUMeter::process_samples(const size_t buffer_length, AUDIOC
 {
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::VUMeter::process_samples enter " + to_string(buffer_length) + " " + to_string(buffer_p));
     // store the samples we've received
-    for (int counter = 0; counter < m_sample_count; counter++)
+    for (int counter = 0; counter < buffer_length; counter++)
     {
         // copy over the sample
         m_samples_p[m_sample_index] = buffer_p[counter];
@@ -313,14 +317,16 @@ AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
     data.channel = get_channel_p()->get_index();
 
     // assume for now that there is no signal
-    data.values.powerInDB = c_power_zero_level_in_db;
+    float voltageInDB = c_zero_level_in_db;
 
-    // we need to calculate the root-mean-squared (RMS) value of the 300ms of audio
-    // we have cached
+    // calculate the root-mean-squared (RMS) value of the 300ms of audio we have cached
     float sum_squares = 0.0f;
     for (int counter = 0; counter < m_sample_count; counter++)
     {
-        sum_squares += m_samples_p[counter] * m_samples_p[counter];
+        // convert the normalized value into a voltage 
+        float voltage = m_samples_p[counter] * FULL_SCALE_VOLTAGE;
+        // square the voltage
+        sum_squares += voltage * voltage;
     }
     // round up to zero just in case some float weirdness resulted in a negative number
     sum_squares = std::max(sum_squares, 0.0f);
@@ -328,11 +334,13 @@ AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
     // only convert to DB if there was a signal
     if (0.0f < sum_squares)
     {
-    	data.values.powerInDB = 20.0f * log10f(sum_squares / m_sample_count);
+        // finish the RMS calculation
+        float rms = sqrtf(sum_squares / m_sample_count);
+        voltageInDB = 20.0f * log10f(rms / ZERO_DB_RMS_VOLTAGE);
     }
 
-    // can't go lower than the minimum
-    data.values.powerInDB = std::max(data.values.powerInDB, c_power_zero_level_in_db);
+    // convert dBm to VU where 4 dBM = 0VU
+    data.values.vuInUnits = voltageInDB - ZERO_VU_LEVEL_IN_DB;
 
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::VUMeter::create_result_data exit");
     return data;

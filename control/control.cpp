@@ -213,7 +213,7 @@ ResultCode Control::handle_results(const size_t num_results, const AUDIOProcesso
                 break;
             case AUDIOProcessor::LEVEL_TYPE_VU:
                 record_p->set_type(v1::VU);
-                record_p->set_powerindb(results[counter].values.powerInDB);
+                record_p->set_vuinunits(results[counter].values.vuInUnits);
                 break;
             default:
                 LOG4CXX_ERROR(g_logger, "unknown level type=" + to_string(results[counter].type));
