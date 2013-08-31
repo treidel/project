@@ -15,11 +15,8 @@ FIND_PACKAGE(LibEV REQUIRED)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 
 IF(DEFINED ENV{VERSION})
-	# use the version provided by the external build environment if available
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVERSION=$ENV{VERSION}")
-ELSE()
-	# hardcode to internal version
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVERSION='\"INTERNAL\"'")	
+       # use the version provided by the external build environment if available
+       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVERSION=$ENV{VERSION}")
 ENDIF()
 
 # add our own directory as an include
