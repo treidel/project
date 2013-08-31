@@ -1,9 +1,9 @@
 [submodule "proto"]
 	path = proto
-	url = git://github.com/treidel/proto.git
+	url = git://github.com/treidel/proto.git master
 [submodule "tools"]
 	path = tools
-	url = git@github.com:treidel/tools.git
+	url = git@github.com:treidel/tools.git master
 [submodule "staging"]
 	path = staging
-	url = git://github.com/treidel/staging
+	url = git://github.com/treidel/staging master
