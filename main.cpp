@@ -33,6 +33,7 @@
 
 // UUID=c20d3a1a-6c1d-11e2-aa09-000c298ce626
 static const uint8_t c_uuid_int[] = {0xc2, 0x0d, 0x3a, 0x1a, 0x6c, 0xd, 0x11, 0xe2, 0xaa, 0x09, 0x00, 0x0c, 0x29, 0x8c, 0xe6, 0x26};
+static const char *c_version = VERSION;
 
 ///////////////////////////////////////////////////////////////////////////////
 // module variables
@@ -113,7 +114,7 @@ int main(int argc, char *argv[])
     // setup the logging layer
     log4cxx::PropertyConfigurator::configure(config_p);
 
-    LOG4CXX_INFO(g_logger, "Starting " << NAME << " - version " << VERSION);
+    LOG4CXX_INFO(g_logger, "Starting " << NAME << " - version " << c_version);
 
     // create the UUID for our SPP server
     sdp_uuid128_create(&g_uuid, &c_uuid_int);

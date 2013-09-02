@@ -18,7 +18,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 
 IF(DEFINED ENV{VERSION})
        # use the version provided by the external build environment if available
-       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVERSION=$ENV{VERSION}")
+       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVERSION=\\\"\${VERSION}\\\"")
 ENDIF()
 
 # add our own directory as an include
