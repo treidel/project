@@ -7,8 +7,13 @@ SET(CMAKE_SYSTEM_VERSION 1)
 SET(CMAKE_C_COMPILER "arm-linux-gnueabihf-gcc")
 SET(CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
 
-# where is the target environment
-SET(CMAKE_FIND_ROOT_PATH "${CMAKE_SOURCE_DIR}/staging")
+# ensure we ahve a target environment
+IF(NOT(DEFINED ENV{STAGING}))
+    MESSAGE(FATAL_ERROR "STAGING not defined")
+ENDIF()
+
+# setup the root path 
+SET(CMAKE_FIND_ROOT_PATH "$ENV{STAGING}")
 
 # add an extra directory to the header search path
 INCLUDE_DIRECTORIES("${CMAKE_FIND_ROOT_PATH}/usr/include")

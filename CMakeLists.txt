@@ -2,7 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(leveling-glass)
 
 # set the toolschain info
-SET(CMAKE_TOOLCHAIN_FILE, "Toolchain-BeagleBone-Black.cmake")
+SET(CMAKE_TOOLCHAIN_FILE "Toolchain-BeagleBone-Black.cmake")
 
 # add third party directory into the module search path
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty.cmake)

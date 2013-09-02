@@ -19,7 +19,7 @@
 
 // make sure the version macro is defined
 #ifndef VERSION
-#error VERSION is not defined
+    #define VERSION "INTERNAL"
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
