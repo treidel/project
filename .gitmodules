@@ -2,6 +2,3 @@
 	path = proto
 	url = git://github.com/treidel/proto.git
 
-[submodule "staging"]
-	path = staging
-	url = git://github.com/treidel/staging.git
