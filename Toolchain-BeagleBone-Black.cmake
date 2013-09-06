@@ -5,13 +5,8 @@ SET(CMAKE_SYSTEM_NAME Linux)
 SET(CMAKE_C_COMPILER "arm-linux-gnueabihf-gcc")
 SET(CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
 
-# ensure we have a target environment
-IF(NOT(DEFINED ENV{STAGING}))
-    MESSAGE(FATAL_ERROR "STAGING not defined")
-ENDIF()
-
 # setup the root path 
-SET(CMAKE_FIND_ROOT_PATH "$ENV{STAGING}")
+SET(CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}/staging")
 
 # search for programs in the build host directories
 SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)

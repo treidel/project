@@ -6,6 +6,14 @@ SET(CMAKE_TOOLCHAIN_FILE "Toolchain-BeagleBone-Black.cmake")
 #define the project
 PROJECT(leveling-glass)
 
+# ensure we have a target environment
+IF(NOT(DEFINED ENV{TARGET}))
+    MESSAGE(FATAL_ERROR "TARGET not defined")
+ENDIF()
+
+# cache the target folder
+SET(TARGET "$ENV{TARGET}" CACHE STRING "target binaries directory" FORCE)
+
 # add third party directory into the module search path
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty.cmake)
 
@@ -42,6 +50,6 @@ ADD_EXECUTABLE(leveling-glass main.cpp)
 TARGET_LINK_LIBRARIES(leveling-glass app proto bluetooth control audio pthread ${LOG4CXX_LIBRARIES} ${LIBEV_LIBRARIES} m) 
 
 # support for make install
-INSTALL(TARGETS leveling-glass DESTINATION ${CMAKE_FIND_ROOT_PATH}/usr/bin COMPONENT binaries)
-INSTALL(FILES config/log.cfg DESTINATION ${CMAKE_FIND_ROOT_PATH}/etc/leveling-glass COMPONENT config)
-INSTALL(FILES config/leveling-glass.conf DESTINATION ${CMAKE_FIND_ROOT_PATH}/etc/init COMPONENT config)
+INSTALL(TARGETS leveling-glass DESTINATION ${TARGET}/usr/bin COMPONENT binaries)
+INSTALL(FILES config/log.cfg DESTINATION ${TARGET}/etc/leveling-glass COMPONENT config)
+INSTALL(FILES config/leveling-glass.conf DESTINATION ${TARGET}/etc/init COMPONENT config)
