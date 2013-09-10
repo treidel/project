@@ -261,6 +261,12 @@ void AUDIOProcessor::PPMMeter::process_samples(const size_t buffer_length, AUDIO
             // set it 
             set_peak(new_peak);
         }
+        else
+        {
+            // attenuate
+            float new_peak = get_peak() * m_fall_factor; 
+            set_peak(new_peak);
+        }
     }
 
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PPMMeter::process_samples exit");
