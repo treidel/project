@@ -95,8 +95,8 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
         v1::Response *response_p = responseornotification.mutable_response();
         responseornotification.set_type(v1::ResponseOrNotification_ResponseOrNotificationType_RESPONSE);
 
-        // assume failure
-        response_p->set_success(false);
+        // assume success
+        response_p->set_success(true);
 
         // send back the same response type as the request
         response_p->set_type(request.type());
@@ -122,24 +122,58 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
             // validate the requested level type
             switch (setlevel.type())
             {
-            case v1::NONE:
-            case v1::PPM:
-            case v1::DIGITALPEAK:
-            case v1::VU:
+                case v1::NONE:
+                    // remove the existing meter (if one exists)
+                    m_processor_p->clear_meter(channel_p);
+                    break;
+
+                case v1::PPM:
+                {
+                    // create the meter
+                    AUDIOProcessor::PeakMeter *meter_p = new AUDIOProcessor::PPMMeter(channel_p);
+                    // add the hold time if it's been configured
+                    if (true != setlevel.has_holdtime())
+                    {
+                        meter_p->set_hold_time(setlevel.holdtime());
+                    }
+                    // add the meter
+                    m_processor_p->add_meter(meter_p);
+                }
+                break;
+
+                case v1::DIGITALPEAK:
+                {
+                    // create the meter
+                    AUDIOProcessor::PeakMeter *meter_p = new AUDIOProcessor::DigitalPeakMeter(channel_p);
+                    // add the hold time if it's been configured
+                    if (true != setlevel.has_holdtime())
+                    {
+                        meter_p->set_hold_time(setlevel.holdtime());
+                    }
+                    // add the meter
+                    m_processor_p->add_meter(meter_p);
+                }
+                break;
+            
+                case v1::VU:
+                {
+                    // create the meter
+                    AUDIOProcessor::Meter *meter_p = new AUDIOProcessor::VUMeter(channel_p);
+                    m_processor_p->add_meter(meter_p);
+                }
+                break;
+
+                default:
+                    LOG4CXX_ERROR(g_logger, "invalid type=" + to_string(setlevel.type()) + " received from client");   
+                    result_code = RESULT_CODE_ERROR;
+                    break;
+            }
+            // populate the response unless we've set an error code
+            if (RESULT_CODE_OK == result_code)
             {
-                // set the type in the audio processor
-                m_processor_p->	set_level_type_for_channel((AUDIOProcessor::LevelType)setlevel.type(), channel_p);
-                // populate the response
                 v1::SetLevelResponse *sl_p = response_p->mutable_setlevel();
             }
-            // success
-            response_p->set_success(true);
             break;
-
-            default:
-                LOG4CXX_ERROR(g_logger, "unknown level type=" << setlevel.type());
-                break;
-            }
         }
         break;
 
@@ -156,16 +190,20 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
                 AUDIOChannel *channel_p = it->second;
                 qac_p->add_channels(channel_p->get_index());
             }
-            response_p->set_success(true);
         }
         break;
 
         default:
             LOG4CXX_ERROR(g_logger, "unknown request type=" << request.type());
+            result_code = RESULT_CODE_ERROR;
             break;
-
         }
-
+        
+        // set the failure flag is necessary
+        if (RESULT_CODE_OK != result_code)
+        {
+            response_p->set_success(false);
+        }
 
         // populate the response
         *response_pp = populate_response(responseornotification);
@@ -210,11 +248,13 @@ ResultCode Control::handle_results(const size_t num_results, const AUDIOProcesso
         {
             case AUDIOProcessor::LEVEL_TYPE_PPM:
                 record_p->set_type(v1::PPM);
-                record_p->set_peakindb(results[counter].values.peakInDB);
+                record_p->set_peakindb(results[counter].values.peak.peakInDB);
+                record_p->set_holdindb(results[counter].values.peak.holdInDB);
                 break;            
             case AUDIOProcessor::LEVEL_TYPE_DIGITALPEAK:
                 record_p->set_type(v1::DIGITALPEAK);
-                record_p->set_peakindb(results[counter].values.peakInDB);
+                record_p->set_peakindb(results[counter].values.peak.peakInDB);
+                record_p->set_holdindb(results[counter].values.peak.holdInDB);
                 break;
             case AUDIOProcessor::LEVEL_TYPE_VU:
                 record_p->set_type(v1::VU);
