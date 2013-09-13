@@ -218,6 +218,15 @@ const std::string to_string(const char *string_p)
     return value;
 }
 
+const std::string to_string(float value)
+{
+    std::stringstream ss;
+    std::string s;
+    ss << value;
+    s = ss.str();
+    return s;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // private function implementations 
 ///////////////////////////////////////////////////////////////////////////////
