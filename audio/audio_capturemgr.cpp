@@ -46,21 +46,21 @@ AUDIOCaptureManager *AUDIOCaptureManager::g_instance_p = NULL;
 
 AUDIOCaptureManager *AUDIOCaptureManager::get_instance()
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::get_instance enter");
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager::get_instance enter");
 
     if (NULL == g_instance_p)
     {
         g_instance_p = new AUDIOCaptureManager();
     }
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::get_instance exit " << g_instance_p);
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager::get_instance exit " << g_instance_p);
 
     return g_instance_p;
 }
 
 AUDIOCaptureManager::~AUDIOCaptureManager()
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::~AUDIOCaptureManager enter");
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager::~AUDIOCaptureManager enter");
 
     for (std::list<AUDIOCaptureInstance *>::iterator it = m_instances.begin();
             it != m_instances.end();
@@ -70,30 +70,30 @@ AUDIOCaptureManager::~AUDIOCaptureManager()
     }
     g_instance_p = NULL;
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::~AUDIOCaptureManager enter");
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager::~AUDIOCaptureManager enter");
 }
 
 void AUDIOCaptureManager::add_handler(Handler *handler_p)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::add_handler enter " << handler_p);
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager::add_handler enter " << handler_p);
 
     m_handlers.push_front(handler_p);
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::add_handler exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager::add_handler exit");
 }
 
 void AUDIOCaptureManager::remove_handler(Handler *handler_p)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::remove_handler enter " << handler_p);
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager::remove_handler enter " << handler_p);
 
     m_handlers.remove(handler_p);
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::remove_handler exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager::remove_handler exit");
 }
 
 AUDIOChannel *AUDIOCaptureManager::find_channel(const AUDIOChannel::Index index)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::find_channel enter " << index);
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager::find_channel enter " << index);
     // assume we won't find it 
     AUDIOChannel *channel_p = NULL;
     // if we have a meter let it do its thing
@@ -103,17 +103,17 @@ AUDIOChannel *AUDIOCaptureManager::find_channel(const AUDIOChannel::Index index)
         channel_p = it->second;
     }
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::find_channel exit channel_p=" << channel_p);
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager::find_channel exit channel_p=" << channel_p);
     return channel_p;
 }
 
 void AUDIOCaptureManager::add_channel(AUDIOChannel *channel_p)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::add_channel enter " << channel_p);
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager::add_channel enter " << channel_p);
 
     m_channels_map[channel_p->get_index()] = channel_p;
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::add_channel exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager::add_channel exit");
 
 }
 
@@ -126,7 +126,7 @@ AUDIOCaptureManager::AUDIOCaptureManager() :
     m_loop_p(ev_default_loop(0))
 
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::AUDIOCaptureManager enter");
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager::AUDIOCaptureManager enter");
 
     // query the list of formats we support
     std::list<snd_pcm_format_t> format_list = AUDIOFormatterFactory::fetch_audio_format_list();
@@ -137,7 +137,7 @@ AUDIOCaptureManager::AUDIOCaptureManager() :
          (0 == rc_card) && (0 <= card_index);
          rc_card = snd_card_next(&card_index))
     {
-        LOG4CXX_DEBUG(g_logger, "found card=" + to_string(card_index));
+        LOG4CXX_TRACE(g_logger, "found card=" + to_string(card_index));
 
         char card[3 + 10 + 1];
         sprintf(card, "hw:%d", card_index);
@@ -154,7 +154,7 @@ AUDIOCaptureManager::AUDIOCaptureManager() :
                 (0 == rc_device) && (0 <= device_index);
                 rc_device = snd_ctl_pcm_next_device(card_handle_p, &device_index))
         {
-            LOG4CXX_DEBUG(g_logger, "found device=" + to_string(card_index) + "," + to_string(device_index));
+            LOG4CXX_TRACE(g_logger, "found device=" + to_string(card_index) + "," + to_string(device_index));
 
             char device[3 + 10 + 1 + 10 + 1];
             sprintf(device, "hw:%d,%d", card_index, device_index);
@@ -163,7 +163,7 @@ AUDIOCaptureManager::AUDIOCaptureManager() :
             int rc = snd_pcm_open(&device_handle_p, device, SND_PCM_STREAM_CAPTURE, SND_PCM_CLASS_GENERIC);
             if (0 > rc)
             {
-                LOG4CXX_DEBUG(g_logger, "snd_pcm_open returned error=" + to_string(rc) + " " + snd_strerror(rc) + " for device=" + device);
+                LOG4CXX_TRACE(g_logger, "snd_pcm_open returned error=" + to_string(rc) + " " + snd_strerror(rc) + " for device=" + device);
                 continue;
             }
             
@@ -196,7 +196,7 @@ AUDIOCaptureManager::AUDIOCaptureManager() :
             // check if we found a supported format
             if (SND_PCM_FORMAT_UNKNOWN == format)
             {
-                LOG4CXX_DEBUG(g_logger, "no supported audio formats found for device=" << device);
+                LOG4CXX_TRACE(g_logger, "no supported audio formats found for device=" << device);
                 // close the device
                 snd_pcm_close(device_handle_p);
                 // release the memory
@@ -280,17 +280,17 @@ AUDIOCaptureManager::AUDIOCaptureManager() :
         snd_ctl_close(card_handle_p);
     }
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager:AUDIOCaptureManager exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager:AUDIOCaptureManager exit");
 }
 
 AUDIOChannel::Index AUDIOCaptureManager::allocate_index()
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::allocate_index enter");
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager::allocate_index enter");
 
     m_channel_count++;
     AUDIOChannel::Index index = (AUDIOChannel::Index)m_channel_count;
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureManager::allocate_index exit " << index);
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureManager::allocate_index exit " << index);
     return index;
 }
 

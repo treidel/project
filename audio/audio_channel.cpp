@@ -42,7 +42,7 @@ AUDIOChannel::AUDIOChannel(Index index, unsigned int sample_rate) :
     m_sample_rate(sample_rate),
     m_loop_p(ev_default_loop(0))
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOChannel::AUDIOChannel enter " << index << " " << sample_rate);
+    LOG4CXX_TRACE(g_logger, "AUDIOChannel::AUDIOChannel enter " << index << " " << sample_rate);
 
     // allocate the pipe file descriptors
     int fds[2];
@@ -62,12 +62,12 @@ AUDIOChannel::AUDIOChannel(Index index, unsigned int sample_rate) :
     // register the listener with the loop
     ev_io_start(m_loop_p, &m_watcher);
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOChannel::AUDIOChannel exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOChannel::AUDIOChannel exit");
 }
 
 AUDIOChannel::~AUDIOChannel()
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOChannel::~AUDIOChannel enter");
+    LOG4CXX_TRACE(g_logger, "AUDIOChannel::~AUDIOChannel enter");
 
     // stop the watcher
     ev_io_stop(m_loop_p, &m_watcher);
@@ -75,7 +75,7 @@ AUDIOChannel::~AUDIOChannel()
     close(m_read_fd);
     close(m_write_fd);
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOChannel::AUDIOChannel exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOChannel::AUDIOChannel exit");
 }
 
 
@@ -85,7 +85,7 @@ AUDIOChannel::~AUDIOChannel()
 
 void AUDIOChannel::read_cb(struct ev_loop *loop_p, struct ev_io *w_p, int revents)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOChannel::read_cb enter " << loop_p << " " << w_p << " " << revents);
+    LOG4CXX_TRACE(g_logger, "AUDIOChannel::read_cb enter " << loop_p << " " << w_p << " " << revents);
 
     // get our object
     AUDIOChannel *channel_p = (AUDIOChannel *)w_p->data;
@@ -119,7 +119,7 @@ void AUDIOChannel::read_cb(struct ev_loop *loop_p, struct ev_io *w_p, int revent
         }
     }
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOChannel::read_cb exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOChannel::read_cb exit");
 }
 
 

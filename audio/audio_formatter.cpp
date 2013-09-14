@@ -36,13 +36,13 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("audio.formatter")
 
 AUDIOFormatter::~AUDIOFormatter()
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOFormatter::~AUDIOFormatter enter");
-    LOG4CXX_DEBUG(g_logger, "AUDIOFormatter::~AUDIOFormatter exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOFormatter::~AUDIOFormatter enter");
+    LOG4CXX_TRACE(g_logger, "AUDIOFormatter::~AUDIOFormatter exit");
 }
 
 AUDIOFormatter *AUDIOFormatterFactory::create_audio_formatter_p(snd_pcm_format_t format)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOFormatterFactory::create_audi_formatter_p enter " << format);
+    LOG4CXX_TRACE(g_logger, "AUDIOFormatterFactory::create_audi_formatter_p enter " << format);
 
     AUDIOFormatter *formatter_p = NULL;
 
@@ -59,38 +59,38 @@ AUDIOFormatter *AUDIOFormatterFactory::create_audio_formatter_p(snd_pcm_format_t
         break;
     }
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOFormatterFactory::create_audio_formatter_p exit " << formatter_p);
+    LOG4CXX_TRACE(g_logger, "AUDIOFormatterFactory::create_audio_formatter_p exit " << formatter_p);
     return formatter_p;
 }
 
 std::list<snd_pcm_format_t> AUDIOFormatterFactory::fetch_audio_format_list()
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOFormatterFactory::fetch_audio_format_list entry");
+    LOG4CXX_TRACE(g_logger, "AUDIOFormatterFactory::fetch_audio_format_list entry");
 
     std::list<snd_pcm_format_t> list;
     list.push_back(SND_PCM_FORMAT_FLOAT_LE);
     list.push_back(SND_PCM_FORMAT_S16_LE);
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOFormatterFactory::fetch_audio_format_list exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOFormatterFactory::fetch_audio_format_list exit");
 
     return list;
 }
 
 AUDIOSigned16BitFormatter::AUDIOSigned16BitFormatter()
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOSigned16BitFormatter::AUDIOSigned16BitFormatter enter");
-    LOG4CXX_DEBUG(g_logger, "AUDIOSigned16BitFormatter::AUDIOSigned16BitFormatter exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOSigned16BitFormatter::AUDIOSigned16BitFormatter enter");
+    LOG4CXX_TRACE(g_logger, "AUDIOSigned16BitFormatter::AUDIOSigned16BitFormatter exit");
 }
 
 AUDIOSigned16BitFormatter::~AUDIOSigned16BitFormatter()
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOSigned16BitFormatter::~AUDIOSigned16BitFormatter enter");
-    LOG4CXX_DEBUG(g_logger, "AUDIOSigned16BitFormatter::~AUDIOSigned16BitFormatter exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOSigned16BitFormatter::~AUDIOSigned16BitFormatter enter");
+    LOG4CXX_TRACE(g_logger, "AUDIOSigned16BitFormatter::~AUDIOSigned16BitFormatter exit");
 }
 
 void AUDIOSigned16BitFormatter::format_samples(uint8_t *raw_buffer_p, AUDIOChannel::Index index, AUDIOChannel::Sample *sample_buffer_p, size_t num_samples)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOSigned16BitFormatter::format_samples enter " + to_string(raw_buffer_p) + " " + to_string(index) + " " + to_string(sample_buffer_p) + " " + to_string(num_samples));
+    LOG4CXX_TRACE(g_logger, "AUDIOSigned16BitFormatter::format_samples enter " + to_string(raw_buffer_p) + " " + to_string(index) + " " + to_string(sample_buffer_p) + " " + to_string(num_samples));
 
     for (int counter = 0; counter < num_samples; counter++)
     {
@@ -98,24 +98,24 @@ void AUDIOSigned16BitFormatter::format_samples(uint8_t *raw_buffer_p, AUDIOChann
         sample_buffer_p[counter] = ((AUDIOChannel::Sample)sample) * c_normalization_factor;
     }
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOSigned16BitFormatter::format_sample exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOSigned16BitFormatter::format_sample exit");
 }
 
 AUDIOFloatFormatter::AUDIOFloatFormatter()
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOFloatFormatter::AUDIOFloatFormatter enter");
-    LOG4CXX_DEBUG(g_logger, "AUDIOFloatFormatter::AUDIOFloatFormatter exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOFloatFormatter::AUDIOFloatFormatter enter");
+    LOG4CXX_TRACE(g_logger, "AUDIOFloatFormatter::AUDIOFloatFormatter exit");
 }
 
 AUDIOFloatFormatter::~AUDIOFloatFormatter()
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOFloatFormatter::~AUDIOFloatFormatter enter");
-    LOG4CXX_DEBUG(g_logger, "AUDIOFloatFormatter::~AUDIOFloatFormatter exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOFloatFormatter::~AUDIOFloatFormatter enter");
+    LOG4CXX_TRACE(g_logger, "AUDIOFloatFormatter::~AUDIOFloatFormatter exit");
 }
 
 void AUDIOFloatFormatter::format_samples(uint8_t *raw_buffer_p, AUDIOChannel::Index index, AUDIOChannel::Sample *sample_buffer_p, size_t num_samples)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOFloatFormatter::format_samples enter " + to_string(raw_buffer_p) + " " + to_string(index) + " " + to_string(sample_buffer_p) + " " + to_string(num_samples));
+    LOG4CXX_TRACE(g_logger, "AUDIOFloatFormatter::format_samples enter " + to_string(raw_buffer_p) + " " + to_string(index) + " " + to_string(sample_buffer_p) + " " + to_string(num_samples));
 
 
     for (int counter = 0; counter < num_samples; counter++)
@@ -124,7 +124,7 @@ void AUDIOFloatFormatter::format_samples(uint8_t *raw_buffer_p, AUDIOChannel::In
         sample_buffer_p[counter] = sample;
     }
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOSigned16BitFormatter::format_sample exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOSigned16BitFormatter::format_sample exit");
 }
 
 
@@ -134,8 +134,8 @@ void AUDIOFloatFormatter::format_samples(uint8_t *raw_buffer_p, AUDIOChannel::In
 
 AUDIOFormatter::AUDIOFormatter()
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOFormatter::AUDIOFormatter enter");
-    LOG4CXX_DEBUG(g_logger, "AUDIOFormatter::AUDIOFormatter exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOFormatter::AUDIOFormatter enter");
+    LOG4CXX_TRACE(g_logger, "AUDIOFormatter::AUDIOFormatter exit");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

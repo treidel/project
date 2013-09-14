@@ -47,7 +47,7 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
     m_channel_count(channel_count),
     m_abort(false)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::AUDIOCaptureInstance enter " << manager_p << " " << handle_p);
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureInstance::AUDIOCaptureInstance enter " << manager_p << " " << handle_p);
 
     // resize the vector to hold the number of channels we have
     m_channels.resize(m_channel_count);
@@ -72,12 +72,12 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
         return;
     }
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::AUDIOCaptureInstance exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureInstance::AUDIOCaptureInstance exit");
 }
 
 AUDIOCaptureInstance::~AUDIOCaptureInstance()
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::~AUDIOCaptureInstance enter");
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureInstance::~AUDIOCaptureInstance enter");
 
     // tell the thread to abort
     m_abort = true;
@@ -102,7 +102,7 @@ AUDIOCaptureInstance::~AUDIOCaptureInstance()
     // free the string
     free(m_device);
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::~AUDIOCaptureInstance exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureInstance::~AUDIOCaptureInstance exit");
 }
 
 
@@ -112,7 +112,7 @@ AUDIOCaptureInstance::~AUDIOCaptureInstance()
 
 void *AUDIOCaptureInstance::thread_handler(void *arg)
 {
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::thread_handler enter " << arg);
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureInstance::thread_handler enter " << arg);
 
     // get the object instance
     AUDIOCaptureInstance *instance_p = (AUDIOCaptureInstance *)arg;
@@ -197,7 +197,7 @@ error:
     // free the channel buffer
     free(channel_buffer_p);
 
-    LOG4CXX_DEBUG(g_logger, "AUDIOCaptureInstance::thread_handler exit");
+    LOG4CXX_TRACE(g_logger, "AUDIOCaptureInstance::thread_handler exit");
 
     return NULL;
 }
