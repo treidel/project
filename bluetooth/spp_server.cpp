@@ -58,7 +58,7 @@ SPPServer::SPPServer(uuid_t uuid) :
     m_uuid(uuid), m_session_p(NULL), m_loop_p(ev_default_loop(0)), m_socket(
         0), m_connection_p(NULL)
 {
-    LOG4CXX_DEBUG(g_logger, "SPPServer::SPPServer enter");
+    LOG4CXX_TRACE(g_logger, "SPPServer::SPPServer enter");
 
     // create the SPP socket
     m_socket = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
@@ -79,7 +79,7 @@ SPPServer::SPPServer(uuid_t uuid) :
     // allocate the channel
     uint8_t channel = allocate_channel(m_socket, &loc_addr);
 
-    LOG4CXX_DEBUG(g_logger, "SPPServer::SPPServer channel=" + to_string(loc_addr.rc_channel));
+    LOG4CXX_DEBUG(g_logger, "allocated channel=" + to_string(loc_addr.rc_channel));
 
     // listen for connections with no backlog
     listen(m_socket, 0);
@@ -147,12 +147,12 @@ SPPServer::SPPServer(uuid_t uuid) :
     // register the listener with the loop
     ev_io_start(m_loop_p, &m_watcher);
 
-    LOG4CXX_DEBUG(g_logger, "SPPServer::SPPServer exit");
+    LOG4CXX_TRACE(g_logger, "SPPServer::SPPServer exit");
 }
 
 SPPServer::~SPPServer()
 {
-    LOG4CXX_DEBUG(g_logger, "SPPServer::~SPPServer enter");
+    LOG4CXX_TRACE(g_logger, "SPPServer::~SPPServer enter");
 
     // stop the watcher
     ev_io_stop(m_loop_p, &m_watcher);
@@ -161,7 +161,7 @@ SPPServer::~SPPServer()
     // close the socket
     close(m_socket);
 
-    LOG4CXX_DEBUG(g_logger, "SPPServer::~SPPServer exit");
+    LOG4CXX_TRACE(g_logger, "SPPServer::~SPPServer exit");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -170,7 +170,7 @@ SPPServer::~SPPServer()
 
 void SPPServer::socket_cb(EV_P_ ev_io *w_p, int revents)
 {
-    LOG4CXX_DEBUG(g_logger, "SPPServer::socket_cb enter " << w_p << " " << revents);
+    LOG4CXX_TRACE(g_logger, "SPPServer::socket_cb enter " << w_p << " " << revents);
     // get the object
     SPPServer *server_p = (SPPServer *)(w_p->data);
     // we're only signalled when a new connection has arrived so let's accept it
@@ -201,7 +201,7 @@ void SPPServer::socket_cb(EV_P_ ev_io *w_p, int revents)
     }
 
     // done
-    LOG4CXX_DEBUG(g_logger, "SPPServer::socket_cb exit");
+    LOG4CXX_TRACE(g_logger, "SPPServer::socket_cb exit");
 }
 
 uint8_t allocate_channel(int sock, struct sockaddr_rc *sockaddr_p)

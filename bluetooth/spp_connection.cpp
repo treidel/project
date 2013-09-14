@@ -48,7 +48,7 @@ SPPConnection::SPPConnection(SPPServer *server_p, int socket, const bdaddr_t *re
     m_loop_p(ev_default_loop(0)),
     m_handler_p(APPManager::createSPPConnector(this))
 {
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::SPPConnection enter " << server_p << " " << to_string(socket) << " " << format_mac_addr(remote_addr_p));
+    LOG4CXX_TRACE(g_logger, "SPPConnection::SPPConnection enter " << server_p << " " << to_string(socket) << " " << format_mac_addr(remote_addr_p));
 
     // store the remote address
     memcpy(&m_remote_addr, remote_addr_p, sizeof(bdaddr_t));
@@ -71,12 +71,12 @@ SPPConnection::SPPConnection(SPPServer *server_p, int socket, const bdaddr_t *re
     // only register the rx size listener with the loop
     ev_io_start(m_loop_p, &m_receive_watcher);
 
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::SPPConnection exit");
+    LOG4CXX_TRACE(g_logger, "SPPConnection::SPPConnection exit");
 }
 
 SPPConnection::~SPPConnection()
 {
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::~SPPConnection enter");
+    LOG4CXX_TRACE(g_logger, "SPPConnection::~SPPConnection enter");
 
     // remove the watchers
     ev_io_stop(m_loop_p, &m_receive_watcher);
@@ -96,7 +96,7 @@ SPPConnection::~SPPConnection()
     // clear ourselves in the server
     m_server_p->m_connection_p = NULL;
 
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::~SPPConnection exit");
+    LOG4CXX_TRACE(g_logger, "SPPConnection::~SPPConnection exit");
 }
 
 const std::string SPPConnection::format_mac_addr(const bdaddr_t *addr_p)
@@ -112,47 +112,47 @@ SPPConnection::Buffer::Buffer() :
     m_message_p(NULL),
     m_remaining(0)
 {
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::Buffer enter");
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::Buffer exit");
+    LOG4CXX_TRACE(g_logger, "SPPConnection::Buffer::Buffer enter");
+    LOG4CXX_TRACE(g_logger, "SPPConnection::Buffer::Buffer exit");
 }
 
 SPPConnection::Buffer::~Buffer()
 {
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::~Buffer enter");
+    LOG4CXX_TRACE(g_logger, "SPPConnection::Buffer::~Buffer enter");
     if (NULL != m_message_p)
     {
         delete m_message_p;
     }
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::~Buffer exit");
+    LOG4CXX_TRACE(g_logger, "SPPConnection::Buffer::~Buffer exit");
 }
 
 void SPPConnection::Buffer::clear()
 {
-   LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::clear enter");
+   LOG4CXX_TRACE(g_logger, "SPPConnection::Buffer::clear enter");
    if (NULL != m_message_p)
    {
        delete m_message_p;
        m_message_p = NULL;
        m_remaining = 0;
    }
-   LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::clear exit");
+   LOG4CXX_TRACE(g_logger, "SPPConnection::Buffer::clear exit");
 }
 
 size_t SPPConnection::Buffer::calculate_offset()
 {
-   LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::Buffer enter");
+   LOG4CXX_TRACE(g_logger, "SPPConnection::Buffer::Buffer enter");
    ASSERT(NULL != m_message_p);
    return (m_message_p->get_length() - m_remaining);
-   LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::Buffer exit");
+   LOG4CXX_TRACE(g_logger, "SPPConnection::Buffer::Buffer exit");
 }
 
 void SPPConnection::Buffer::set_message(APPManager::Message *message_p)
 {
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::set_message enter " << message_p);
+    LOG4CXX_TRACE(g_logger, "SPPConnection::Buffer::set_message enter " << message_p);
     ASSERT(NULL != message_p);
     m_message_p = message_p;
     m_remaining = message_p->get_length();
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::Buffer::set_message exit");
+    LOG4CXX_TRACE(g_logger, "SPPConnection::Buffer::set_message exit");
 }
 ///////////////////////////////////////////////////////////////////////////////
 // APPManager:NotificationHandler implementation
@@ -160,7 +160,7 @@ void SPPConnection::Buffer::set_message(APPManager::Message *message_p)
 
 ResultCode SPPConnection::send_notification(APPManager::Message **notification_pp)
 {
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::send_notification enter " << notification_pp);
+    LOG4CXX_TRACE(g_logger, "SPPConnection::send_notification enter " << notification_pp);
 
     // queue the message to send when the socket is ready to write
     m_transmit_queue.push(*notification_pp);
@@ -171,7 +171,7 @@ ResultCode SPPConnection::send_notification(APPManager::Message **notification_p
     // tell the caller we took overship of the message
     *notification_pp = NULL;
 
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::send_notification exit");
+    LOG4CXX_TRACE(g_logger, "SPPConnection::send_notification exit");
 
     return RESULT_CODE_OK;
 }
@@ -182,7 +182,7 @@ ResultCode SPPConnection::send_notification(APPManager::Message **notification_p
 
 void SPPConnection::receive_cb (EV_P_ ev_io *w_p, int revents)
 {
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::receive_cb enter " << w_p << " " << revents);
+    LOG4CXX_TRACE(g_logger, "SPPConnection::receive_cb enter " << w_p << " " << revents);
 
     do
     {
@@ -203,7 +203,7 @@ void SPPConnection::receive_cb (EV_P_ ev_io *w_p, int revents)
         }
         if (0 != (revents & EV_READ))
         {
-            LOG4CXX_DEBUG(g_logger, "SPPConnection::receive_cb EV_READ");
+            LOG4CXX_TRACE(g_logger, "SPPConnection::receive_cb EV_READ");
 
             // see if we need to read the size
             if (true == receive_p->is_empty())
@@ -289,12 +289,12 @@ void SPPConnection::receive_cb (EV_P_ ev_io *w_p, int revents)
     }
     while (false);
 
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::receive_cb exit");
+    LOG4CXX_TRACE(g_logger, "SPPConnection::receive_cb exit");
 }
 
 void SPPConnection::transmit_cb(EV_P_ ev_io *w_p, int revents)
 {
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::transmit_cb enter " << w_p << " " << revents);
+    LOG4CXX_TRACE(g_logger, "SPPConnection::transmit_cb enter " << w_p << " " << revents);
 
     // use a do-while to provide a simple break-out
     do
@@ -307,7 +307,7 @@ void SPPConnection::transmit_cb(EV_P_ ev_io *w_p, int revents)
 
         if (0 != (revents & EV_ERROR))
         {
-            LOG4CXX_DEBUG(g_logger, "SPPConnection::transmit_cb EV_ERROR");
+            LOG4CXX_TRACE(g_logger, "SPPConnection::transmit_cb EV_ERROR");
             // disconnect
             disconnect(&connection_p);
             // done
@@ -389,12 +389,12 @@ void SPPConnection::transmit_cb(EV_P_ ev_io *w_p, int revents)
     }
     while (false);
 
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::transmit_cb exit");
+    LOG4CXX_TRACE(g_logger, "SPPConnection::transmit_cb exit");
 }
 
 void SPPConnection::disconnect(SPPConnection **connection_pp)
 {
-	LOG4CXX_DEBUG(g_logger, "SPPConnection::disconnect enter " << connection_pp);
+	LOG4CXX_TRACE(g_logger, "SPPConnection::disconnect enter " << connection_pp);
 
 	// get the object itself
 	SPPConnection *connection_p = *connection_pp;
@@ -411,5 +411,5 @@ void SPPConnection::disconnect(SPPConnection **connection_pp)
     // delete the connection
     delete connection_p;
 
-    LOG4CXX_DEBUG(g_logger, "SPPConnection::disconnect exit");
+    LOG4CXX_TRACE(g_logger, "SPPConnection::disconnect exit");
 }
