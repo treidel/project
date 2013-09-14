@@ -45,24 +45,24 @@ Control::Control(AUDIOProcessor *processor_p, APPManager::NotificationHandler *h
     m_processor_p(processor_p),
     m_handler_p(handler_p)
 {
-    LOG4CXX_DEBUG(g_logger, "Control::Control enter " << handler_p);
+    LOG4CXX_TRACE(g_logger, "Control::Control enter " << handler_p);
 
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     // add ourselves as a handler
     m_processor_p->add_handler(this);
 
-    LOG4CXX_DEBUG(g_logger, "Control::Control exit");
+    LOG4CXX_TRACE(g_logger, "Control::Control exit");
 }
 
 Control::~Control()
 {
-    LOG4CXX_DEBUG(g_logger, "Control::Contol enter");
+    LOG4CXX_TRACE(g_logger, "Control::Contol enter");
 
     // remove ourselves as a handler
     m_processor_p->remove_handler(this);
 
-    LOG4CXX_DEBUG(g_logger, "Control::Contol exit");
+    LOG4CXX_TRACE(g_logger, "Control::Contol exit");
 }
 
 
@@ -72,7 +72,7 @@ Control::~Control()
 
 ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::Message **response_pp)
 {
-    LOG4CXX_DEBUG(g_logger, "Control::handler_request enter " << request_p << " " << response_pp);
+    LOG4CXX_TRACE(g_logger, "Control::handler_request enter " << request_p << " " << response_pp);
 
     // assume success
     ResultCode result_code = RESULT_CODE_OK;
@@ -211,7 +211,7 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
     while (false);
 
     // done
-    LOG4CXX_DEBUG(g_logger, "Control::handler_request exit " << result_code);
+    LOG4CXX_TRACE(g_logger, "Control::handler_request exit " << result_code);
     return result_code;
 }
 
@@ -223,7 +223,7 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
 
 ResultCode Control::handle_results(const size_t num_results, const AUDIOProcessor::ResultData results[])
 {
-    LOG4CXX_DEBUG(g_logger, "Control::handle_results enter " << results);
+    LOG4CXX_TRACE(g_logger, "Control::handle_results enter " << results);
 
     // get the response message ready
     v1::ResponseOrNotification responseornotification;
@@ -281,7 +281,7 @@ ResultCode Control::handle_results(const size_t num_results, const AUDIOProcesso
         ASSERT(NULL == message_p);
     }
 
-    LOG4CXX_DEBUG(g_logger, "Control::handle_results exit " << rc);
+    LOG4CXX_TRACE(g_logger, "Control::handle_results exit " << rc);
 
     return rc;
 }
@@ -294,7 +294,7 @@ ResultCode Control::handle_results(const size_t num_results, const AUDIOProcesso
 
 APPManager::Message *populate_response(::google::protobuf::MessageLite& message)
 {
-    LOG4CXX_DEBUG(g_logger, "Control::populate_response enter " << &message);
+    LOG4CXX_TRACE(g_logger, "Control::populate_response enter " << &message);
 
     // allocate the memory for the response
     APPManager::Message *response_p = new APPManager::Message(message.ByteSize());
@@ -306,7 +306,7 @@ APPManager::Message *populate_response(::google::protobuf::MessageLite& message)
         return NULL;
     }
     // done
-    LOG4CXX_DEBUG(g_logger, "Control::populate_response exit " << response_p);
+    LOG4CXX_TRACE(g_logger, "Control::populate_response exit " << response_p);
     return response_p;
 }
 
