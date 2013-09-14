@@ -10,8 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define AUDIO_CHANNEL_ZERO_LEVEL	(0.0f)
-#define BUFFER_SIZE_IN_SAMPLES (2048)
-#define BUFFER_SIZE_IN_BYTES (BUFFER_SIZE_IN_SAMPLES * sizeof(AUDIOChannel::Sample))
+#define CALC_NUM_SAMPLES_FOR_MILLIS(millis, rate)  (((rate) * (millis)) / 1000)
 
 ///////////////////////////////////////////////////////////////////////////////
 // forward declarations

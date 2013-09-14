@@ -248,11 +248,19 @@ void AUDIOProcessor::PPMMeter::process_samples(const size_t buffer_length, AUDIO
 {
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PPMMeter::process_samples enter " + to_string(buffer_length) + " " + to_string(buffer_p));
 
+    AUDIOChannel::Sample min = 1.0f;
+    AUDIOChannel::Sample max = AUDIO_CHANNEL_ZERO_LEVEL;
+
     // calculate the peak amplitude for the signal
     for (int counter = 0; counter < buffer_length; counter++)
     {
         // take the absolute value
         AUDIOChannel::Sample amplitude = fabs(buffer_p[counter]);
+
+        // calculate the min + max amplitude
+        min = std::min(amplitude, min);
+        max = std::max(amplitude, max);
+
         // see if this sample is larger then the current peak
         if (amplitude > get_peak())
         {
@@ -268,6 +276,8 @@ void AUDIOProcessor::PPMMeter::process_samples(const size_t buffer_length, AUDIO
             set_peak(new_peak);
         }
     }
+
+    LOG4CXX_DEBUG(g_logger, "ppm min=" + to_string(min) + " max=" + to_string(max));
 
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PPMMeter::process_samples exit");
 }
@@ -303,6 +313,9 @@ AUDIOProcessor::ResultData AUDIOProcessor::PPMMeter::create_result_data()
         // do the voltage to dBu conversion 
         data.values.peak.holdInDB = 20.f * log10f(voltage / ZERO_DB_PEAK_VOLTAGE);
     }
+
+    LOG4CXX_DEBUG(g_logger, "ppm peak(dB)=" + to_string(data.values.peak.peakInDB) + " hold(dB)=" + to_string(data.values.peak.holdInDB));
+
 
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::PPMMeter::create_result_data exit");
     return data;
@@ -368,6 +381,8 @@ AUDIOProcessor::ResultData AUDIOProcessor::DigitalPeakMeter::create_result_data(
         // do the voltage to dB conversion 
         data.values.peak.holdInDB = 20.f * log10f(get_peak());
     }
+
+    LOG4CXX_DEBUG(g_logger, "digital peak(dB)=" + to_string(data.values.peak.peakInDB) + " hold(dB)=" + to_string(data.values.peak.holdInDB));
 
     // reset the peak
     set_peak(AUDIO_CHANNEL_ZERO_LEVEL);
@@ -445,6 +460,8 @@ AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
 
     // convert dBm to VU where 4 dBM = 0VU
     data.values.vuInUnits = voltageInDB - ZERO_VU_LEVEL_IN_DB;
+
+    LOG4CXX_DEBUG(g_logger, "vu value(units)=" + to_string(data.values.vuInUnits));
 
     LOG4CXX_DEBUG(g_logger, "AUDIOProcessor::VUMeter::create_result_data exit");
     return data;

@@ -71,6 +71,7 @@ private:
     snd_pcm_t *m_handle_p;
     char *m_device;
     pthread_t m_thread_id;
+    unsigned int m_rate;
     size_t m_channel_count;
     bool m_abort;
 

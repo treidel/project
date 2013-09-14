@@ -28,11 +28,6 @@
 
 static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("audio.channel"));
 
-// we get away with having a single buffer by virtue of being single threaded
-// in event loop
-static AUDIOChannel::Sample g_buffer[BUFFER_SIZE_IN_BYTES];
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // private function declarations
 ///////////////////////////////////////////////////////////////////////////////
@@ -83,6 +78,7 @@ AUDIOChannel::~AUDIOChannel()
     LOG4CXX_DEBUG(g_logger, "AUDIOChannel::AUDIOChannel exit");
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // private function implementations
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,8 +89,15 @@ void AUDIOChannel::read_cb(struct ev_loop *loop_p, struct ev_io *w_p, int revent
 
     // get our object
     AUDIOChannel *channel_p = (AUDIOChannel *)w_p->data;
+
+    // calculate the number of samples in 50ms of samples 
+    const unsigned int num_samples = CALC_NUM_SAMPLES_FOR_MILLIS(50, channel_p->get_sample_rate());
+
+    // setup buffer space on the stack for the audio samples
+    AUDIOChannel::Sample buffer[num_samples];
+
     // read the data from the pipe
-    int rc = read(channel_p->get_read_fd(), g_buffer, BUFFER_SIZE_IN_BYTES);
+    int rc = read(channel_p->get_read_fd(), buffer, sizeof(buffer));
     if (0 > rc)
     {
         LOG4CXX_ERROR(g_logger, "read returned error " << rc);
@@ -108,7 +111,7 @@ void AUDIOChannel::read_cb(struct ev_loop *loop_p, struct ev_io *w_p, int revent
     {
         // call the handler to do something useful with this audio frame
         AUDIOCaptureManager::Handler *handler_p = *iter;
-        ResultCode result = handler_p->handle_samples(channel_p, BUFFER_SIZE_IN_SAMPLES, g_buffer);
+        ResultCode result = handler_p->handle_samples(channel_p, num_samples, buffer);
         if (RESULT_CODE_OK != result)
         {
             LOG4CXX_ERROR(g_logger, "handler_p->handle_samples returned error " << result);

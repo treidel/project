@@ -41,6 +41,7 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("audio.captureinst
 
 AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const char* device, size_t channel_count, snd_pcm_format_t format, unsigned int rate, snd_pcm_t *handle_p) :
     m_device(strdup(device)),
+    m_rate(rate),
     m_handle_p(handle_p),
     m_formatter_p(AUDIOFormatterFactory::create_audio_formatter_p(format)),
     m_channel_count(channel_count),
@@ -119,12 +120,15 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
     // get the channel count locally for convenience
     const size_t channel_count = instance_p->m_channel_count;
 
+    // calculate the number of samples in 50ms of samples 
+    const unsigned int num_samples = CALC_NUM_SAMPLES_FOR_MILLIS(50, instance_p->m_rate);
+
     // allocate a buffer to hold raw audio data
-    const snd_pcm_uframes_t buffer_length = BUFFER_SIZE_IN_SAMPLES * channel_count * instance_p->m_formatter_p->sample_sizeof();
+    const snd_pcm_uframes_t buffer_length = num_samples * channel_count * instance_p->m_formatter_p->sample_sizeof();
     uint8_t *raw_buffer_p = (uint8_t *)malloc(buffer_length);
 
     // allocate buffer to hold the normalized data
-    AUDIOChannel::Sample *channel_buffer_p = (AUDIOChannel::Sample *)malloc(BUFFER_SIZE_IN_SAMPLES * sizeof(AUDIOChannel::Sample));
+    AUDIOChannel::Sample *channel_buffer_p = (AUDIOChannel::Sample *)malloc(num_samples * sizeof(AUDIOChannel::Sample));
 
     // tell the audio device we want some data now please
     int rc = snd_pcm_prepare(instance_p->m_handle_p);
@@ -143,7 +147,7 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
     while (false == instance_p->m_abort)
     {
         // read some data
-        rc = snd_pcm_readi(instance_p->m_handle_p, (void *)raw_buffer_p, BUFFER_SIZE_IN_SAMPLES);
+        rc = snd_pcm_readi(instance_p->m_handle_p, (void *)raw_buffer_p, num_samples);
         if (-EPIPE == rc)
         {
             // EPIPE is returned when we were too slow in retrieving a sample
@@ -172,12 +176,12 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
         for (int counter = 0; counter < channel_count; counter++)
         {
             // let the formatter de-interlace convert the samples for us
-            instance_p->m_formatter_p->format_samples(raw_buffer_p, counter, channel_buffer_p, BUFFER_SIZE_IN_SAMPLES);
+            instance_p->m_formatter_p->format_samples(raw_buffer_p, counter, channel_buffer_p, num_samples);
 
             // now feed the samples to our consumer e.g. the channel
             AUDIOChannel *channel_p = instance_p->m_channels[counter];
             // write the data to the pipe
-            rc = write(channel_p->get_write_fd(), channel_buffer_p, BUFFER_SIZE_IN_SAMPLES * sizeof(AUDIOChannel::Sample));
+            rc = write(channel_p->get_write_fd(), channel_buffer_p, num_samples * sizeof(AUDIOChannel::Sample));
             if (rc < 0)
             {
                 LOG4CXX_ERROR(g_logger, "write returned error=" << rc)
