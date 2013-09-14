@@ -42,16 +42,16 @@ SPPConnector::SPPConnector(APPManager::NotificationHandler *handler_p) :
     m_processor_p(new AUDIOProcessor()),
     m_control_p(new Control(m_processor_p, handler_p))
 {
-    LOG4CXX_DEBUG(g_logger, "SPPConnector::SPPConnector enter " << handler_p);
-    LOG4CXX_DEBUG(g_logger, "SPPConnector::SPPConnector exit");
+    LOG4CXX_TRACE(g_logger, "SPPConnector::SPPConnector enter " << handler_p);
+    LOG4CXX_TRACE(g_logger, "SPPConnector::SPPConnector exit");
 }
 
 SPPConnector::~SPPConnector()
 {
-    LOG4CXX_DEBUG(g_logger, "SPPConnector::~SPPConnector enter");
+    LOG4CXX_TRACE(g_logger, "SPPConnector::~SPPConnector enter");
     delete m_control_p;
     delete m_processor_p;
-    LOG4CXX_DEBUG(g_logger, "SPPConnector::~SPPConnector exit");
+    LOG4CXX_TRACE(g_logger, "SPPConnector::~SPPConnector exit");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -60,12 +60,12 @@ SPPConnector::~SPPConnector()
 
 ResultCode SPPConnector::handle_request(APPManager::Message *request_p, APPManager::Message **response_pp)
 {
-    LOG4CXX_DEBUG(g_logger, "SPPConnector::handle_request enter");
+    LOG4CXX_TRACE(g_logger, "SPPConnector::handle_request enter");
 
     // pass thru the request to the control object
     ResultCode result = m_control_p->handle_request(request_p, response_pp);
 
-    LOG4CXX_DEBUG(g_logger, "SPPConnector::handle_request exit " << result);
+    LOG4CXX_TRACE(g_logger, "SPPConnector::handle_request exit " << result);
     return result;
 }
 
