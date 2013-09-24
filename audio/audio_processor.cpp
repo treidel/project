@@ -211,8 +211,8 @@ void AUDIOProcessor::PeakMeter::set_hold_time(uint32_t hold_time)
     LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PeakMeter::set_hold_time enter " + to_string(hold_time));
 
     ASSERT((METER_HOLD_TIME_INVALID == hold_time) || 
-            ((METER_HOLD_TIME_MINIMUM_IN_SECS >= hold_time) && 
-             (METER_HOLD_TIME_MAXIMUM_IN_SECS <= hold_time)));
+            ((METER_HOLD_TIME_MINIMUM_IN_SECS <= hold_time) && 
+             (METER_HOLD_TIME_MAXIMUM_IN_SECS >= hold_time)));
 
     // store the hold time 
     m_hold_time = hold_time;

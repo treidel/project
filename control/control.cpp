@@ -132,7 +132,7 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
                     // create the meter
                     AUDIOProcessor::PeakMeter *meter_p = new AUDIOProcessor::PPMMeter(channel_p);
                     // add the hold time if it's been configured
-                    if (true != setlevel.has_holdtime())
+                    if (true == setlevel.has_holdtime())
                     {
                         meter_p->set_hold_time(setlevel.holdtime());
                     }
@@ -146,7 +146,7 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
                     // create the meter
                     AUDIOProcessor::PeakMeter *meter_p = new AUDIOProcessor::DigitalPeakMeter(channel_p);
                     // add the hold time if it's been configured
-                    if (true != setlevel.has_holdtime())
+                    if (true == setlevel.has_holdtime())
                     {
                         meter_p->set_hold_time(setlevel.holdtime());
                     }
