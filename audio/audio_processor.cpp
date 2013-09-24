@@ -507,6 +507,7 @@ void AUDIOProcessor::PeakMeter::set_peak(AUDIOChannel::Sample peak)
         {
             LOG4CXX_TRACE(g_logger, "updating hold value for channel=" + get_channel_p()->get_index());
             m_hold = peak;
+            m_last_timestamp = current_time;
         }
     }
 

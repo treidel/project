@@ -16,7 +16,8 @@
 // constants
 ///////////////////////////////////////////////////////////////////////////////
 
-static const AUDIOChannel::Sample c_normalization_factor = (1.0 / 32768.0);
+static const AUDIOChannel::Sample c_s16_normalization_factor = (1.0 / 32768.0);
+static const AUDIOChannel::Sample c_s32_normalization_factor = (1.0 / 2147483648.0); 
 
 ///////////////////////////////////////////////////////////////////////////////
 // module variables
@@ -48,15 +49,18 @@ AUDIOFormatter *AUDIOFormatterFactory::create_audio_formatter_p(snd_pcm_format_t
 
     switch (format)
     {
-    case SND_PCM_FORMAT_FLOAT_LE:
-        formatter_p = new AUDIOFloatFormatter();
-        break;
-    case SND_PCM_FORMAT_S16_LE:
-        formatter_p = new AUDIOSigned16BitFormatter();
-        break;
-    default:
-        LOG4CXX_FATAL(g_logger, "unknown audio format=" << format);
-        break;
+        case SND_PCM_FORMAT_FLOAT_LE:
+            formatter_p = new AUDIOFloatFormatter();
+            break;
+        case SND_PCM_FORMAT_S32_LE:
+            formatter_p = new AUDIOSigned32BitFormatter();
+            break;
+        case SND_PCM_FORMAT_S16_LE:
+            formatter_p = new AUDIOSigned16BitFormatter();
+            break;
+        default:
+            LOG4CXX_FATAL(g_logger, "unknown audio format=" << format);
+            break;
     }
 
     LOG4CXX_TRACE(g_logger, "AUDIOFormatterFactory::create_audio_formatter_p exit " << formatter_p);
@@ -69,6 +73,7 @@ std::list<snd_pcm_format_t> AUDIOFormatterFactory::fetch_audio_format_list()
 
     std::list<snd_pcm_format_t> list;
     list.push_back(SND_PCM_FORMAT_FLOAT_LE);
+    list.push_back(SND_PCM_FORMAT_S32_LE);
     list.push_back(SND_PCM_FORMAT_S16_LE);
 
     LOG4CXX_TRACE(g_logger, "AUDIOFormatterFactory::fetch_audio_format_list exit");
@@ -95,7 +100,32 @@ void AUDIOSigned16BitFormatter::format_samples(uint8_t *raw_buffer_p, AUDIOChann
     for (int counter = 0; counter < num_samples; counter++)
     {
         int16_t sample = ((int16_t *)raw_buffer_p)[(2 * counter) + index];
-        sample_buffer_p[counter] = ((AUDIOChannel::Sample)sample) * c_normalization_factor;
+        sample_buffer_p[counter] = ((AUDIOChannel::Sample)sample) * c_s16_normalization_factor;
+    }
+
+    LOG4CXX_TRACE(g_logger, "AUDIOSigned16BitFormatter::format_sample exit");
+}
+
+AUDIOSigned32BitFormatter::AUDIOSigned32BitFormatter()
+{
+    LOG4CXX_TRACE(g_logger, "AUDIOSigned32BitFormatter::AUDIOSigned32BitFormatter enter");
+    LOG4CXX_TRACE(g_logger, "AUDIOSigned32BitFormatter::AUDIOSigned32BitFormatter exit");
+}
+
+AUDIOSigned32BitFormatter::~AUDIOSigned32BitFormatter()
+{
+    LOG4CXX_TRACE(g_logger, "AUDIOSigned32BitFormatter::~AUDIOSigned32BitFormatter enter");
+    LOG4CXX_TRACE(g_logger, "AUDIOSigned32BitFormatter::~AUDIOSigned32BitFormatter exit");
+}
+
+void AUDIOSigned32BitFormatter::format_samples(uint8_t *raw_buffer_p, AUDIOChannel::Index index, AUDIOChannel::Sample *sample_buffer_p, size_t num_samples)
+{
+    LOG4CXX_TRACE(g_logger, "AUDIOSigned32BitFormatter::format_samples enter " + to_string(raw_buffer_p) + " " + to_string(index) + " " + to_string(sample_buffer_p) + " " + to_string(num_samples));
+
+    for (int counter = 0; counter < num_samples; counter++)
+    {
+        int32_t sample = ((int32_t *)raw_buffer_p)[(2 * counter) + index];
+        sample_buffer_p[counter] = ((AUDIOChannel::Sample)sample) * c_s32_normalization_factor;
     }
 
     LOG4CXX_TRACE(g_logger, "AUDIOSigned16BitFormatter::format_sample exit");

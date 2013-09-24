@@ -117,7 +117,7 @@ public:
 
     const size_t sample_sizeof()
     {
-        return sizeof(uint16_t);
+        return sizeof(int16_t);
     }
 };
 
@@ -125,6 +125,35 @@ public:
 // class definition
 ///////////////////////////////////////////////////////////////////////////////
 
+class AUDIOSigned32BitFormatter : public AUDIOFormatter
+{
+
+///////////////////////////////////////////////////////////////////////////////
+// public function declarations
+///////////////////////////////////////////////////////////////////////////////
+
+public:
+    AUDIOSigned32BitFormatter();
+    ~AUDIOSigned32BitFormatter();
+
+
+///////////////////////////////////////////////////////////////////////////////
+// AUDIOFormatter declarations
+///////////////////////////////////////////////////////////////////////////////
+
+public:
+    const snd_pcm_format_t format()
+    {
+        return SND_PCM_FORMAT_S32_LE;
+    }
+
+    void format_samples(uint8_t *raw_buffer_p, AUDIOChannel::Index index, AUDIOChannel::Sample *sample_buffer_p, size_t num_samples);
+
+    const size_t sample_sizeof()
+    {
+        return sizeof(int32_t);
+    }
+};
 
 class AUDIOFloatFormatter : public AUDIOFormatter
 {
