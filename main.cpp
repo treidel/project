@@ -1,6 +1,7 @@
 
 #include "bluetooth/spp_server.h"
 #include "audio/audio_capturemgr.h"
+#include "config.h"
 
 #include <stdlib.h>
 #include <getopt.h>
@@ -15,6 +16,7 @@
 
 #define NAME "Leveling Glass"
 #define DEFAULT_LOG_CONFIG_FILE "/etc/leveling-glass/log.cfg"
+#define DEFAULT_APP_CONFIG_FILE "/etc/leveling-glass/leveling-glass.ini"
 
 // make sure the version macro is defined
 #ifndef VERSION
@@ -41,11 +43,13 @@ static const char *c_version = VERSION;
 static uuid_t g_uuid;
 static SPPServer *g_server_p = NULL;
 static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("main"));
-static const char* g_default_log_config_p = DEFAULT_LOG_CONFIG_FILE;
+static const char *g_default_log_config_p = DEFAULT_LOG_CONFIG_FILE;
+static const char *g_default_app_config_p = DEFAULT_APP_CONFIG_FILE; 
 
 static struct option g_options[] = 
 {
     {"config", optional_argument, 0, 'c'},
+    {"log", optional_argument, 0, 'l'},
     {"daemon", optional_argument, 0, 'd'},
     {0, 0, 0, 0}
 };
@@ -65,13 +69,14 @@ int main(int argc, char *argv[])
 {
     // setup default parameters
     bool daemon = false;
-    const char *config_p = g_default_log_config_p;
+    const char *app_config_p = g_default_app_config_p;
+    const char *log_config_p = g_default_log_config_p;
 
     // parse the command line
     while(true)
     {
         int option_index = 0;
-        int c = getopt_long(argc, argv, "dc:", g_options, &option_index);
+        int c = getopt_long(argc, argv, "dcl:", g_options, &option_index);
         // detect end of options
         if (-1 == c)
         {
@@ -84,8 +89,13 @@ int main(int argc, char *argv[])
                 switch(g_options[option_index].val)
                 {
                     case 'c':
+                        LOG4CXX_INFO(g_logger, "using app config file=" + to_string(optarg));
+                        app_config_p = optarg;
+                        break;
+
+                    case 'l':
                         LOG4CXX_INFO(g_logger, "using log config file=" + to_string(optarg));
-                        config_p = optarg;
+                        log_config_p = optarg;
                         break;
                     case 'd':
                         LOG4CXX_INFO(g_logger, "running in background");
@@ -97,8 +107,12 @@ int main(int argc, char *argv[])
                 }
                 break;
             case 'c':
+                LOG4CXX_INFO(g_logger, "using app config file=" + to_string(optarg));
+                app_config_p = optarg; 
+                break;                
+            case 'l':
                 LOG4CXX_INFO(g_logger, "using log config file=" + to_string(optarg));
-                config_p = optarg; 
+                log_config_p = optarg; 
                 break;
             case 'd':
                 LOG4CXX_INFO(g_logger, "running in background");
@@ -111,9 +125,17 @@ int main(int argc, char *argv[])
     }
 
     // setup the logging layer
-    log4cxx::PropertyConfigurator::configure(config_p);
+    log4cxx::PropertyConfigurator::configure(log_config_p);
 
     LOG4CXX_INFO(g_logger, "Starting " << NAME << " - version " << c_version);
+
+    // read the config file 
+    ResultCode result_code = Config::init(app_config_p);
+    if (RESULT_CODE_OK != result_code)
+    {
+        LOG4CXX_FATAL(g_logger, "unable to read app config file due to rc=" + to_string(result_code) + ", exiting");
+        return -1;
+    }
 
     // create the UUID for our SPP server
     sdp_uuid128_create(&g_uuid, &c_uuid_int);
