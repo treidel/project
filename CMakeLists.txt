@@ -12,7 +12,7 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/thirdpart
 # find the CMake modules we need
 FIND_PACKAGE(Log4Cxx REQUIRED)
 FIND_PACKAGE(LibEV REQUIRED)
-FIND_PACKAGE(LibJSON REQUIRED)
+FIND_PACKAGE(LibINIConfig REQUIRED)
 
 # set the global compiler flags
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
@@ -28,7 +28,7 @@ INCLUDE_DIRECTORIES(.)
 # add the module 
 INCLUDE_DIRECTORIES(${LOG4CXX_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${LIBEV_INCLUDE_DIRS})
-INCLUDE_DIRECTORIES(${LIBJSON_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${LIBINICONFIG_INCLUDE_DIRS})
 
 # add the subdirectories
 ADD_SUBDIRECTORY(bluetooth)
@@ -41,7 +41,7 @@ ADD_SUBDIRECTORY(proto)
 ADD_EXECUTABLE(leveling-glass main.cpp common.cpp)
 
 # add the libraries to the executable
-TARGET_LINK_LIBRARIES(leveling-glass app proto bluetooth control audio pthread ${LOG4CXX_LIBRARIES} ${LIBEV_LIBRARIES} ${LIBJSON_LIBRARIES}) 
+TARGET_LINK_LIBRARIES(leveling-glass app proto bluetooth control audio pthread ${LOG4CXX_LIBRARIES} ${LIBEV_LIBRARIES} ${LIBINICONFIG_LIBRARIES}) 
 
 # support for make install
 INSTALL(TARGETS leveling-glass DESTINATION /usr/bin COMPONENT binaries)
