@@ -47,3 +47,4 @@ TARGET_LINK_LIBRARIES(leveling-glass app proto bluetooth control audio pthread $
 INSTALL(TARGETS leveling-glass DESTINATION /usr/bin COMPONENT binaries)
 INSTALL(FILES config/log.cfg DESTINATION /etc/leveling-glass COMPONENT config)
 INSTALL(FILES config/leveling-glass.conf DESTINATION /etc/init COMPONENT config)
+INSTALL(FILES config/leveling-glass.ini DESTINATION /etc/leveling-glass COMPONENT config)

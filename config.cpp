@@ -65,6 +65,7 @@ ResultCode Config::init(const char *configpath_p)
             // error
             LOG4CXX_ERROR(g_logger, "error reading config file=" + to_string(configpath_p));
             result_code = RESULT_CODE_ERROR;
+            print_file_parsing_errors(stdout, error_collection_p);
             break;
     }
     if (NULL != error_collection_p)
