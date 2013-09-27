@@ -45,6 +45,8 @@ Config *Config::g_instance_p = NULL;
 
 ResultCode Config::init(const char *configpath_p)
 {
+    LOG4CXX_TRACE(g_logger, "Config::init enter " + to_string(configpath_p));
+
     // assume success
     ResultCode result_code = RESULT_CODE_OK;
 
@@ -73,6 +75,107 @@ ResultCode Config::init(const char *configpath_p)
         free_ini_config_errors(error_collection_p);
     }
 
+    LOG4CXX_TRACE(g_logger, "Config::init exit " + to_string(result_code));
+    return result_code;
+}
+
+const Config *Config::get_instance_p() 
+{
+    LOG4CXX_TRACE(g_logger, "Config::get_instance_p() enter");
+    LOG4CXX_TRACE(g_logger, "Config::get_instance_p() exit instance_p=" + to_string(g_instance_p));
+    return g_instance_p;
+}
+
+ResultCode Config::get_float(const char *section_p, const char *item_p, float *value_p) const
+{
+    LOG4CXX_TRACE(g_logger, "Config::get_float enter " + to_string(section_p) + " " + to_string(item_p) + " " + to_string(value_p));
+
+    ResultCode result_code = RESULT_CODE_OK;
+
+    // query for the item
+    struct collection_item *item_collection_p = NULL;
+    if(0 == get_config_item(section_p, item_p, m_collection_p, &item_collection_p))
+    {
+        // get the value from the collection
+        double value = get_double_config_value(item_collection_p, 1, 0.0, NULL);
+        *value_p = (float)value;
+    }
+    else
+    {
+        LOG4CXX_ERROR(g_logger, "unable to find config file time section=" + to_string(section_p) + " item=" + to_string(item_p));
+        result_code = RESULT_CODE_ERROR;
+    }
+
+    LOG4CXX_TRACE(g_logger, "Config::get_float exit " + to_string(result_code));
+    return result_code;
+}
+
+ResultCode Config::get_float_with_default(const char *section_p, const char *item_p, float default_value, float *value_p) const
+{
+    LOG4CXX_TRACE(g_logger, "Config::get_float_with_default enter " + to_string(section_p) + " " + to_string(item_p) + " " + to_string(default_value) + " " + to_string(value_p));
+
+    ResultCode result_code = RESULT_CODE_OK;
+
+    // query for the item
+    struct collection_item *item_collection_p = NULL;
+    if(0 == get_config_item(section_p, item_p, m_collection_p, &item_collection_p))
+    {
+        // get the value from the collection
+        double value = get_double_config_value(item_collection_p, 1, 0.0, NULL);
+        *value_p = (float)value;
+    }
+    else
+    {
+        // set the default value
+        *value_p = default_value;
+    }
+
+    LOG4CXX_TRACE(g_logger, "Config::get_float_with_default exit " + to_string(result_code));
+    return result_code;
+}
+
+ResultCode Config::get_string(const char *section_p, const char *item_p, const char **value_pp) const
+{
+    LOG4CXX_TRACE(g_logger, "Config::get_string enter " + to_string(section_p) + " " + to_string(item_p) + " " + to_string(value_pp));
+
+    ResultCode result_code = RESULT_CODE_OK;
+
+    // query for the item
+    struct collection_item *item_collection_p = NULL;
+    if(0 == get_config_item(section_p, item_p, m_collection_p, &item_collection_p))
+    {
+        // get the value from the collection
+        *value_pp = get_const_string_config_value(item_collection_p, NULL);
+    }
+    else
+    {
+        LOG4CXX_ERROR(g_logger, "unable to find config file time section=" + to_string(section_p) + " item=" + to_string(item_p));
+        result_code = RESULT_CODE_ERROR;
+    }
+
+    LOG4CXX_TRACE(g_logger, "Config::get_string exit " + to_string(result_code));
+    return result_code;
+}
+
+ResultCode Config::get_string_with_default(const char *section_p, const char *item_p, const char *default_value_p, const char **value_pp) const
+{
+    LOG4CXX_TRACE(g_logger, "Config::get_string_with_default enter " + to_string(section_p) + " " + to_string(item_p) + " " + to_string(default_value_p) + " " + to_string(value_pp));
+
+    ResultCode result_code = RESULT_CODE_OK;
+
+    // query for the item
+    struct collection_item *item_collection_p = NULL;
+    if(0 == get_config_item(section_p, item_p, m_collection_p, &item_collection_p))
+    {
+        // get the value from the collection
+        *value_pp = get_const_string_config_value(item_collection_p, NULL);
+    }
+    else
+    {
+        *value_pp = default_value_p;
+    }
+
+    LOG4CXX_TRACE(g_logger, "Config::get_string_with_default exit " + to_string(result_code));
     return result_code;
 }
 

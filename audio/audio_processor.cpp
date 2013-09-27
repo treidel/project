@@ -21,7 +21,6 @@
 #define UPDATES_PER_SECOND      (24)
 #define UPDATE_FREQUENCY        (1.0f/UPDATES_PER_SECOND)
 #define VU_NUMBER_OF_SAMPLES(x)	((3 * x) / 10)   // 300ms of samples
-#define FULL_SCALE_VOLTAGE      (3.3f)
 #define ZERO_DB_RMS_VOLTAGE     (0.775f)
 #define ZERO_DB_PEAK_VOLTAGE    (1.0f)
 #define ZERO_VU_LEVEL_IN_DB     (4.0f)
@@ -295,6 +294,9 @@ AUDIOProcessor::ResultData AUDIOProcessor::PPMMeter::create_result_data()
     // populate the channel
     data.channel = get_channel_p()->get_index();
 
+    // get the fullscale voltage
+    const float fullscale_voltage = get_channel_p()->get_fullscale_voltage();
+
     // assume the levels are zero for now
     data.values.peak.peakInDB = c_zero_level_in_db;
     data.values.peak.holdInDB = c_zero_level_in_db;
@@ -302,14 +304,14 @@ AUDIOProcessor::ResultData AUDIOProcessor::PPMMeter::create_result_data()
     if (AUDIO_CHANNEL_ZERO_LEVEL != get_peak())
     {
         // convert the normalized sample to a voltage
-        float voltage = get_peak() * FULL_SCALE_VOLTAGE;    
+        float voltage = get_peak() * fullscale_voltage;
         // do the voltage to dBu conversion 
         data.values.peak.peakInDB = 20.f * log10f(voltage / ZERO_DB_PEAK_VOLTAGE);
     }
     if (AUDIO_CHANNEL_ZERO_LEVEL != get_hold())
     {
         // convert the normalized sample to a voltage
-        float voltage = get_hold() * FULL_SCALE_VOLTAGE;    
+        float voltage = get_hold() * fullscale_voltage;    
         // do the voltage to dBu conversion 
         data.values.peak.holdInDB = 20.f * log10f(voltage / ZERO_DB_PEAK_VOLTAGE);
     }
@@ -435,6 +437,9 @@ AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
     // populate the channel
     data.channel = get_channel_p()->get_index();
 
+    // get the fullscale voltage
+    const float fullscale_voltage = get_channel_p()->get_fullscale_voltage();
+
     // assume for now that there is no signal
     float voltageInDB = c_zero_level_in_db;
 
@@ -443,7 +448,7 @@ AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
     for (int counter = 0; counter < m_sample_count; counter++)
     {
         // convert the normalized value into a voltage 
-        float voltage = m_samples_p[counter] * FULL_SCALE_VOLTAGE;
+        float voltage = m_samples_p[counter] * fullscale_voltage;
         // square the voltage
         sum_squares += voltage * voltage;
     }

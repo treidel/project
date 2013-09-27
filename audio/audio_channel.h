@@ -38,10 +38,11 @@ public:
 
 public:
 
-    AUDIOChannel(Index index, unsigned int sample_rate);
+    AUDIOChannel(Index index, unsigned int sample_rate, float fullscale_volatage);
     virtual ~AUDIOChannel();
 
     inline Index get_index() const;
+    inline float get_fullscale_voltage() const;
     inline unsigned int get_sample_rate() const;
     inline int get_read_fd();
     inline int get_write_fd();
@@ -64,6 +65,7 @@ private:
 
 private:
     Index m_index;
+    float m_fullscale_voltage;
     unsigned int m_sample_rate;
     int m_read_fd;
     int m_write_fd;
@@ -78,6 +80,11 @@ private:
 AUDIOChannel::Index AUDIOChannel::get_index() const
 {
     return m_index;
+}
+
+float AUDIOChannel::get_fullscale_voltage() const 
+{
+    return m_fullscale_voltage;
 }
 
 unsigned int AUDIOChannel::get_sample_rate() const

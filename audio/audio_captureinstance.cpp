@@ -4,6 +4,7 @@
 #include "audio_channel.h"
 #include "audio_capturemgr.h"
 #include "audio_formatter.h"
+#include "config.h"
 
 #include <log4cxx/logger.h>
 
@@ -11,6 +12,8 @@
 // macros
 ///////////////////////////////////////////////////////////////////////////////
 
+#define DEFAULT_FULL_SCALE_VOLTAGE      (3.3f)
+#define FULLSCALE_VOLTAGE_CONFIG_ITEM   "fullscale-voltage"
 
 ///////////////////////////////////////////////////////////////////////////////
 // type defintions
@@ -55,10 +58,14 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
     // setup the channels
     for (int counter = 0; counter < m_channel_count; counter++)
     {
+        // query for the peak voltage
+        std::string channel_section = "channel-" + to_string(counter);
+        float voltage = 0.0;
+        Config::get_instance_p()->get_float_with_default(channel_section.c_str(), FULLSCALE_VOLTAGE_CONFIG_ITEM, DEFAULT_FULL_SCALE_VOLTAGE, &voltage);
     	// allocate a unique index for the channel
         AUDIOChannel::Index index = manager_p->allocate_index();
-        // craete the channel object
-        AUDIOChannel *channel_p = new AUDIOChannel(index, rate);
+        // create the channel object
+        AUDIOChannel *channel_p = new AUDIOChannel(index, rate, voltage);
         // store it in our list
         m_channels[counter] = channel_p;
         // register it with the manager

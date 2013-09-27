@@ -37,8 +37,9 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("audio.channel"));
 // public function implementations
 ///////////////////////////////////////////////////////////////////////////////
 
-AUDIOChannel::AUDIOChannel(Index index, unsigned int sample_rate) :
+AUDIOChannel::AUDIOChannel(Index index, unsigned int sample_rate, float fullscale_voltage) :
     m_index(index),
+    m_fullscale_voltage(fullscale_voltage),
     m_sample_rate(sample_rate),
     m_loop_p(ev_default_loop(0))
 {

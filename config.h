@@ -37,12 +37,12 @@ class Config
 public:
 
     static ResultCode init(const char *configpath_p);
-    static Config *get_instance_p();
+    static const Config *get_instance_p();
 
-    ResultCode get_float(const char *section_p, const char *item_p, float *value_p);
-    ResultCode get_float_with_default(const char *section_p, const char *item_p, float default_value, float *value_p);
-    ResultCode get_string(const char *section_p, const char *item_p, const char **value_pp);
-    ResultCode get_string_with_default(const char *section_p, const char *item_p, const char **value_pp, const char *default_value_p);
+    ResultCode get_float(const char *section_p, const char *item_p, float *value_p) const;
+    ResultCode get_float_with_default(const char *section_p, const char *item_p, float default_value, float *value_p) const;
+    ResultCode get_string(const char *section_p, const char *item_p, const char **value_pp) const;
+    ResultCode get_string_with_default(const char *section_p, const char *item_p, const char *default_value_p, const char **value_pp) const;
 
 ///////////////////////////////////////////////////////////////////////////////
 // protected function declarations 
