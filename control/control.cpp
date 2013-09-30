@@ -104,99 +104,107 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
         // see what kind of request we got
         switch (request.type())
         {
-        case v1::SETLEVEL:
-        {
-            // get the request
-            const ::v1::SetLevelRequest& setlevel = request.setlevel();
-
-            LOG4CXX_INFO(g_logger, "processing SETLEVEL request, channel=" + to_string(setlevel.channel()) + " level=" + to_string(setlevel.type()));
-
-            // validate the channel
-            AUDIOChannel *channel_p = AUDIOCaptureManager::get_instance()->find_channel((AUDIOChannel::Index)setlevel.channel());
-            if (NULL == channel_p)
+            case v1::ECHO:
             {
-                LOG4CXX_ERROR(g_logger, "invalid channel=" << setlevel.channel() << " received from client");
-                result_code = RESULT_CODE_ERROR;
-                break;
+                const ::v1::EchoRequest &echo = request.echo();
+                LOG4CXX_DEBUG(g_logger, "processing ECHO request");
+                response_p->mutable_echo();
             }
-            // validate the requested level type
-            switch (setlevel.type())
+            break;
+
+            case v1::SETLEVEL:
             {
-                case v1::NONE:
-                    // remove the existing meter (if one exists)
-                    m_processor_p->clear_meter(channel_p);
-                    break;
+                // get the request
+                const ::v1::SetLevelRequest& setlevel = request.setlevel();
 
-                case v1::PPM:
-                {
-                    // create the meter
-                    AUDIOProcessor::PeakMeter *meter_p = new AUDIOProcessor::PPMMeter(channel_p);
-                    // add the hold time if it's been configured
-                    if (true == setlevel.has_holdtime())
-                    {
-                        meter_p->set_hold_time(setlevel.holdtime());
-                    }
-                    // add the meter
-                    m_processor_p->add_meter(meter_p);
-                }
-                break;
+                LOG4CXX_INFO(g_logger, "processing SETLEVEL request, channel=" + to_string(setlevel.channel()) + " level=" + to_string(setlevel.type()));
 
-                case v1::DIGITALPEAK:
+                // validate the channel
+                AUDIOChannel *channel_p = AUDIOCaptureManager::get_instance()->find_channel((AUDIOChannel::Index)setlevel.channel());
+                if (NULL == channel_p)
                 {
-                    // create the meter
-                    AUDIOProcessor::PeakMeter *meter_p = new AUDIOProcessor::DigitalPeakMeter(channel_p);
-                    // add the hold time if it's been configured
-                    if (true == setlevel.has_holdtime())
-                    {
-                        meter_p->set_hold_time(setlevel.holdtime());
-                    }
-                    // add the meter
-                    m_processor_p->add_meter(meter_p);
-                }
-                break;
-            
-                case v1::VU:
-                {
-                    // create the meter
-                    AUDIOProcessor::Meter *meter_p = new AUDIOProcessor::VUMeter(channel_p);
-                    m_processor_p->add_meter(meter_p);
-                }
-                break;
-
-                default:
-                    LOG4CXX_ERROR(g_logger, "invalid type=" + to_string(setlevel.type()) + " received from client");   
+                    LOG4CXX_ERROR(g_logger, "invalid channel=" + to_string(setlevel.channel()) + " received from client");
                     result_code = RESULT_CODE_ERROR;
                     break;
-            }
-            // populate the response unless we've set an error code
-            if (RESULT_CODE_OK == result_code)
-            {
-                v1::SetLevelResponse *sl_p = response_p->mutable_setlevel();
+                }
+                // validate the requested level type
+                switch (setlevel.type())
+                {
+                    case v1::NONE:
+                        // remove the existing meter (if one exists)
+                        m_processor_p->clear_meter(channel_p);
+                        break;
+
+                    case v1::PPM:
+                    {
+                        // create the meter
+                        AUDIOProcessor::PeakMeter *meter_p = new AUDIOProcessor::PPMMeter(channel_p);
+                        // add the hold time if it's been configured
+                        if (true == setlevel.has_holdtime())
+                        {
+                            meter_p->set_hold_time(setlevel.holdtime());
+                        }
+                        // add the meter
+                        m_processor_p->add_meter(meter_p);
+                    }
+                    break;
+
+                    case v1::DIGITALPEAK:
+                    {
+                        // create the meter
+                        AUDIOProcessor::PeakMeter *meter_p = new AUDIOProcessor::DigitalPeakMeter(channel_p);
+                        // add the hold time if it's been configured
+                        if (true == setlevel.has_holdtime())
+                        {
+                            meter_p->set_hold_time(setlevel.holdtime());
+                        }
+                        // add the meter
+                        m_processor_p->add_meter(meter_p);
+                    }
+                    break;
+            
+                    case v1::VU:
+                    {
+                        // create the meter
+                        AUDIOProcessor::Meter *meter_p = new AUDIOProcessor::VUMeter(channel_p);
+                        m_processor_p->add_meter(meter_p);
+                    }
+                    break;
+
+                    default:
+                        LOG4CXX_ERROR(g_logger, "invalid type=" + to_string(setlevel.type()) + " received from client");   
+                        result_code = RESULT_CODE_ERROR;
+                        break;
+                }
+                // populate the response unless we've set an error code
+                if(RESULT_CODE_OK == result_code)
+                {
+                    v1::SetLevelResponse *sl_p = response_p->mutable_setlevel();
+                }
+                break;
             }
             break;
-        }
-        break;
 
-        case v1::QUERYAUDIOCHANNELS:
-        {
-            LOG4CXX_INFO(g_logger, "processing QUERYAUDIOCHANNELS request");
-            // do something to query the channels
-            v1::QueryAudioChannelsResponse *qac_p = response_p->mutable_queryaudiochannels();
-            AUDIOCaptureManager *manager_p = AUDIOCaptureManager::get_instance();
-            for (AUDIOCaptureManager::ChannelIterator it = manager_p->begin();
+            case v1::QUERYAUDIOCHANNELS:
+            {
+                LOG4CXX_INFO(g_logger, "processing QUERYAUDIOCHANNELS request");
+                // do something to query the channels
+                v1::QueryAudioChannelsResponse *qac_p = response_p->mutable_queryaudiochannels();
+                AUDIOCaptureManager *manager_p = AUDIOCaptureManager::get_instance();
+                for(AUDIOCaptureManager::ChannelIterator it = manager_p->begin();
                     it != manager_p->end();
                     it++)
-            {
-                AUDIOChannel *channel_p = it->second;
-                qac_p->add_channels(channel_p->get_index());
+                {
+                    AUDIOChannel *channel_p = it->second;
+                    qac_p->add_channels(channel_p->get_index());
+                }
             }
-        }
-        break;
-
-        default:
-            LOG4CXX_ERROR(g_logger, "unknown request type=" << request.type());
-            result_code = RESULT_CODE_ERROR;
             break;
+
+            default:
+                LOG4CXX_ERROR(g_logger, "unknown request type=" << request.type());
+                result_code = RESULT_CODE_ERROR;
+                break;
         }
         
         // set the failure flag is necessary
