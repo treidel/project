@@ -1,6 +1,6 @@
 [submodule "proto"]
 	path = proto
-	url = git://github.comL:treidel/proto.git
+	url = git://github.com:treidel/proto.git
 
 [submodule "staging"]
 	path = staging
