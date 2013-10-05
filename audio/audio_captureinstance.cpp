@@ -59,7 +59,7 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
     for (int counter = 0; counter < m_channel_count; counter++)
     {
         // query for the peak voltage
-        std::string channel_section = "channel-" + to_string(counter);
+        std::string channel_section = "channel-" + to_string(counter + 1);
         float voltage = 0.0;
         Config::get_instance_p()->get_float_with_default(channel_section.c_str(), FULLSCALE_VOLTAGE_CONFIG_ITEM, DEFAULT_FULL_SCALE_VOLTAGE, &voltage);
     	// allocate a unique index for the channel
