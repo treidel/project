@@ -62,8 +62,12 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
         std::string channel_section = "channel-" + to_string(counter + 1);
         float voltage = 0.0;
         Config::get_instance_p()->get_float_with_default(channel_section.c_str(), FULLSCALE_VOLTAGE_CONFIG_ITEM, DEFAULT_FULL_SCALE_VOLTAGE, &voltage);
+
     	// allocate a unique index for the channel
         AUDIOChannel::Index index = manager_p->allocate_index();
+
+        LOG4CXX_INFO(g_logger, "using peak voltage=" + to_string(voltage) + "V for channel=" + to_string(index));
+
         // create the channel object
         AUDIOChannel *channel_p = new AUDIOChannel(index, rate, voltage);
         // store it in our list
