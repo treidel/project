@@ -38,7 +38,7 @@ ADD_SUBDIRECTORY(app)
 ADD_SUBDIRECTORY(proto)
 
 # define the executable
-ADD_EXECUTABLE(leveling-glass main.cpp common.cpp config.cpp)
+ADD_EXECUTABLE(leveling-glass main.cpp common.cpp config.cpp log.cpp)
 
 # add the libraries to the executable
 TARGET_LINK_LIBRARIES(leveling-glass app proto bluetooth control audio pthread ${LOG4CXX_LIBRARIES} ${LIBINICONFIG_LIBRARIES} ${LIBEV_LIBRARIES}) 
