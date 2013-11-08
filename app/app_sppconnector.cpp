@@ -5,8 +5,7 @@
 #include "app_sppconnector.h"
 #include "control/control.h"
 #include "audio/audio_processor.h"
-
-#include <log4cxx/logger.h>
+#include "log.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // macros
@@ -27,7 +26,7 @@
 // module variables
 ///////////////////////////////////////////////////////////////////////////////
 
-static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("app.sppconnector"));
+static LogInstance g_logger("app.sppconnector");
 
 ///////////////////////////////////////////////////////////////////////////////
 // private function declarations
@@ -42,16 +41,16 @@ SPPConnector::SPPConnector(APPManager::NotificationHandler *handler_p) :
     m_processor_p(new AUDIOProcessor()),
     m_control_p(new Control(m_processor_p, handler_p))
 {
-    LOG4CXX_TRACE(g_logger, "SPPConnector::SPPConnector enter " << handler_p);
-    LOG4CXX_TRACE(g_logger, "SPPConnector::SPPConnector exit");
+    LOG_GENERATE_TRACE(g_logger, "SPPConnector::SPPConnector enter this=%p handler_p=%p", this, handler_p);
+    LOG_GENERATE_TRACE(g_logger, "SPPConnector::SPPConnector exit");
 }
 
 SPPConnector::~SPPConnector()
 {
-    LOG4CXX_TRACE(g_logger, "SPPConnector::~SPPConnector enter");
+    LOG_GENERATE_TRACE(g_logger, "SPPConnector::~SPPConnector enter this=%p", this);
     delete m_control_p;
     delete m_processor_p;
-    LOG4CXX_TRACE(g_logger, "SPPConnector::~SPPConnector exit");
+    LOG_GENERATE_TRACE(g_logger, "SPPConnector::~SPPConnector exit");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -60,12 +59,12 @@ SPPConnector::~SPPConnector()
 
 ResultCode SPPConnector::handle_request(APPManager::Message *request_p, APPManager::Message **response_pp)
 {
-    LOG4CXX_TRACE(g_logger, "SPPConnector::handle_request enter");
+    LOG_GENERATE_TRACE(g_logger, "SPPConnector::handle_request enter this=%p request_p=%p response_pp=%p", this, request_p, response_pp);
 
     // pass thru the request to the control object
     ResultCode result = m_control_p->handle_request(request_p, response_pp);
 
-    LOG4CXX_TRACE(g_logger, "SPPConnector::handle_request exit " << result);
+    LOG_GENERATE_TRACE(g_logger, "SPPConnector::handle_request exit result=%d", result);
     return result;
 }
 

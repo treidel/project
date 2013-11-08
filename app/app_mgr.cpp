@@ -1,10 +1,9 @@
 
 #include "app_mgr.h"
 #include "app_sppconnector.h"
+#include "log.h"
 
 #include <stdlib.h>
-
-#include <log4cxx/logger.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // macros
@@ -25,7 +24,7 @@
 // module variables
 ///////////////////////////////////////////////////////////////////////////////
 
-static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("app.mgr"));
+static LogInstance g_logger("app.mgr");
 
 ///////////////////////////////////////////////////////////////////////////////
 // private function declarations
@@ -38,19 +37,18 @@ static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("app.mgr"));
 
 APPManager::RequestHandler *APPManager::createSPPConnector(NotificationHandler *handler_p)
 {
-    LOG4CXX_TRACE(g_logger, "APPManager::createSPPConnector enter " << handler_p);
+    LOG_GENERATE_TRACE(g_logger, "APPManager::createSPPConnector enter handler_p=%p", handler_p);
 
     SPPConnector *connector_p = new SPPConnector(handler_p);
 
-    LOG4CXX_TRACE(g_logger, "APPManager::createSPPConnector exit " << connector_p);
-
+    LOG_GENERATE_TRACE(g_logger, "APPManager::createSPPConnector exit connector_p=%p", connector_p);
     return connector_p;
 }
 
 APPManager::RequestHandler::~RequestHandler()
 {
-    LOG4CXX_TRACE(g_logger, "APPManager::RequestHandler::~RequestHandler enter");
-    LOG4CXX_TRACE(g_logger, "APPManager::RequestHandler::~RequestHandler exit");
+    LOG_GENERATE_TRACE(g_logger, "APPManager::RequestHandler::~RequestHandler enter this=%p", this);
+    LOG_GENERATE_TRACE(g_logger, "APPManager::RequestHandler::~RequestHandler exit");
 }
 
 APPManager::Message::Message(const size_t length) :

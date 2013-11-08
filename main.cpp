@@ -2,12 +2,12 @@
 #include "bluetooth/spp_server.h"
 #include "audio/audio_capturemgr.h"
 #include "config.h"
+#include "log.h"
 
 #include <stdlib.h>
 #include <getopt.h>
 #include <ev.h>
 
-#include <log4cxx/logger.h>
 #include <log4cxx/propertyconfigurator.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ static const char *c_version = VERSION;
 
 static uuid_t g_uuid;
 static SPPServer *g_server_p = NULL;
-static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("main"));
+static LogInstance g_logger("main");
 static const char *g_default_log_config_p = DEFAULT_LOG_CONFIG_FILE;
 static const char *g_default_app_config_p = DEFAULT_APP_CONFIG_FILE; 
 
@@ -50,7 +50,6 @@ static struct option g_options[] =
 {
     {"config", optional_argument, 0, 'c'},
     {"log", optional_argument, 0, 'l'},
-    {"daemon", optional_argument, 0, 'd'},
     {0, 0, 0, 0}
 };
 
@@ -68,7 +67,6 @@ static void populate_logpath(char *execpath_p, size_t path_length);
 int main(int argc, char *argv[])
 {
     // setup default parameters
-    bool daemon = false;
     const char *app_config_p = g_default_app_config_p;
     const char *log_config_p = g_default_log_config_p;
 
@@ -89,37 +87,29 @@ int main(int argc, char *argv[])
                 switch(g_options[option_index].val)
                 {
                     case 'c':
-                        LOG4CXX_INFO(g_logger, "using app config file=" + to_string(optarg));
+                        LOG_GENERATE_INFO(g_logger, "using app config file=%s", optarg);
                         app_config_p = optarg;
                         break;
 
                     case 'l':
-                        LOG4CXX_INFO(g_logger, "using log config file=" + to_string(optarg));
+                        LOG_GENERATE_INFO(g_logger, "using log config file=%s", optarg);
                         log_config_p = optarg;
                         break;
-                    case 'd':
-                        LOG4CXX_INFO(g_logger, "running in background");
-                        daemon = true;
-                        break;
                     default:
-                        LOG4CXX_FATAL(g_logger, "invalid long option " + to_string(g_options[option_index].name));
+                        LOG_GENERATE_WTF(g_logger, "invalid long option %s", g_options[option_index].name);
                         return -1;
                 }
                 break;
             case 'c':
-                LOG4CXX_INFO(g_logger, "using app config file=" + to_string(optarg));
+                LOG_GENERATE_INFO(g_logger, "using app config file=%s", optarg);
                 app_config_p = optarg; 
                 break;                
             case 'l':
-                LOG4CXX_INFO(g_logger, "using log config file=" + to_string(optarg));
+                LOG_GENERATE_INFO(g_logger, "using log config file=%s", optarg);
                 log_config_p = optarg; 
                 break;
-            case 'd':
-                LOG4CXX_INFO(g_logger, "running in background");
-                daemon = true;
-                break;
             default:
-                LOG4CXX_FATAL(g_logger, "invalid option '" + to_string(c) + "'");
+                LOG_GENERATE_INFO(g_logger, "invalid option '%c'", c);
                 return -1;
         }
     }
@@ -127,13 +117,13 @@ int main(int argc, char *argv[])
     // setup the logging layer
     log4cxx::PropertyConfigurator::configure(log_config_p);
 
-    LOG4CXX_INFO(g_logger, "Starting " << NAME << " - version " << c_version);
+    LOG_GENERATE_INFO(g_logger, "Starting %s - version %s", NAME, c_version);
 
     // read the config file 
     ResultCode result_code = Config::init(app_config_p);
     if (RESULT_CODE_OK != result_code)
     {
-        LOG4CXX_FATAL(g_logger, "unable to read app config file due to rc=" + to_string(result_code) + ", exiting");
+        LOG_GENERATE_WTF(g_logger, "unable to read app config file due to result_code=%d, exiting", result_code);
         return -1;
     }
 
@@ -156,35 +146,14 @@ int main(int argc, char *argv[])
     ev_signal_init(&term_watcher, kill_cb, SIGTERM);
     ev_signal_start(loop_p, &term_watcher);
 
-    // see if we're going to run in daemon mone
-    if (true == daemon)
-    {
-        // fork into two processes
-        pid_t pid = fork();
-        switch (pid)
-        {
-            case -1:
-                LOG4CXX_FATAL(g_logger, "unable to fork");
-                return -1;
-            case 0:
-                LOG4CXX_DEBUG(g_logger, "running in background");
-                // help libev handle the fork
-                ev_default_fork();
-                break;
-            default:
-                LOG4CXX_INFO(g_logger, "background daemon process pid=" + to_string(pid));
-                return 0;
-        }
-    }
-
     // notify that we're running
-    LOG4CXX_INFO(g_logger, NAME << " running");
+    LOG_GENERATE_INFO(g_logger, "%s running", NAME);
 
     // run forever
     ev_run(loop_p, 0);
 
     // we should never get here
-    LOG4CXX_FATAL(g_logger, "main loop exited");
+    LOG_GENERATE_WTF(g_logger, "main loop exited");
     return -1;
 }
 
@@ -194,7 +163,7 @@ int main(int argc, char *argv[])
 
 void kill_cb(struct ev_loop *loop_p, ev_signal *w_p, int revents)
 {
-    LOG4CXX_INFO(g_logger, "Exiting");
+    LOG_GENERATE_INFO(g_logger, "Exiting");
     exit(1);
 }
 

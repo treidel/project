@@ -5,8 +5,7 @@
 #include "audio_capturemgr.h"
 #include "audio_formatter.h"
 #include "config.h"
-
-#include <log4cxx/logger.h>
+#include "log.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // macros
@@ -29,7 +28,7 @@
 // module variables
 ///////////////////////////////////////////////////////////////////////////////
 
-static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("audio.captureinstance"));
+static LogInstance g_logger("audio.captureinstance");
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -50,7 +49,7 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
     m_channel_count(channel_count),
     m_abort(false)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOCaptureInstance::AUDIOCaptureInstance enter " << manager_p << " " << handle_p);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOCaptureInstance::AUDIOCaptureInstance enter this=%p manager_p=%p device=%s channel_count=%d format=%d rate=%d handle_p=%p", this, device, channel_count, format, rate, handle_p);
 
     // resize the vector to hold the number of channels we have
     m_channels.resize(m_channel_count);
@@ -59,14 +58,15 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
     for (int counter = 0; counter < m_channel_count; counter++)
     {
         // query for the peak voltage
-        std::string channel_section = "channel-" + to_string(counter + 1);
+        char channel_section[128];
+        snprintf(channel_section, sizeof(channel_section), "channel-%d", counter + 1);
         float voltage = 0.0;
-        Config::get_instance_p()->get_float_with_default(channel_section.c_str(), FULLSCALE_VOLTAGE_CONFIG_ITEM, DEFAULT_FULL_SCALE_VOLTAGE, &voltage);
+        Config::get_instance_p()->get_float_with_default(channel_section, FULLSCALE_VOLTAGE_CONFIG_ITEM, DEFAULT_FULL_SCALE_VOLTAGE, &voltage);
 
     	// allocate a unique index for the channel
         AUDIOChannel::Index index = manager_p->allocate_index();
 
-        LOG4CXX_INFO(g_logger, "using peak voltage=" + to_string(voltage) + "V for channel=" + to_string(index));
+        LOG_GENERATE_INFO(g_logger, "using peak voltage=%fV for channel=%d", voltage, index);
 
         // create the channel object
         AUDIOChannel *channel_p = new AUDIOChannel(index, rate, voltage);
@@ -79,16 +79,16 @@ AUDIOCaptureInstance::AUDIOCaptureInstance(AUDIOCaptureManager *manager_p, const
     // launch the processing thread
     if (0 != pthread_create(&m_thread_id, NULL, thread_handler, (void *)this))
     {
-        LOG4CXX_ERROR(g_logger, "unable to create thread");
+        LOG_GENERATE_ERROR(g_logger, "unable to create thread");
         return;
     }
 
-    LOG4CXX_TRACE(g_logger, "AUDIOCaptureInstance::AUDIOCaptureInstance exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOCaptureInstance::AUDIOCaptureInstance exit");
 }
 
 AUDIOCaptureInstance::~AUDIOCaptureInstance()
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOCaptureInstance::~AUDIOCaptureInstance enter");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOCaptureInstance::~AUDIOCaptureInstance enter this=%p", this);
 
     // tell the thread to abort
     m_abort = true;
@@ -113,7 +113,7 @@ AUDIOCaptureInstance::~AUDIOCaptureInstance()
     // free the string
     free(m_device);
 
-    LOG4CXX_TRACE(g_logger, "AUDIOCaptureInstance::~AUDIOCaptureInstance exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOCaptureInstance::~AUDIOCaptureInstance exit");
 }
 
 
@@ -123,7 +123,7 @@ AUDIOCaptureInstance::~AUDIOCaptureInstance()
 
 void *AUDIOCaptureInstance::thread_handler(void *arg)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOCaptureInstance::thread_handler enter " << arg);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOCaptureInstance::thread_handler enter arg=%p", arg);
 
     // get the object instance
     AUDIOCaptureInstance *instance_p = (AUDIOCaptureInstance *)arg;
@@ -145,11 +145,11 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
     int rc = snd_pcm_prepare(instance_p->m_handle_p);
     if (rc < 0)
     {
-        LOG4CXX_ERROR(g_logger, "snd_pcm_prepare returned error=" << rc << " " << snd_strerror(rc));
+        LOG_GENERATE_ERROR(g_logger, "snd_pcm_prepare returned error=%d %s", rc, snd_strerror(rc));
         return NULL;
     }
 
-    LOG4CXX_INFO(g_logger, "Collection started for " << instance_p->m_device);
+    LOG_GENERATE_INFO(g_logger, "Collection started for %s", instance_p->m_device);
 
     // debug counter to see how many samples we've captured
     int samples = 0;
@@ -163,20 +163,20 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
         {
             // EPIPE is returned when we were too slow in retrieving a sample
 
-            LOG4CXX_WARN(g_logger, "received EPIPE, buffer underrun capturing samples");
+            LOG_GENERATE_WARN(g_logger, "received EPIPE, buffer underrun capturing samples");
 
             // reinitialize the channel
             rc = snd_pcm_prepare(instance_p->m_handle_p);
             if (rc < 0)
             {
-                LOG4CXX_ERROR(g_logger, "snd_pcm_prepare returned error=" << rc << " " << snd_strerror(rc));
+                LOG_GENERATE_ERROR(g_logger, "snd_pcm_prepare returned error=%d %s", rc, snd_strerror(rc));
                 goto error;
             }
             continue;
         }
         else if (0 > rc)
         {
-            LOG4CXX_ERROR(g_logger, "snd_pcm_readi returned error=" << rc << " " << snd_strerror(rc));
+            LOG_GENERATE_ERROR(g_logger, "snd_pcm_readi returned error=%d %s", rc, snd_strerror(rc));
             goto error;
         }
 
@@ -195,7 +195,7 @@ void *AUDIOCaptureInstance::thread_handler(void *arg)
             rc = write(channel_p->get_write_fd(), channel_buffer_p, num_samples * sizeof(AUDIOChannel::Sample));
             if (rc < 0)
             {
-                LOG4CXX_ERROR(g_logger, "write returned error=" << rc)
+                LOG_GENERATE_ERROR(g_logger, "write returned error=%d", rc)
                 goto error;
             }
         }
@@ -208,7 +208,7 @@ error:
     // free the channel buffer
     free(channel_buffer_p);
 
-    LOG4CXX_TRACE(g_logger, "AUDIOCaptureInstance::thread_handler exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOCaptureInstance::thread_handler exit");
 
     return NULL;
 }

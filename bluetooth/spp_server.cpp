@@ -1,5 +1,6 @@
 #include "spp_server.h"
 #include "spp_connection.h"
+#include "log.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -10,8 +11,6 @@
 #include <sys/socket.h>
 
 #include <string>
-
-#include <log4cxx/logger.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // macros
@@ -41,8 +40,7 @@ static const char *g_serviceprovider = "Wazzup";
 // module variables
 ///////////////////////////////////////////////////////////////////////////////
 
-static log4cxx::LoggerPtr g_logger(
-    log4cxx::Logger::getLogger("bluetooth.spp.server"));
+static LogInstance g_logger("bluetooth.spp.server");
 
 ///////////////////////////////////////////////////////////////////////////////
 // private function declarations
@@ -58,13 +56,13 @@ SPPServer::SPPServer(uuid_t uuid) :
     m_uuid(uuid), m_session_p(NULL), m_loop_p(ev_default_loop(0)), m_socket(
         0), m_connection_p(NULL)
 {
-    LOG4CXX_TRACE(g_logger, "SPPServer::SPPServer enter");
+    LOG_GENERATE_TRACE(g_logger, "SPPServer::SPPServer enter this=%d uuid=%d", this, uuid);
 
     // create the SPP socket
     m_socket = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
     if (0 > m_socket)
     {
-        LOG4CXX_ERROR(g_logger, "socket returned error " + m_socket);
+        LOG_GENERATE_ERROR(g_logger, "socket returned error %d", m_socket);
         return;
     }
 
@@ -79,7 +77,7 @@ SPPServer::SPPServer(uuid_t uuid) :
     // allocate the channel
     uint8_t channel = allocate_channel(m_socket, &loc_addr);
 
-    LOG4CXX_DEBUG(g_logger, "allocated channel=" + to_string(loc_addr.rc_channel));
+    LOG_GENERATE_DEBUG(g_logger, "allocated channel=%d", loc_addr.rc_channel);
 
     // listen for connections with no backlog
     listen(m_socket, 0);
@@ -126,11 +124,11 @@ SPPServer::SPPServer(uuid_t uuid) :
     int rc = sdp_record_register(m_session_p, record_p, 0);
     if (0 > rc)
     {
-        LOG4CXX_ERROR(g_logger, "sdp_record_register returned error " + to_string(rc));
+        LOG_GENERATE_ERROR(g_logger, "sdp_record_register returned error %d", rc);
         return;
     }
 
-    LOG4CXX_INFO(g_logger, "Listening for SPP connections on channel=" + to_string(channel));
+    LOG_GENERATE_INFO(g_logger, "Listening for SPP connections on channel=%d", channel);
 
     // cleanup
     sdp_data_free(channel_p);
@@ -147,12 +145,12 @@ SPPServer::SPPServer(uuid_t uuid) :
     // register the listener with the loop
     ev_io_start(m_loop_p, &m_watcher);
 
-    LOG4CXX_TRACE(g_logger, "SPPServer::SPPServer exit");
+    LOG_GENERATE_TRACE(g_logger, "SPPServer::SPPServer exit");
 }
 
 SPPServer::~SPPServer()
 {
-    LOG4CXX_TRACE(g_logger, "SPPServer::~SPPServer enter");
+    LOG_GENERATE_TRACE(g_logger, "SPPServer::~SPPServer enter this=%p", this);
 
     // stop the watcher
     ev_io_stop(m_loop_p, &m_watcher);
@@ -161,7 +159,7 @@ SPPServer::~SPPServer()
     // close the socket
     close(m_socket);
 
-    LOG4CXX_TRACE(g_logger, "SPPServer::~SPPServer exit");
+    LOG_GENERATE_TRACE(g_logger, "SPPServer::~SPPServer exit");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -170,7 +168,7 @@ SPPServer::~SPPServer()
 
 void SPPServer::socket_cb(EV_P_ ev_io *w_p, int revents)
 {
-    LOG4CXX_TRACE(g_logger, "SPPServer::socket_cb enter " << w_p << " " << revents);
+    LOG_GENERATE_TRACE(g_logger, "SPPServer::socket_cb enter w_p=%p revents=0x%x", w_p, revents);
     // get the object
     SPPServer *server_p = (SPPServer *)(w_p->data);
     // we're only signalled when a new connection has arrived so let's accept it
@@ -179,12 +177,12 @@ void SPPServer::socket_cb(EV_P_ ev_io *w_p, int revents)
     int client_socket = accept(w_p->fd, (struct sockaddr *)&remote_addr, &len);
     if (0 > client_socket)
     {
-        LOG4CXX_ERROR(g_logger, "accept returned error " << client_socket);
+        LOG_GENERATE_ERROR(g_logger, "accept returned error %d", client_socket);
         return;
     }
 
     std::string mac_addr_s = SPPConnection::format_mac_addr(&remote_addr.rc_bdaddr);
-    LOG4CXX_INFO(g_logger, "received connection from " << mac_addr_s);
+    LOG_GENERATE_INFO(g_logger, "received connection from %s", mac_addr_s.c_str());
 
     // see if we already have a connection
     if (NULL == server_p->m_connection_p)
@@ -194,14 +192,14 @@ void SPPServer::socket_cb(EV_P_ ev_io *w_p, int revents)
     }
     else
     {
-        LOG4CXX_WARN(g_logger, "refusing connection request -> already connected");
+        LOG_GENERATE_WARN(g_logger, "refusing connection request -> already connected");
 
         // close the socket unceremoniously
         close(client_socket);
     }
 
     // done
-    LOG4CXX_TRACE(g_logger, "SPPServer::socket_cb exit");
+    LOG_GENERATE_TRACE(g_logger, "SPPServer::socket_cb exit");
 }
 
 uint8_t allocate_channel(int sock, struct sockaddr_rc *sockaddr_p)

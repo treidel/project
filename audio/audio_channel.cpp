@@ -2,11 +2,10 @@
 #include "common.h"
 #include "audio_channel.h"
 #include "audio_capturemgr.h"
+#include "log.h"
 
 #include <unistd.h>
 #include <stdlib.h>
-
-#include <log4cxx/logger.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // macros
@@ -26,7 +25,7 @@
 // module variables
 ///////////////////////////////////////////////////////////////////////////////
 
-static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("audio.channel"));
+static LogInstance g_logger("audio.channel");
 
 ///////////////////////////////////////////////////////////////////////////////
 // private function declarations
@@ -43,14 +42,14 @@ AUDIOChannel::AUDIOChannel(Index index, unsigned int sample_rate, float fullscal
     m_sample_rate(sample_rate),
     m_loop_p(ev_default_loop(0))
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOChannel::AUDIOChannel enter " << index << " " << sample_rate);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOChannel::AUDIOChannel enter this=%p index=%d sample_rate=%d fullscale_voltage=%f", this, index, sample_rate, fullscale_voltage);
 
     // allocate the pipe file descriptors
     int fds[2];
     int rc = pipe(fds);
     if (0 > rc)
     {
-        LOG4CXX_ERROR(g_logger, "pipe returned error " << rc);
+        LOG_GENERATE_ERROR(g_logger, "pipe returned error=%d", rc);
         return;
     }
     // store the file descriptors in our private data
@@ -63,12 +62,12 @@ AUDIOChannel::AUDIOChannel(Index index, unsigned int sample_rate, float fullscal
     // register the listener with the loop
     ev_io_start(m_loop_p, &m_watcher);
 
-    LOG4CXX_TRACE(g_logger, "AUDIOChannel::AUDIOChannel exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOChannel::AUDIOChannel exit");
 }
 
 AUDIOChannel::~AUDIOChannel()
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOChannel::~AUDIOChannel enter");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOChannel::~AUDIOChannel enter this=%p", this);
 
     // stop the watcher
     ev_io_stop(m_loop_p, &m_watcher);
@@ -76,7 +75,7 @@ AUDIOChannel::~AUDIOChannel()
     close(m_read_fd);
     close(m_write_fd);
 
-    LOG4CXX_TRACE(g_logger, "AUDIOChannel::AUDIOChannel exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOChannel::AUDIOChannel exit");
 }
 
 
@@ -86,7 +85,7 @@ AUDIOChannel::~AUDIOChannel()
 
 void AUDIOChannel::read_cb(struct ev_loop *loop_p, struct ev_io *w_p, int revents)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOChannel::read_cb enter " << loop_p << " " << w_p << " " << revents);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOChannel::read_cb enter loop_p=%p w_p=%p revents=0x%x", loop_p, w_p, revents);
 
     // get our object
     AUDIOChannel *channel_p = (AUDIOChannel *)w_p->data;
@@ -101,7 +100,7 @@ void AUDIOChannel::read_cb(struct ev_loop *loop_p, struct ev_io *w_p, int revent
     int rc = read(channel_p->get_read_fd(), buffer, sizeof(buffer));
     if (0 > rc)
     {
-        LOG4CXX_ERROR(g_logger, "read returned error " << rc);
+        LOG_GENERATE_ERROR(g_logger, "read returned error=%d", rc);
         return;
     }
     // iterate through all handlers
@@ -115,12 +114,12 @@ void AUDIOChannel::read_cb(struct ev_loop *loop_p, struct ev_io *w_p, int revent
         ResultCode result = handler_p->handle_samples(channel_p, num_samples, buffer);
         if (RESULT_CODE_OK != result)
         {
-            LOG4CXX_ERROR(g_logger, "handler_p->handle_samples returned error " << result);
+            LOG_GENERATE_ERROR(g_logger, "handler_p->handle_samples returned error=%d", result);
             return;
         }
     }
 
-    LOG4CXX_TRACE(g_logger, "AUDIOChannel::read_cb exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOChannel::read_cb exit");
 }
 
 

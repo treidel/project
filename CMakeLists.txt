@@ -15,7 +15,7 @@ FIND_PACKAGE(LibEV REQUIRED)
 FIND_PACKAGE(LibINIConfig REQUIRED)
 
 # set the global compiler flags
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wno-psabi")
 
 IF(DEFINED ENV{VERSION})
        # use the version provided by the external build environment if available

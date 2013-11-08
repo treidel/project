@@ -1,12 +1,11 @@
 
 #include "common.h"
 #include "control.h"
+#include "log.h"
 
 #include "proto/v1.pb.h"
 
 #include <google/protobuf/message_lite.h>
-
-#include <log4cxx/logger.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // macros
@@ -29,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("control.v1"));
+static LogInstance g_logger("control.v1");
 
 ///////////////////////////////////////////////////////////////////////////////
 // private function declarations
@@ -45,24 +44,24 @@ Control::Control(AUDIOProcessor *processor_p, APPManager::NotificationHandler *h
     m_processor_p(processor_p),
     m_handler_p(handler_p)
 {
-    LOG4CXX_TRACE(g_logger, "Control::Control enter " << handler_p);
+    LOG_GENERATE_TRACE(g_logger, "Control::Control enter this=%p handler_p=%p", this, handler_p);
 
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     // add ourselves as a handler
     m_processor_p->add_handler(this);
 
-    LOG4CXX_TRACE(g_logger, "Control::Control exit");
+    LOG_GENERATE_TRACE(g_logger, "Control::Control exit");
 }
 
 Control::~Control()
 {
-    LOG4CXX_TRACE(g_logger, "Control::Contol enter");
+    LOG_GENERATE_TRACE(g_logger, "Control::Contol enter this=%p", this);
 
     // remove ourselves as a handler
     m_processor_p->remove_handler(this);
 
-    LOG4CXX_TRACE(g_logger, "Control::Contol exit");
+    LOG_GENERATE_TRACE(g_logger, "Control::Contol exit");
 }
 
 
@@ -72,7 +71,7 @@ Control::~Control()
 
 ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::Message **response_pp)
 {
-    LOG4CXX_TRACE(g_logger, "Control::handler_request enter " << request_p << " " << response_pp);
+    LOG_GENERATE_TRACE(g_logger, "Control::handler_request enter this=%p request_p=%p response_pp=%p", this, request_p, response_pp);
 
     // assume success
     ResultCode result_code = RESULT_CODE_OK;
@@ -86,7 +85,7 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
         v1::Request request;
         if (false == request.ParseFromArray(request_p->get_data_p(), request_p->get_length()))
         {
-            LOG4CXX_ERROR(g_logger, "unable to parse request protocol buffer len=" << request_p->get_length());
+            LOG_GENERATE_ERROR(g_logger, "unable to parse request protocol buffer len=%d", request_p->get_length());
             result_code = RESULT_CODE_ERROR;
             break;
         }
@@ -107,7 +106,7 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
             case v1::ECHO:
             {
                 const ::v1::EchoRequest &echo = request.echo();
-                LOG4CXX_DEBUG(g_logger, "processing ECHO request");
+                LOG_GENERATE_DEBUG(g_logger, "processing ECHO request");
                 response_p->mutable_echo();
             }
             break;
@@ -117,13 +116,13 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
                 // get the request
                 const ::v1::SetLevelRequest& setlevel = request.setlevel();
 
-                LOG4CXX_INFO(g_logger, "processing SETLEVEL request, channel=" + to_string(setlevel.channel()) + " level=" + to_string(setlevel.type()));
+                LOG_GENERATE_INFO(g_logger, "processing SETLEVEL request, channel=%d level=%d", setlevel.channel(), setlevel.type());
 
                 // validate the channel
                 AUDIOChannel *channel_p = AUDIOCaptureManager::get_instance()->find_channel((AUDIOChannel::Index)setlevel.channel());
                 if (NULL == channel_p)
                 {
-                    LOG4CXX_ERROR(g_logger, "invalid channel=" + to_string(setlevel.channel()) + " received from client");
+                    LOG_GENERATE_ERROR(g_logger, "invalid channel=%d received from client", setlevel.channel());
                     result_code = RESULT_CODE_ERROR;
                     break;
                 }
@@ -172,7 +171,7 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
                     break;
 
                     default:
-                        LOG4CXX_ERROR(g_logger, "invalid type=" + to_string(setlevel.type()) + " received from client");   
+                        LOG_GENERATE_ERROR(g_logger, "invalid type=%d received from client", setlevel.type());
                         result_code = RESULT_CODE_ERROR;
                         break;
                 }
@@ -187,7 +186,7 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
 
             case v1::QUERYAUDIOCHANNELS:
             {
-                LOG4CXX_INFO(g_logger, "processing QUERYAUDIOCHANNELS request");
+                LOG_GENERATE_INFO(g_logger, "processing QUERYAUDIOCHANNELS request");
                 // do something to query the channels
                 v1::QueryAudioChannelsResponse *qac_p = response_p->mutable_queryaudiochannels();
                 AUDIOCaptureManager *manager_p = AUDIOCaptureManager::get_instance();
@@ -202,7 +201,7 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
             break;
 
             default:
-                LOG4CXX_ERROR(g_logger, "unknown request type=" << request.type());
+                LOG_GENERATE_ERROR(g_logger, "unknown request type=%d", request.type());
                 result_code = RESULT_CODE_ERROR;
                 break;
         }
@@ -219,7 +218,7 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
     while (false);
 
     // done
-    LOG4CXX_TRACE(g_logger, "Control::handler_request exit " << result_code);
+    LOG_GENERATE_TRACE(g_logger, "Control::handler_request exit result_code=%d", result_code);
     return result_code;
 }
 
@@ -231,7 +230,7 @@ ResultCode Control::handle_request(APPManager::Message *request_p, APPManager::M
 
 ResultCode Control::handle_results(const size_t num_results, const AUDIOProcessor::ResultData results[])
 {
-    LOG4CXX_TRACE(g_logger, "Control::handle_results enter " << results);
+    LOG_GENERATE_TRACE(g_logger, "Control::handle_results enter this=%p num_result=%d results=%p", this, num_results, results);
 
     // get the response message ready
     v1::ResponseOrNotification responseornotification;
@@ -269,7 +268,7 @@ ResultCode Control::handle_results(const size_t num_results, const AUDIOProcesso
                 record_p->set_vuinunits(results[counter].values.vuInUnits);
                 break;
             default:
-                LOG4CXX_ERROR(g_logger, "unknown level type=" + to_string(results[counter].type));
+                LOG_GENERATE_ERROR(g_logger, "unknown level type=%d", results[counter].type);
                 return RESULT_CODE_ERROR;
         }
     }
@@ -281,7 +280,7 @@ ResultCode Control::handle_results(const size_t num_results, const AUDIOProcesso
     ResultCode rc = m_handler_p->send_notification(&message_p);
     if (RESULT_CODE_OK != rc)
     {
-        LOG4CXX_ERROR(g_logger, "unable to send notification rc=" << rc);
+        LOG_GENERATE_ERROR(g_logger, "unable to send notification rc=%d", rc);
         free(message_p);
     }
     else
@@ -289,8 +288,7 @@ ResultCode Control::handle_results(const size_t num_results, const AUDIOProcesso
         ASSERT(NULL == message_p);
     }
 
-    LOG4CXX_TRACE(g_logger, "Control::handle_results exit " << rc);
-
+    LOG_GENERATE_TRACE(g_logger, "Control::handle_results exit rc=%d", rc);
     return rc;
 }
 
@@ -302,19 +300,19 @@ ResultCode Control::handle_results(const size_t num_results, const AUDIOProcesso
 
 APPManager::Message *populate_response(::google::protobuf::MessageLite& message)
 {
-    LOG4CXX_TRACE(g_logger, "Control::populate_response enter " << &message);
+    LOG_GENERATE_TRACE(g_logger, "Control::populate_response enter message=%p", &message);
 
     // allocate the memory for the response
     APPManager::Message *response_p = new APPManager::Message(message.ByteSize());
     // serialize the response
     if (false == message.SerializeToArray((void *)(response_p->get_data_p()), response_p->get_length()))
     {
-        LOG4CXX_ERROR(g_logger, "unable to serialize response to protocol buffer");
+        LOG_GENERATE_ERROR(g_logger, "unable to serialize response to protocol buffer");
         delete response_p;
         return NULL;
     }
     // done
-    LOG4CXX_TRACE(g_logger, "Control::populate_response exit " << response_p);
+    LOG_GENERATE_TRACE(g_logger, "Control::populate_response exit response_p=%p", response_p);
     return response_p;
 }
 

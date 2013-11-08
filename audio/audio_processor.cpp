@@ -4,6 +4,7 @@
 
 #include "audio_processor.h"
 #include "audio_capturemgr.h"
+#include "log.h"
 
 #include <ev.h>
 #include <stdlib.h>
@@ -12,7 +13,6 @@
 #include <stdint.h>
 #include <time.h>
 
-#include <log4cxx/logger.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // macros
@@ -48,7 +48,7 @@ static const float c_zero_level_in_vu = -20;
 ///////////////////////////////////////////////////////////////////////////////
 // module variables
 ///////////////////////////////////////////////////////////////////////////////
-static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("audio.processor"));
+static LogInstance g_logger("audio.processor");
 
 ///////////////////////////////////////////////////////////////////////////////
 // private function declarations
@@ -63,7 +63,7 @@ AUDIOProcessor::AUDIOProcessor() :
     m_handler_p(NULL),
     m_loop_p(ev_default_loop(0))
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::AUDIOProcessor enter");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::AUDIOProcessor enter this=%p", this);
 
     // register for audio data
     AUDIOCaptureManager::get_instance()->add_handler(this);
@@ -73,12 +73,12 @@ AUDIOProcessor::AUDIOProcessor() :
     m_timer.data = (void *)this;
     ev_timer_start(m_loop_p, &m_timer);
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::AUDIOProcessor exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::AUDIOProcessor exit");
 }
 
 AUDIOProcessor::~AUDIOProcessor()
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::~AUDIOProcessor enter");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::~AUDIOProcessor enter this=%p", this);
 
     // deregister
     AUDIOCaptureManager::get_instance()->remove_handler(this);
@@ -95,12 +95,12 @@ AUDIOProcessor::~AUDIOProcessor()
     // stop the timer
     ev_timer_stop(m_loop_p, &m_timer);
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::~AUDIOProcessor exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::~AUDIOProcessor exit");
 }
 
 void AUDIOProcessor::add_meter(Meter *meter_p)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::add_meter enter " << meter_p);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::add_meter enter this=%p meter_p=%p", this, meter_p);
 
     // release the existing meter (if it exists)
     std::map<AUDIOChannel::Index, Meter *>::iterator it = m_meters_map.find(meter_p->get_channel_p()->get_index());
@@ -115,12 +115,12 @@ void AUDIOProcessor::add_meter(Meter *meter_p)
     // store the new meter
     m_meters_map[meter_p->get_channel_p()->get_index()] = meter_p;
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::add_meter exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::add_meter exit");
 }
 
 void AUDIOProcessor::clear_meter(AUDIOChannel *channel_p)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::clear_meter enter " << channel_p);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::clear_meter enter this=%p channel_p=%p", this, channel_p);
 
     // release the existing meter (if it exists)
     std::map<AUDIOChannel::Index, Meter *>::iterator it = m_meters_map.find(channel_p->get_index());
@@ -132,23 +132,23 @@ void AUDIOProcessor::clear_meter(AUDIOChannel *channel_p)
         m_meters_map.erase(it);
     }
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::clear_meter exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::clear_meter exit");
 }
 
 const AUDIOProcessor::Meter *AUDIOProcessor::get_meter(const AUDIOChannel *channel_p) const
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::get_meter enter " << channel_p);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::get_meter enter this=%p channel_p=%d", this, channel_p);
 
     // find the meter (if it exists)
     Meter *meter_p = find_meter_by_channel_index(channel_p->get_index());
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::get_level_type_for_channel exit " << meter_p);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::get_level_type_for_channel exit meter_p=%p", meter_p);
     return meter_p;
 }
 
 ResultCode AUDIOProcessor::handle_samples(AUDIOChannel *channel_p, const size_t buffer_length, AUDIOChannel::Sample *buffer_p)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::handler_samples enter " << channel_p << " " << buffer_length << " " << buffer_p);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::handler_samples enter this=%p channel_p=%p buffer_length=%d buffer_p=%p", this, channel_p, buffer_length, buffer_p);
 
     // if we have a meter let it do its thing
     Meter *meter_p = find_meter_by_channel_index(channel_p->get_index());
@@ -157,13 +157,13 @@ ResultCode AUDIOProcessor::handle_samples(AUDIOChannel *channel_p, const size_t 
         meter_p->process_samples(buffer_length, buffer_p);
     }
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::handler_samples exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::handler_samples exit");
     return RESULT_CODE_OK;
 }
 
 void AUDIOProcessor::add_handler(AUDIOProcessor::Handler *handler_p)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::add_handler enter " << handler_p);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::add_handler enter this=%p handler_p=%p", this, handler_p);
 
     if (NULL == m_handler_p)
     {
@@ -171,15 +171,15 @@ void AUDIOProcessor::add_handler(AUDIOProcessor::Handler *handler_p)
     }
     else
     {
-        LOG4CXX_ERROR(g_logger, "m_handler_p is not NULL");
+        LOG_GENERATE_ERROR(g_logger, "m_handler_p is not NULL");
     }
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::add_handler exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::add_handler exit");
 }
 
 void AUDIOProcessor::remove_handler(AUDIOProcessor::Handler *handler_p)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::remove_handler enter " << handler_p);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::remove_handler enter this=%p handler_p=%p", this, handler_p);
 
     if (handler_p == m_handler_p)
     {
@@ -187,27 +187,27 @@ void AUDIOProcessor::remove_handler(AUDIOProcessor::Handler *handler_p)
     }
     else
     {
-        LOG4CXX_ERROR(g_logger, "m_handler_p is not equal to handler_p");
+        LOG_GENERATE_ERROR(g_logger, "m_handler_p is not equal to handler_p");
     }
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::remove_handler exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::remove_handler exit");
 }
 
 AUDIOProcessor::Meter::~Meter()
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::Meter::~Meter enter");
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::Meter::~Meter exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::Meter::~Meter enter this=%p", this);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::Meter::~Meter exit");
 }
 
 AUDIOProcessor::PeakMeter::~PeakMeter()
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PeakMeter::~PeakMeter enter");
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PeakMeter::~PeakMeter exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PeakMeter::~PeakMeter enter this=%p", this);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PeakMeter::~PeakMeter exit");
 }
 
 void AUDIOProcessor::PeakMeter::set_hold_time(uint32_t hold_time)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PeakMeter::set_hold_time enter " + to_string(hold_time));
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PeakMeter::set_hold_time enter this=%p hold_time=%d", this, hold_time);
 
     ASSERT((METER_HOLD_TIME_INVALID == hold_time) || 
             ((METER_HOLD_TIME_MINIMUM_IN_SECS <= hold_time) && 
@@ -222,30 +222,30 @@ void AUDIOProcessor::PeakMeter::set_hold_time(uint32_t hold_time)
         m_hold = AUDIO_CHANNEL_ZERO_LEVEL;
     }
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PeakMeter::set_hold_time exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PeakMeter::set_hold_time exit");
 }
 
 AUDIOProcessor::PPMMeter::PPMMeter(AUDIOChannel *channel_p) :
     AUDIOProcessor::PeakMeter::PeakMeter(channel_p)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PPMMeter::PPMMeter enter");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PPMMeter::PPMMeter enter this=%p channel_p=%p", this, channel_p);
 
     // calculate the rise and fall factors
     m_rise_factor = 1.0f - powf(PPM_TYPE_1_INTEGRATION_RISE_LEVEL, 1.0f / ((float)(channel_p->get_sample_rate()) * PPM_TYPE_1_INTEGRATION_RISE_TIME));
     m_fall_factor = powf(PPM_TYPE_1_INTEGRATION_DROP_LEVEL, 1.0f / ((float)(channel_p->get_sample_rate()) * PPM_TYPE_1_INTEGRATION_DROP_TIME));
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PPMMeter::PPMMeter exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PPMMeter::PPMMeter exit");
 }
 
 AUDIOProcessor::PPMMeter::~PPMMeter()
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PPMMeter::~PPMMeter enter");
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PPMMeter::~PPMMeter exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PPMMeter::~PPMMeter enter this=%p", this);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PPMMeter::~PPMMeter exit");
 }
 
 void AUDIOProcessor::PPMMeter::process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PPMMeter::process_samples enter " + to_string(buffer_length) + " " + to_string(buffer_p));
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PPMMeter::process_samples enter this=%p buffer_length=%d buffer_p=%p", this, buffer_length, buffer_p);
 
     AUDIOChannel::Sample min = 1.0f;
     AUDIOChannel::Sample max = AUDIO_CHANNEL_ZERO_LEVEL;
@@ -276,14 +276,14 @@ void AUDIOProcessor::PPMMeter::process_samples(const size_t buffer_length, AUDIO
         }
     }
 
-    LOG4CXX_DEBUG(g_logger, "ppm min=" + to_string(min) + " max=" + to_string(max));
+    LOG_GENERATE_DEBUG(g_logger, "ppm min=%d max=%d", min, max);
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PPMMeter::process_samples exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PPMMeter::process_samples exit");
 }
 
 AUDIOProcessor::ResultData AUDIOProcessor::PPMMeter::create_result_data()
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PPMMeter::create_result_data enter");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PPMMeter::create_result_data enter this=%p", this);
 
     AUDIOProcessor::ResultData data;
     memset(&data, 0, sizeof(data));
@@ -316,29 +316,29 @@ AUDIOProcessor::ResultData AUDIOProcessor::PPMMeter::create_result_data()
         data.values.peak.holdInDB = 20.f * log10f(voltage / ZERO_DB_PEAK_VOLTAGE);
     }
 
-    LOG4CXX_DEBUG(g_logger, "ppm peak(dB)=" + to_string(data.values.peak.peakInDB) + " hold(dB)=" + to_string(data.values.peak.holdInDB));
+    LOG_GENERATE_DEBUG(g_logger, "ppm peak(dB)=%f hold(dB)=%f", data.values.peak.peakInDB, data.values.peak.holdInDB);
 
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PPMMeter::create_result_data exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PPMMeter::create_result_data exit");
     return data;
 }
 
 AUDIOProcessor::DigitalPeakMeter::DigitalPeakMeter(AUDIOChannel *channel_p) :
     AUDIOProcessor::PeakMeter(channel_p)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::DigitalPeakMeter enter");
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::DigitalPeakMeter exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::DigitalPeakMeter enter this=%p channel_p=%p", this, channel_p);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::DigitalPeakMeter exit");
 }
 
 AUDIOProcessor::DigitalPeakMeter::~DigitalPeakMeter()
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::~DigitalPeakMeter enter");
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::~DigitalPeakMeter exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::~DigitalPeakMeter enter this=%p", this);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::~DigitalPeakMeter exit");
 }
 
 void AUDIOProcessor::DigitalPeakMeter::process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::process_samples enter " + to_string(buffer_length) + " " + to_string(buffer_p));
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::process_samples enter this=%p buffer_length=%d buffer_p=%p", this, buffer_length, buffer_p);
 
     // calculate the peak amplitude for the signal
     for (int counter = 0; counter < buffer_length; counter++)
@@ -353,12 +353,12 @@ void AUDIOProcessor::DigitalPeakMeter::process_samples(const size_t buffer_lengt
         }
     }
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::process_samples exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::process_samples exit");
 }
 
 AUDIOProcessor::ResultData AUDIOProcessor::DigitalPeakMeter::create_result_data()
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::create_result_data enter");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::create_result_data enter this=%p", this);
 
     AUDIOProcessor::ResultData data;
     memset(&data, 0, sizeof(data));
@@ -384,12 +384,12 @@ AUDIOProcessor::ResultData AUDIOProcessor::DigitalPeakMeter::create_result_data(
         data.values.peak.holdInDB = 20.f * log10f(get_peak());
     }
 
-    LOG4CXX_DEBUG(g_logger, "digital peak(dB)=" + to_string(data.values.peak.peakInDB) + " hold(dB)=" + to_string(data.values.peak.holdInDB));
+    LOG_GENERATE_DEBUG(g_logger, "digital peak(dB)=%f hold(dB)=%f", data.values.peak.peakInDB, data.values.peak.holdInDB);
 
     // reset the peak
     set_peak(AUDIO_CHANNEL_ZERO_LEVEL);
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::create_result_data exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::DigitalPeakMeter::create_result_data exit");
     return data;
 }
 
@@ -398,20 +398,20 @@ AUDIOProcessor::VUMeter::VUMeter(AUDIOChannel *channel_p) :
     m_sample_index(0),
     m_sample_count(VU_NUMBER_OF_SAMPLES(channel_p->get_sample_rate()))
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::VUMeter::VUMeter enter");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::VUMeter::VUMeter enter this=%p channel_p=%p", this, channel_p);
     m_samples_p = (AUDIOChannel::Sample *)calloc(1, sizeof(AUDIOChannel::Sample) * m_sample_count);
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::VUMeter::VUMeter exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::VUMeter::VUMeter exit");
 }
 
 AUDIOProcessor::VUMeter::~VUMeter()
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::VUMeter::~VUMeter enter");
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::VUMeter::~VUMeter exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::VUMeter::~VUMeter enter this=%p", this);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::VUMeter::~VUMeter exit");
 }
 
 void AUDIOProcessor::VUMeter::process_samples(const size_t buffer_length, AUDIOChannel::Sample *buffer_p)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::VUMeter::process_samples enter " + to_string(buffer_length) + " " + to_string(buffer_p));
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::VUMeter::process_samples enter this=%p buffer_length=%d buffer_p=%p", this, buffer_length, buffer_p);
     // store the samples we've received
     for (int counter = 0; counter < buffer_length; counter++)
     {
@@ -421,12 +421,12 @@ void AUDIOProcessor::VUMeter::process_samples(const size_t buffer_length, AUDIOC
         m_sample_index = (m_sample_index + 1) % m_sample_count;
     }
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::VUMeter::process_samples exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::VUMeter::process_samples exit");
 }
 
 AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::VUMeter::create_result_data enter");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::VUMeter::create_result_data enter this=%p", this);
 
     AUDIOProcessor::ResultData data;
     memset(&data, 0, sizeof(data));
@@ -466,9 +466,9 @@ AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
     // convert dBm to VU where 4 dBM = 0VU
     data.values.vuInUnits = voltageInDB - ZERO_VU_LEVEL_IN_DB;
 
-    LOG4CXX_DEBUG(g_logger, "vu value(units)=" + to_string(data.values.vuInUnits));
+    LOG_GENERATE_DEBUG(g_logger, "vu value(units)=%f", data.values.vuInUnits);
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::VUMeter::create_result_data exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::VUMeter::create_result_data exit");
     return data;
 }
 
@@ -479,8 +479,8 @@ AUDIOProcessor::ResultData AUDIOProcessor::VUMeter::create_result_data()
 AUDIOProcessor::Meter::Meter(AUDIOChannel *channel_p) :
     m_channel_p(channel_p)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::Meter::Meter enter");
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::Meter::Meter exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::Meter::Meter enter this=%p channel_p=%p", this, channel_p);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::Meter::Meter exit");
 }
 
 
@@ -491,13 +491,13 @@ AUDIOProcessor::PeakMeter::PeakMeter(AUDIOChannel *channel_p) :
     m_hold(AUDIO_CHANNEL_ZERO_LEVEL),
     m_last_timestamp(0)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PeakMeter::PeakMeter enter");
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PeakMeter::PeakMeter exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PeakMeter::PeakMeter enter this=%p channel_p=%p", this, channel_p);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PeakMeter::PeakMeter exit");
 }
 
 void AUDIOProcessor::PeakMeter::set_peak(AUDIOChannel::Sample peak)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PeakMeter::set_peak enter");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PeakMeter::set_peak enter this=%p peak=%f", this, peak);
     // update the peak value
     m_peak = peak;
     // see if a hold time is set
@@ -510,13 +510,13 @@ void AUDIOProcessor::PeakMeter::set_peak(AUDIOChannel::Sample peak)
         if (((m_last_timestamp + m_hold_time) < current_time) || 
             (peak > m_hold))
         {
-            LOG4CXX_TRACE(g_logger, "updating hold value for channel=" + get_channel_p()->get_index());
+            LOG_GENERATE_TRACE(g_logger, "updating hold value for channel=%d", get_channel_p()->get_index());
             m_hold = peak;
             m_last_timestamp = current_time;
         }
     }
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::PeakMeter::setpeak exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::PeakMeter::setpeak exit");
 }
 
 
@@ -526,7 +526,7 @@ void AUDIOProcessor::PeakMeter::set_peak(AUDIOChannel::Sample peak)
 
 void AUDIOProcessor::timer_cb(EV_P_ ev_timer *w_p, int revents)
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::timer_cb enter " << w_p << " " << revents);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::timer_cb enter w_p=%p revents=0x%x", w_p, revents);
 
     // get the object
     AUDIOProcessor *processor_p = (AUDIOProcessor *)w_p->data;
@@ -561,12 +561,12 @@ void AUDIOProcessor::timer_cb(EV_P_ ev_timer *w_p, int revents)
         }
     }
 
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::timer_cb exit");
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::timer_cb exit");
 }
 
 AUDIOProcessor::Meter *AUDIOProcessor::find_meter_by_channel_index(AUDIOChannel::Index index) const
 {
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::find_meter_by_channel_index enter " + to_string(index));
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::find_meter_by_channel_index enter this=%p index=%d", this, index);
 
     std::map<AUDIOChannel::Index, Meter *>::const_iterator it = m_meters_map.find(index);
     // assume we won't find it 
@@ -576,6 +576,6 @@ AUDIOProcessor::Meter *AUDIOProcessor::find_meter_by_channel_index(AUDIOChannel:
         meter_p = it->second;
     }
     // done
-    LOG4CXX_TRACE(g_logger, "AUDIOProcessor::find_meter_by_channel_index exit " << meter_p);
+    LOG_GENERATE_TRACE(g_logger, "AUDIOProcessor::find_meter_by_channel_index exit meter_p=%p", meter_p);
     return meter_p;
 }

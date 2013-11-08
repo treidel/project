@@ -3,13 +3,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "config.h"
+#include "log.h"
 
 extern "C" 
 {
 #include <ini_config.h>
 };
-
-#include <log4cxx/logger.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // macros
@@ -30,7 +29,7 @@ extern "C"
 // module variables
 ///////////////////////////////////////////////////////////////////////////////
 
-static log4cxx::LoggerPtr g_logger(log4cxx::Logger::getLogger("config"));
+static LogInstance g_logger("config");
 
 Config *Config::g_instance_p = NULL;
 
@@ -45,7 +44,7 @@ Config *Config::g_instance_p = NULL;
 
 ResultCode Config::init(const char *configpath_p)
 {
-    LOG4CXX_TRACE(g_logger, "Config::init enter " + to_string(configpath_p));
+    LOG_GENERATE_TRACE(g_logger, "Config::init enter configpath_p=%s", configpath_p);
 
     // assume success
     ResultCode result_code = RESULT_CODE_OK;
@@ -58,14 +57,14 @@ ResultCode Config::init(const char *configpath_p)
     {
         case 0:
             // success
-            LOG4CXX_DEBUG(g_logger, "successfully read config file=" + to_string(configpath_p));
+            LOG_GENERATE_DEBUG(g_logger, "successfully read config file=%s", configpath_p);
             // create the singleton
             g_instance_p = new Config(ini_collection_p);
             break;
 
         default:
             // error
-            LOG4CXX_ERROR(g_logger, "error reading config file=" + to_string(configpath_p));
+            LOG_GENERATE_ERROR(g_logger, "error reading config file=%s", configpath_p);
             result_code = RESULT_CODE_ERROR;
             print_file_parsing_errors(stdout, error_collection_p);
             break;
@@ -75,20 +74,20 @@ ResultCode Config::init(const char *configpath_p)
         free_ini_config_errors(error_collection_p);
     }
 
-    LOG4CXX_TRACE(g_logger, "Config::init exit " + to_string(result_code));
+    LOG_GENERATE_TRACE(g_logger, "Config::init exit result_code=%d", result_code);
     return result_code;
 }
 
 const Config *Config::get_instance_p() 
 {
-    LOG4CXX_TRACE(g_logger, "Config::get_instance_p() enter");
-    LOG4CXX_TRACE(g_logger, "Config::get_instance_p() exit instance_p=" + to_string(g_instance_p));
+    LOG_GENERATE_TRACE(g_logger, "Config::get_instance_p() enter");
+    LOG_GENERATE_TRACE(g_logger, "Config::get_instance_p() exit instance_p=%p", g_instance_p);
     return g_instance_p;
 }
 
 ResultCode Config::get_float(const char *section_p, const char *item_p, float *value_p) const
 {
-    LOG4CXX_TRACE(g_logger, "Config::get_float enter " + to_string(section_p) + " " + to_string(item_p) + " " + to_string(value_p));
+    LOG_GENERATE_TRACE(g_logger, "Config::get_float enter this=%p section_p=%s item_p=%s value_p=%p", this, section_p, item_p, value_p);
 
     ResultCode result_code = RESULT_CODE_OK;
 
@@ -102,17 +101,17 @@ ResultCode Config::get_float(const char *section_p, const char *item_p, float *v
     }
     else
     {
-        LOG4CXX_ERROR(g_logger, "unable to find config file time section=" + to_string(section_p) + " item=" + to_string(item_p));
+        LOG_GENERATE_ERROR(g_logger, "unable to find config file time section=%s item=%s", section_p, item_p);
         result_code = RESULT_CODE_ERROR;
     }
 
-    LOG4CXX_TRACE(g_logger, "Config::get_float exit " + to_string(result_code));
+    LOG_GENERATE_TRACE(g_logger, "Config::get_float exit result_code=%d", result_code);
     return result_code;
 }
 
 ResultCode Config::get_float_with_default(const char *section_p, const char *item_p, float default_value, float *value_p) const
 {
-    LOG4CXX_TRACE(g_logger, "Config::get_float_with_default enter " + to_string(section_p) + " " + to_string(item_p) + " " + to_string(default_value) + " " + to_string(value_p));
+    LOG_GENERATE_TRACE(g_logger, "Config::get_float_with_default enter this=%p section_p=%s item_p=%s default_value=%f value_p=%p", this, section_p, item_p, default_value, value_p);
 
     ResultCode result_code = RESULT_CODE_OK;
 
@@ -130,13 +129,13 @@ ResultCode Config::get_float_with_default(const char *section_p, const char *ite
         *value_p = default_value;
     }
 
-    LOG4CXX_TRACE(g_logger, "Config::get_float_with_default exit " + to_string(result_code));
+    LOG_GENERATE_TRACE(g_logger, "Config::get_float_with_default exit result_code=%d", result_code);
     return result_code;
 }
 
 ResultCode Config::get_string(const char *section_p, const char *item_p, const char **value_pp) const
 {
-    LOG4CXX_TRACE(g_logger, "Config::get_string enter " + to_string(section_p) + " " + to_string(item_p) + " " + to_string(value_pp));
+    LOG_GENERATE_TRACE(g_logger, "Config::get_string enter this=%p section_p=%s item_p=%s value_pp=%p", this, section_p, item_p, value_pp);
 
     ResultCode result_code = RESULT_CODE_OK;
 
@@ -149,17 +148,17 @@ ResultCode Config::get_string(const char *section_p, const char *item_p, const c
     }
     else
     {
-        LOG4CXX_ERROR(g_logger, "unable to find config file time section=" + to_string(section_p) + " item=" + to_string(item_p));
+        LOG_GENERATE_ERROR(g_logger, "unable to find config file time section=%s item=%s", section_p, item_p);
         result_code = RESULT_CODE_ERROR;
     }
 
-    LOG4CXX_TRACE(g_logger, "Config::get_string exit " + to_string(result_code));
+    LOG_GENERATE_TRACE(g_logger, "Config::get_string exit result_code=%d", result_code);
     return result_code;
 }
 
 ResultCode Config::get_string_with_default(const char *section_p, const char *item_p, const char *default_value_p, const char **value_pp) const
 {
-    LOG4CXX_TRACE(g_logger, "Config::get_string_with_default enter " + to_string(section_p) + " " + to_string(item_p) + " " + to_string(default_value_p) + " " + to_string(value_pp));
+    LOG_GENERATE_TRACE(g_logger, "Config::get_string_with_default enter this=%p section_p=%s item_p=%s default_value_p=%s value_pp=%p", this, section_p, item_p, default_value_p, value_pp);
 
     ResultCode result_code = RESULT_CODE_OK;
 
@@ -175,7 +174,7 @@ ResultCode Config::get_string_with_default(const char *section_p, const char *it
         *value_pp = default_value_p;
     }
 
-    LOG4CXX_TRACE(g_logger, "Config::get_string_with_default exit " + to_string(result_code));
+    LOG_GENERATE_TRACE(g_logger, "Config::get_string_with_default exit result_code=%d", result_code);
     return result_code;
 }
 
@@ -186,17 +185,16 @@ ResultCode Config::get_string_with_default(const char *section_p, const char *it
 Config::Config(struct collection_item *collection_p) : 
     m_collection_p(collection_p)
 {
-    LOG4CXX_TRACE(g_logger, "Config::Config enter " + to_string(collection_p));
-
-    LOG4CXX_TRACE(g_logger, "Config::Config exit");
+    LOG_GENERATE_TRACE(g_logger, "Config::Config enter this=%p collection_p=%p", this, collection_p);
+    LOG_GENERATE_TRACE(g_logger, "Config::Config exit");
 }
 
 Config::~Config()
 {
-    LOG4CXX_TRACE(g_logger, "Config::~Config enter");
+    LOG_GENERATE_TRACE(g_logger, "Config::~Config enter this=%p", this);
     if (NULL != m_collection_p)
     {
         free_ini_config(m_collection_p);
     }
-    LOG4CXX_TRACE(g_logger, "Config::~Config exit");
+    LOG_GENERATE_TRACE(g_logger, "Config::~Config exit");
 }

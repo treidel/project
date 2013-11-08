@@ -14,7 +14,12 @@
 // macros
 ///////////////////////////////////////////////////////////////////////////////
 
-#define LOG_GENERATE_TRACE(instance, format, ...) instance.generate(LOG_LEVEL_TRACE, format, __VA_ARGS__);
+#define LOG_GENERATE_TRACE(instance, format, ...) instance.generate(LogInstance::LOG_LEVEL_TRACE, format, ##__VA_ARGS__);
+#define LOG_GENERATE_DEBUG(instance, format, ...) instance.generate(LogInstance::LOG_LEVEL_DEBUG, format, ##__VA_ARGS__);
+#define LOG_GENERATE_INFO(instance, format, ...) instance.generate(LogInstance::LOG_LEVEL_INFO, format, ##__VA_ARGS__);
+#define LOG_GENERATE_WARN(instance, format, ...) instance.generate(LogInstance::LOG_LEVEL_WARNING, format, ##__VA_ARGS__);
+#define LOG_GENERATE_ERROR(instance, format, ...) instance.generate(LogInstance::LOG_LEVEL_ERROR, format, ##__VA_ARGS__);
+#define LOG_GENERATE_WTF(instance, format, ...) instance.generate(LogInstance::LOG_LEVEL_WTF, format, ##__VA_ARGS__);
 
 ///////////////////////////////////////////////////////////////////////////////
 // forward declarations
@@ -31,10 +36,6 @@ class LogInstance
 // type definitions
 ///////////////////////////////////////////////////////////////////////////////
 
-
-///////////////////////////////////////////////////////////////////////////////
-// type defintions
-///////////////////////////////////////////////////////////////////////////////
 
 public:
 
